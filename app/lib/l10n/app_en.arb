@@ -1,0 +1,380 @@
+{
+  "@@locale": "en",
+  "appName": "Winibex Accounting",
+  "navDashboard": "Dashboard",
+  "navTransactions": "Transactions",
+  "navApprovals": "Approvals",
+  "navClients": "Clients",
+  "navInvoices": "Invoices",
+  "navQuotations": "Quotations",
+  "navPayroll": "Payroll",
+  "navRecurring": "Recurring costs",
+  "navReports": "Reports",
+  "navSettings": "Settings",
+  "actionSave": "Save",
+  "actionSaveDraft": "Save draft",
+  "actionSubmit": "Submit for approval",
+  "actionApprove": "Approve and post",
+  "actionReject": "Reject",
+  "actionReverse": "Reverse entry",
+  "actionCancel": "Cancel",
+  "actionBack": "Back",
+  "actionNext": "Next",
+  "actionEdit": "Edit",
+  "actionSearch": "Search",
+  "actionExportCsv": "Export CSV",
+  "actionCopyRow": "Copy row",
+  "actionDownloadPdf": "Download PDF",
+  "actionAttachReceipt": "Attach receipt",
+  "actionTakePhoto": "Take photo",
+  "actionViewJournal": "View journal entry",
+  "actionAddTaxLine": "Add tax line",
+  "actionAddCharge": "Add charge",
+  "actionNewTransaction": "New transaction",
+  "actionNewInvoice": "New invoice",
+  "actionNewQuotation": "New quotation",
+  "actionConvertToInvoice": "Convert to invoice",
+  "actionSignIn": "Sign in",
+  "actionSignOut": "Sign out",
+  "actionProceedAnyway": "Proceed anyway",
+  "actionReviewMatch": "Review matching entry",
+  "fieldDate": "Date",
+  "fieldDirection": "Direction",
+  "fieldCurrency": "Currency",
+  "fieldAmount": "Amount",
+  "fieldPaidBy": "Paid by",
+  "fieldReceivedInto": "Received into",
+  "fieldExchangeRate": "Exchange rate",
+  "fieldPkrAmount": "PKR amount",
+  "fieldCategory": "Category",
+  "fieldAccount": "Account",
+  "fieldDescription": "Description",
+  "fieldClient": "Client",
+  "fieldProject": "Project",
+  "fieldRebillable": "Rebillable to client",
+  "fieldReference": "Reference",
+  "fieldReceipt": "Receipt",
+  "fieldReason": "Reason",
+  "fieldEmail": "Email",
+  "fieldPassword": "Password",
+  "directionMoneyIn": "Money in",
+  "directionMoneyOut": "Money out",
+  "directionTransfer": "Transfer",
+  "paidByCompany": "Company account",
+  "paidByPerson": "{name}, personally",
+  "@paidByPerson": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "statusDraft": "Draft",
+  "statusPending": "Pending approval",
+  "statusPosted": "Posted",
+  "statusRejected": "Rejected",
+  "statusReversed": "Reversed",
+  "statusPaid": "Paid",
+  "statusPartial": "Partially paid",
+  "statusOverdue": "Overdue",
+  "statusSent": "Sent",
+  "statusAccepted": "Accepted",
+  "statusConverted": "Converted",
+  "clientStatusActive": "Active",
+  "clientStatusOnCall": "On call",
+  "clientStatusPaused": "Paused",
+  "clientStatusClosed": "Closed",
+  "colDate": "Date",
+  "colNumber": "No.",
+  "colDescription": "Description",
+  "colAccount": "Account",
+  "colCategory": "Category",
+  "colDebit": "Debit",
+  "colCredit": "Credit",
+  "colBalance": "Balance",
+  "colStatus": "Status",
+  "colClient": "Client",
+  "colEnteredBy": "Entered by",
+  "stepDirection": "What kind of entry is this?",
+  "stepCurrency": "Which currency?",
+  "stepAmount": "How much?",
+  "stepPaidBy": "Who paid?",
+  "stepReceivedInto": "Where did the money land?",
+  "stepConversion": "Conversion to PKR",
+  "stepTaxes": "Taxes and charges",
+  "stepDetails": "What was it for?",
+  "stepReceipt": "Receipt",
+  "stepReview": "Review before submitting",
+  "hintLastRate": "Last rate used for {currency}: {rate}",
+  "@hintLastRate": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "hintEnterRateOrPkr": "Enter the rate or the PKR amount. The other fills in.",
+  "hintPersonPayable": "The company will owe {name} this amount until it is reimbursed.",
+  "@hintPersonPayable": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hintReceiptRequired": "A receipt is required for this entry.",
+  "hintReceiptOptional": "Optional. Entries without a receipt are flagged for review.",
+  "totalPkrOut": "Total PKR out",
+  "totalPkrIn": "Total PKR received",
+  "rowsAndTotal": "{count} entries, {total}",
+  "@rowsAndTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmPosted": "Posted. {account} is now {balance}.",
+  "@confirmPosted": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      },
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmSubmitted": "Submitted. Waiting for {approver} to approve.",
+  "@confirmSubmitted": {
+    "placeholders": {
+      "approver": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDraftSaved": "Draft saved.",
+  "confirmReversed": "Reversed. Both entries stay in the ledger, linked.",
+  "confirmRejected": "Rejected. {name} can see the reason.",
+  "@confirmRejected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errUnbalanced": "Debits and credits do not match.",
+  "errMissingCategory": "Pick a category before submitting.",
+  "errMissingAccount": "Pick an account before submitting.",
+  "errAmountNotPositive": "Enter an amount above zero. Direction sets whether money comes in or goes out.",
+  "errFutureDate": "The date cannot be in the future.",
+  "errBeforeOpening": "This date is before the account's opening date.",
+  "errNeedRateOrPkr": "Enter the exchange rate or the PKR amount.",
+  "errRateNotPositive": "The exchange rate must be above zero.",
+  "errTaxExceedsBase": "A tax line cannot be larger than the amount it is calculated on.",
+  "errTaxNotInEffect": "This tax was not in effect on the transaction date.",
+  "errCashNegative": "{account} only has {balance}. Cash cannot go below zero.",
+  "@errCashNegative": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      },
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "errSameAccountTransfer": "Choose two different accounts for a transfer.",
+  "errOverpayment": "This is more than the invoice's remaining {remaining}. Record the extra as a customer advance.",
+  "@errOverpayment": {
+    "placeholders": {
+      "remaining": {
+        "type": "String"
+      }
+    }
+  },
+  "errReceiptRequired": "Attach a receipt. It is required for this kind of entry.",
+  "errPostedImmutable": "Posted entries cannot be edited. Reverse it and enter a corrected one.",
+  "errDuplicateReference": "This reference is already used on {account}.",
+  "@errDuplicateReference": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "errNetwork": "Could not reach the server. Your entry is kept. Try again when connected.",
+  "errSignIn": "Email or password is incorrect.",
+  "warnPossibleDuplicate": "An entry for the same amount on {account} was recorded on {date}.",
+  "@warnPossibleDuplicate": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "warnUnusualAmount": "This is more than three times the usual amount for {category}.",
+  "@warnUnusualAmount": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "warnRateDeviation": "This rate is {percent}% away from the last rate used for {currency}.",
+  "@warnRateDeviation": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "warnBackdated": "This date is more than 90 days ago.",
+  "warnClosedClient": "{client} is marked closed.",
+  "@warnClosedClient": {
+    "placeholders": {
+      "client": {
+        "type": "String"
+      }
+    }
+  },
+  "warnTaxOverride": "This tax rate differs from the configured rate.",
+  "warnLargeCash": "Large cash expense. Double check before submitting.",
+  "flagNoReceipt": "No receipt",
+  "flagThinDescription": "Description too short",
+  "flagSelfApproved": "Created and approved by the same person",
+  "flagPassThroughAging": "Money held in a pass-through account over 14 days",
+  "flagUninvoicedRebillable": "Rebillable spend not invoiced after 30 days",
+  "emptyTransactions": "No transactions yet. Record the first money in or money out to start the ledger.",
+  "emptyApprovals": "Nothing waiting for approval.",
+  "emptyClients": "No clients yet. Add one to link income and spending to it.",
+  "emptyInvoices": "No invoices yet. Create one, or convert an accepted quotation.",
+  "emptyFlags": "No flagged entries. Everything has been reviewed.",
+  "emptySearch": "No entries match \"{query}\".",
+  "@emptySearch": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "termDebit": "Debit",
+  "termDebitTip": "The left side of a journal entry. Increases assets and expenses, decreases liabilities and income.",
+  "termCredit": "Credit",
+  "termCreditTip": "The right side of a journal entry. Increases liabilities and income, decreases assets and expenses.",
+  "termJournalEntry": "Journal entry",
+  "termJournalEntryTip": "The debit and credit lines this transaction records in the books. Debits always equal credits.",
+  "termPosted": "Posted",
+  "termPostedTip": "Recorded in the books. A posted entry cannot be edited, only reversed.",
+  "termDraft": "Draft",
+  "termDraftTip": "Saved but not submitted. Does not affect any balance.",
+  "termReversal": "Reversal",
+  "termReversalTip": "An equal and opposite entry that cancels a posted one. Both stay visible so the history is complete.",
+  "termAccountsReceivable": "Accounts receivable",
+  "termAccountsReceivableTip": "Money clients owe Winibex for invoices not yet paid.",
+  "termAccountsPayable": "Accounts payable",
+  "termAccountsPayableTip": "Money Winibex owes to suppliers, contractors or people who paid on its behalf.",
+  "termRebillable": "Rebillable",
+  "termRebillableTip": "Spent on a client's behalf and charged back to them. Appears on their next invoice instead of reducing profit.",
+  "termAbsorbed": "Absorbed",
+  "termAbsorbedTip": "Spent on a client's behalf and not charged back. Comes out of the profit on that client.",
+  "termPassThrough": "Pass-through account",
+  "termPassThroughTip": "A personal account where company money lands before being transferred to Winibex. Only company money is tracked here.",
+  "termTrialBalance": "Trial balance",
+  "termTrialBalanceTip": "Every account's debit or credit total. The two columns must be equal, which proves the books are internally consistent.",
+  "termChartOfAccounts": "Chart of accounts",
+  "termChartOfAccountsTip": "The full list of accounts the books are organised into, from cash and bank to income and expenses.",
+  "termExchangeRate": "Exchange rate",
+  "termExchangeRateTip": "PKR per one unit of the foreign currency. Use the rate the bank actually applied.",
+  "termWithholdingTax": "Withholding tax",
+  "termWithholdingTaxTip": "Tax deducted at source by the payer and deposited with FBR on the recipient's behalf.",
+  "termFinalTax154A": "Final tax, Section 154A",
+  "termFinalTax154ATip": "Tax the bank deducts on IT export receipts for PSEB-registered companies. It is the full tax on that income.",
+  "termRunway": "Runway",
+  "termRunwayTip": "How many months current cash covers fixed costs such as salaries and subscriptions, assuming no new income.",
+  "termFiscalYear": "Fiscal year",
+  "termFiscalYearTip": "1 July to 30 June, matching the Pakistan tax year.",
+  "termPartnerShare": "Partner share",
+  "termPartnerShareTip": "The portion of earnings kept by the owner of an Upwork or other platform account used for the work.",
+  "loginHeading": "Sign in",
+  "@loginHeading": {
+    "description": "Heading on the login screen"
+  },
+  "loginSubheading": "Winibex internal books",
+  "@loginSubheading": {
+    "description": "Line under the login heading"
+  },
+  "loginEmailRequired": "Enter your email address.",
+  "@loginEmailRequired": {
+    "description": "Validation on the login form"
+  },
+  "loginPasswordRequired": "Enter your password.",
+  "@loginPasswordRequired": {
+    "description": "Validation on the login form"
+  },
+  "loginSigningIn": "Signing in...",
+  "@loginSigningIn": {
+    "description": "Button label while the request is in flight"
+  },
+  "errTooManyAttempts": "Too many sign-in attempts. Try again in a few minutes.",
+  "@errTooManyAttempts": {
+    "description": "Shown after the login rate limit"
+  },
+  "errServer": "Something went wrong. Try again.",
+  "@errServer": {
+    "description": "Generic server failure"
+  },
+  "errSessionExpired": "Your session has expired. Sign in again.",
+  "@errSessionExpired": {
+    "description": "Shown when the refresh token is rejected"
+  },
+  "mustChangePassword": "Set a new password before continuing.",
+  "@mustChangePassword": {
+    "description": "Shown when must_change_password is true"
+  },
+  "actionRetry": "Try again",
+  "@actionRetry": {
+    "description": "Retry a failed request"
+  },
+  "themeSystem": "Match system",
+  "@themeSystem": {
+    "description": "Theme option"
+  },
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Theme option"
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Theme option"
+  },
+  "a11yToggleTheme": "Change theme",
+  "@a11yToggleTheme": {
+    "description": "Semantics label for the theme button"
+  },
+  "a11yWhatIsTerm": "What does {term} mean?",
+  "@a11yWhatIsTerm": {
+    "description": "Semantics label on a term tooltip",
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "errAccountInactive": "This account has been deactivated. Ask the owner.",
+  "@errAccountInactive": {
+    "description": "Shown when a deactivated user tries to sign in"
+  }
+}
