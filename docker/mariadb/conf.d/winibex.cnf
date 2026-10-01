@@ -1,0 +1,20 @@
+[mariadb]
+
+# Strict mode matters more here than anywhere else in the stack. Without it
+# the server truncates and coerces on insert, which on a BIGINT paisa column
+# means money changes value with no error raised.
+#
+# On Hostinger these globals cannot be set, so the connection pool sets the
+# same values per session. This file keeps local behaviour identical.
+sql_mode = STRICT_ALL_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_ENGINE_SUBSTITUTION,ONLY_FULL_GROUP_BY
+
+# All timestamps are stored UTC. The server must not apply a local offset.
+default_time_zone = +00:00
+
+character-set-server = utf8mb4
+collation-server = utf8mb4_uca1400_ai_ci
+
+innodb_default_row_format = dynamic
+
+# Nothing in this system loads files from the client.
+local_infile = 0

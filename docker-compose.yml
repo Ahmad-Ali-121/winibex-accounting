@@ -1,0 +1,33 @@
+name: winibex-accounting
+
+# Production is Hostinger managed MariaDB 11.8, confirmed 2026-10-01.
+# Local must be the same engine and major version. Developing on MySQL and
+# deploying to MariaDB means finding the differences in production.
+
+services:
+  mariadb:
+    image: mariadb:11.8
+    container_name: winibex-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: winibex_root_local
+      MARIADB_DATABASE: winibex
+      MARIADB_USER: winibex
+      MARIADB_PASSWORD: winibex_local
+      TZ: UTC
+    ports:
+      # 3307 on the host so a database already installed locally does not clash.
+      - "3307:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+      - ./docker/mariadb/conf.d:/etc/mysql/conf.d:ro
+      - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+volumes:
+  mariadb-data:

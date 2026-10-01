@@ -1,0 +1,30 @@
+{
+  "name": "winibex-accounting-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Winibex Accounting API. Node, Express, MariaDB.",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "start": "node scripts/probe-deploy.js --serve",
+    "test": "node --env-file=.env --test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "hash:password": "node --env-file=.env scripts/hash-password.js",
+    "db:up": "docker compose -f ../docker-compose.yml up -d",
+    "db:down": "docker compose -f ../docker-compose.yml down",
+    "db:reset": "docker compose -f ../docker-compose.yml down -v && docker compose -f ../docker-compose.yml up -d",
+    "db:shell": "docker exec -it winibex-mariadb mariadb -u winibex -pwinibex_local winibex",
+    "probe": "node --env-file=.env scripts/probe-deploy.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "mysql2": "^3.23.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0"
+  }
+}
