@@ -1,10 +1,41 @@
 # Schema
 
-MySQL 8. All money columns are `BIGINT` in paisa (1 PKR = 100 paisa).
+MariaDB 11.8. All money columns are `BIGINT` in paisa (1 PKR = 100 paisa).
 All timestamps UTC. Soft delete only, via status columns.
 
 Status: Structure approved 2026-10-01. Tax and chart of accounts sections
 pending review by the company accountant before Phase 0 migration.
+
+---
+
+## Database engine
+
+The server is MariaDB, not MySQL. Confirmed against the live Hostinger
+database on 2026-10-01, see decision 041. This affects the schema in four
+places and nowhere else.
+
+**Character set.** Every table is created `utf8mb4` with
+`utf8mb4_uca1400_ai_ci`, the MariaDB 11.6+ default. MySQL's
+`utf8mb4_0900_ai_ci` does not exist here.
+
+**JSON columns are text.** `JSON` on MariaDB is an alias for LONGTEXT with a
+validity check. The driver returns a string. So `audit_log.before_json`,
+`audit_log.after_json`, `idempotency_keys.response_json` and
+`generated_documents.source_data_json` are stringified on write and parsed on
+read, in the repository layer. Nothing queries inside them, and the `->` and
+`->>` operators are not available.
+
+**Session settings.** Hostinger does not allow global `sql_mode` or server
+time zone changes, so every connection sets `STRICT_ALL_TABLES`,
+`time_zone = '+00:00'` and `READ-COMMITTED` itself.
+
+**Big numbers.** Every connection sets `supportBigNumbers`. Without it the
+driver rounds a BIGINT past JavaScript's safe integer limit with no error.
+Decision 044.
+
+**Reserved words.** `KEY` is reserved, so the settings and idempotency tables
+use `setting_key` and `idempotency_key` rather than `key`. No column anywhere
+is named with a reserved word, so no query needs backticks to run.
 
 ---
 
@@ -56,7 +87,7 @@ Reference only. Shown as a hint on the entry form, never applied automatically.
 | id | BIGINT PK | |
 | name | VARCHAR(100) | |
 | email | VARCHAR(190) UNIQUE | login |
-| password_hash | VARCHAR(255) | argon2id. bcryptjs is the documented fallback, see decision 039 |
+| password_hash | VARCHAR(255) | bcrypt now, argon2id switchable. See decision 042 |
 | must_change_password | BOOL | true for the bootstrapped owner, forces a change on first login |
 | role | ENUM | `owner`, `admin`, `staff`. See Permissions below |
 | approval_limit | BIGINT NULL | admins only, paisa. Null means unlimited |
@@ -64,6 +95,9 @@ Reference only. Shown as a hint on the entry form, never applied automatically.
 | shares_owner_login | BOOL | true for people who also use the winibexoffice login |
 | is_active | BOOL | never delete a user |
 | created_at, updated_at | TIMESTAMP | |
+
+`password_hash` holds which algorithm produced it as part of the value, so a
+change of algorithm never locks anyone out.
 
 ### refresh_tokens
 Server-side sessions, so logout and revocation actually work.
@@ -86,7 +120,7 @@ Key-value. Avoids hardcoding policy.
 
 | Column | Type | Notes |
 | --- | --- | --- |
-| key | VARCHAR(100) PK | |
+| setting_key | VARCHAR(100) PK | named `setting_key`, not `key`, which is reserved |
 | value | TEXT | |
 | value_type | ENUM | `string`, `int`, `bool`, `date`, `json` |
 | description | VARCHAR(255) | |
@@ -95,7 +129,7 @@ Key-value. Avoids hardcoding policy.
 
 Seeded keys:
 
-| key | default | purpose |
+| setting_key | default | purpose |
 | --- | --- | --- |
 | `base_currency` | PKR | |
 | `fiscal_year_start_month` | 7 | July to June |
@@ -158,20 +192,17 @@ Storing a balance invites the drift the spreadsheet already has.
 | name | VARCHAR(100) | |
 | type | ENUM | `asset`, `liability`, `equity`, `income`, `expense` |
 | parent_id | BIGINT NULL | |
-
-Full seed, codes, and worked posting examples are in
-`docs/CHART-OF-ACCOUNTS.md`. Structured for the Revised AFRS for Small-Sized
-Entities framework that applies to Winibex as a small private company, and
-mapped to the heads of the FBR annual return.
-
-| Column | Type | Notes |
-| --- | --- | --- |
 | fbr_return_head_code | VARCHAR(20) FK NULL | references `fbr_return_heads`. Empty until the accountant supplies the mapping |
 | normal_balance | ENUM | `debit`, `credit`. Contra accounts such as 1219 and 1229 are credit despite being assets |
 | is_header | BOOL | grouping only, never posted to by any path |
 | is_system | BOOL | system accounts cannot be renamed or deactivated |
 | allow_manual_posting | BOOL | false for control accounts like receivables |
 | is_active | BOOL | |
+
+Full seed, codes, and worked posting examples are in
+`docs/CHART-OF-ACCOUNTS.md`. Structured for the Revised AFRS for Small-Sized
+Entities framework that applies to Winibex as a small private company, and
+mapped to the heads of the FBR annual return.
 
 ---
 
@@ -226,7 +257,7 @@ draft  →  pending  →  posted  →  reversed
 - `pending` is awaiting admin approval, editable only back to draft
 - `posted` is **immutable for everyone, including admin**. No update statement
   may touch a posted row's money fields. Enforced in the service layer and by
-  a MySQL trigger
+  a database trigger
 - `reversed` means a reversing entry exists. Both rows stay visible and link to
   each other
 
@@ -356,9 +387,9 @@ paid posted transactions minus reimbursements.
 ### idempotency_keys
 | Column | Type | Notes |
 | --- | --- | --- |
-| key | CHAR(36) PK | from the client |
+| idempotency_key | CHAR(36) PK | from the client. Named `idempotency_key`, not `key`, which is reserved |
 | user_id, endpoint | | |
-| response_json | JSON | returned on repeat |
+| response_json | JSON | returned on repeat. Text on MariaDB, so stringify and parse |
 | created_at | TIMESTAMP | purged after 24 hours, the one table that is purged |
 
 ### attachments
@@ -376,6 +407,8 @@ financial years after the entry date. Files on disk, not in the database.
 | id, user_id, table_name, record_id, action, before_json, after_json, ip, created_at |
 
 Every insert, update, status change on money tables. Append only.
+`before_json` and `after_json` are JSON columns, which on MariaDB are text.
+The audit helper stringifies on write and parses on read.
 
 ### entry_flags
 Validation findings attached to a transaction. Warnings and flags live here so
@@ -416,6 +449,11 @@ is the first thing an auditor asks about.
 | name | VARCHAR(50) PK | `journal`, `invoice`, `quotation`, `receipt`, `voucher` |
 | prefix | VARCHAR(10) | |
 | next_value | BIGINT | allocated inside the same DB transaction as the insert |
+
+Allocation is `SELECT ... FOR UPDATE` inside the caller's transaction, so a
+rolled-back caller leaves the counter untouched. MariaDB's native SEQUENCE
+objects are deliberately not used: they allocate outside the transaction and
+would leave gaps.
 
 ---
 
@@ -673,7 +711,7 @@ Every PDF the system produces, kept for re-download and audit.
 | file_path | VARCHAR(255) | |
 | generated_by, generated_at | | |
 | sent_to, sent_at | NULL | |
-| source_data_json | JSON | exact data the PDF was built from |
+| source_data_json | JSON | exact data the PDF was built from. Text on MariaDB |
 | sha256 | CHAR(64) | of the PDF file |
 
 ---
@@ -791,6 +829,10 @@ before they exist.
 | 002 | transactions and everything Phase 1 needs, plus the posted-row immutability trigger |
 | Later | one per phase |
 
+Every migration file is plain SQL, numbered, idempotent where it can be, and
+records itself in `schema_migrations` as its last statement. Tables are created
+`ENGINE = InnoDB` with `utf8mb4` and `utf8mb4_uca1400_ai_ci`.
+
 ## Retention
 
 Companies Act 2017 section 220 requires books of account and vouchers to be
@@ -819,11 +861,15 @@ for the queries the app actually runs:
 | transaction_taxes | (tax_id, statement_id) |
 | invoices | (client_id, status, due_date) |
 | bank_statement_lines | (account_id, status, line_date) |
-| idempotency_keys | (key) UNIQUE, (created_at) for expiry |
+| idempotency_keys | (created_at) for expiry |
+
+`idempotency_keys.idempotency_key` is the primary key, so it needs no separate
+unique index.
 
 ## Constraints
 
-MySQL 8 enforces CHECK constraints:
+MariaDB 11.8 enforces CHECK constraints. Proved against the real engine in
+step 0.1 rather than assumed.
 
 - `journal_lines`: `debit >= 0 AND credit >= 0 AND (debit = 0 OR credit = 0) AND (debit > 0 OR credit > 0)`
 - `transactions`: `amount > 0`, `gross_amount > 0`
@@ -834,13 +880,13 @@ MySQL 8 enforces CHECK constraints:
 
 ## Open questions
 
-Flagged, not decided:
-
+Flagged, not decided.
 
 1. Invoice numbering: continue from 5026, or restart with a year prefix
-6. Whether partner share on earning accounts is a cost of services or a
-   reduction of revenue. Accountant to decide, the schema supports either
 2. Email invoices from the system, or download and send manually
 3. Whether petty cash below a threshold skips approval
 4. Whether to store per-client default categories
-5. Import timing: after Phase 1 or after Phase 3
+5. ~~Import timing~~ Answered by decision 037: books go live 2026-07-01,
+   history entered afterwards and merged when it reconciles
+6. Whether partner share on earning accounts is a cost of services or a
+   reduction of revenue. Accountant to decide, the schema supports either

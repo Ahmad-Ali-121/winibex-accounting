@@ -4,34 +4,52 @@ Read this first. Update it before ending any session.
 
 **Last updated:** 2026-10-01
 **Current phase:** 0, foundation
-**Where we stopped:** Phase 0 plan reviewed by Claude Code. Its gaps are
-resolved in decisions 035 to 040. Ready to start step 0.1.
+**Where we stopped:** Step 0.1 complete and committed. Repo structure, local
+MariaDB 11.8 in Docker, password module, lint and test setup. 23 tests, 20
+passing, 3 skipped pending argon2. Next is step 0.2, the migration runner.
 
 ---
 
 ## Next three things
 
-1. Step 0.1: repo structure, Docker MySQL, throwaway deploy to test argon2
-2. Migration 001 per the table in `docs/SCHEMA.md`, Migrations
-3. Accountant reviews TAXES and CHART-OF-ACCOUNTS in parallel
+1. Sweep MySQL out of the docs. `AGENTS.md`, `docs/OVERVIEW.md`,
+   `docs/SCHEMA.md` and `docs/DEPLOY.md` all say MySQL 8. The server is
+   MariaDB 11.8, see decision 041
+2. Step 0.2: migration runner, `schema_migrations` table, applied in order
+   locally and through phpMyAdmin in production
+3. Step 0.3: migration 001 per the table in `docs/SCHEMA.md`, Migrations
+
+Accountant reviews TAXES and CHART-OF-ACCOUNTS in parallel, not blocking.
 
 ---
 
 ## Phase 0 — Foundation
 
-- [ ] Repo structure: `api/`, `app/`, `mcp/`, `docs/`
-- [ ] Schema reviewed and approved
+### Step 0.1 — done 2026-10-01
+
+- [x] Repo structure: `api/`, `app/`, `mcp/`, `docs/`
+- [x] Local MariaDB 11.8 in Docker, strict mode, UTC, utf8mb4
+- [x] Separate `winibex_test` database so tests never touch development data
+- [x] `api/core/password.js`, bcryptjs with argon2id switchable
+- [x] Lint and test commands, no test framework. Decision 043
+- [x] Database behaviour proved by test: CHECK constraints enforced, strict
+      mode on, rollback complete, JSON round trips, BIGINT exact
+- [x] argon2 decision settled without a blocking deploy. Decision 042
+
+### Remaining
+
+- [ ] Migration runner and `schema_migrations`
 - [ ] Migration 001 written and applied
-- [ ] Seed data: accounts, categories, chart of accounts, currencies
+- [ ] Seed data: currencies, chart of accounts, categories, accounts, settings
 - [ ] Seed taxes and tax rules. Deliberately not in Phase 0, waits for the accountant
 - [ ] Company profile: NTN, PSEB number, logo, address
-- [ ] Express app with MySQL pool and health check
+- [ ] Express app with MariaDB pool and health check
 - [ ] Login, access tokens, refresh token rotation, logout
-- [ ] argon2 proved on Hostinger, or bcryptjs adopted
 - [ ] Owner bootstrap with forced password change
 - [ ] Role middleware: owner, admin, staff
 - [ ] Audit log helper used by every write
 - [ ] `sequences` table and gapless allocator
+- [ ] Idempotency middleware and the 24 hour purge
 - [ ] Flutter app scaffold with Riverpod and router
 - [x] Theme file: `app/lib/core/theme/app_theme.dart`, Graphite and petrol, Onest
 - [x] Strings file drafted: `app/lib/l10n/app_en.arb` and `l10n.yaml`
@@ -171,6 +189,7 @@ resolved in decisions 035 to 040. Ready to start step 0.1.
 ## Blocked, waiting on Ahmad
 
 - [x] PSEB active, on ATL, not PRA registered, paid-up capital up to PKR 1 million
+- [x] Hostinger database engine: MariaDB 11.8.9. Node 24.x
 - [ ] PSEB certificate expiry date, for the expiry warning
 - [ ] Current monthly salary for Ahmad Ali Khan, Maryam, Fazal
 - [ ] Upwork IDs and split percent for each
@@ -182,6 +201,28 @@ resolved in decisions 035 to 040. Ready to start step 0.1.
 ---
 
 ## Session log
+
+### 2026-10-01 (step 0.1)
+First code written. Repo structure, local MariaDB in Docker, password module,
+lint and tests.
+
+Three things surprised us, all caught by tests before anything was built on
+top of them:
+
+1. The Hostinger database is MariaDB 11.8, not MySQL 8. Every document said
+   MySQL. Decision 041 records what actually differs. The docs still need the
+   sweep
+2. A test proved the driver silently rounds a BIGINT past JavaScript's safe
+   integer limit, changing the last four digits with no error. Fixed with
+   `supportBigNumbers`, decision 044. The test stays as the guard
+3. The argon2 question was blocking progress for no good reason. Settled by
+   building the password module to support both methods and reading the method
+   from the stored hash, so the choice can be made or changed at any time.
+   Decision 042
+
+Also learned: `node --test tests/` breaks on Windows PowerShell, which strips
+the trailing slash and makes Node treat the folder as a file. Dropping the path
+entirely works everywhere.
 
 ### 2026-10-01 (sixth pass)
 Claude Code reviewed the docs before migration 001 and found real gaps. Fixed:

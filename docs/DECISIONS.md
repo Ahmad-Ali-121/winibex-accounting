@@ -58,6 +58,9 @@ Double-entry accounting needs transactions, joins and referential integrity.
 MySQL is also what Hostinger provides as managed storage. MERN was considered
 and the M was dropped.
 
+Superseded in part by decision 041: the Hostinger server is MariaDB, not MySQL.
+The reasoning above is unchanged.
+
 ---
 
 ### 006 — MCP server in Node, not Dart
@@ -123,8 +126,8 @@ Refines decision 007. Three states that matter: draft is editable, posted is
 not, reversed means a reversing entry exists. No one can edit a posted entry,
 including admin. Corrections are reversal plus re-entry, with a required reason.
 
-Enforced in the service layer and again by a MySQL trigger, because an ORM-level
-rule is one bad script away from being bypassed.
+Enforced in the service layer and again by a database trigger, because an
+application-level rule is one bad script away from being bypassed.
 
 ---
 
@@ -448,6 +451,8 @@ Proved with a throwaway deploy in step 0.1. If it fails, bcryptjs, decided
 before login is built. With four users, changing later means four password
 resets.
 
+Superseded by decision 042.
+
 ---
 
 ### 040 — Schema additions from the Phase 0 review
@@ -458,6 +463,105 @@ Raised by Claude Code before migration 001 and accepted:
 `balance_sheet`. `chart_of_accounts` gains `normal_balance`, `is_header` and
 `is_active`. `users` gains `must_change_password` for the owner bootstrap.
 `fbr_return_heads` seeds empty until the accountant supplies codes.
+
+---
+
+### 041 — The database is MariaDB 11.8, not MySQL 8
+2026-10-01
+
+Checked in phpMyAdmin at the start of step 0.1. Hostinger's managed database
+reports `11.8.9-MariaDB-log`. Every document that said MySQL 8 was assuming.
+
+Local development runs MariaDB 11.8 in Docker, the same major version.
+Developing against MySQL and deploying to MariaDB means finding the differences
+in production.
+
+What actually differs, and what it costs us:
+
+- `utf8mb4_0900_ai_ci` does not exist. The default from MariaDB 11.6 is
+  `utf8mb4_uca1400_ai_ci`, which is what we use
+- `JSON` is an alias for LONGTEXT, stored as text. So `audit_log.before_json`,
+  `audit_log.after_json`, `idempotency_keys.response_json` and
+  `generated_documents.source_data_json` must be stringified on write and
+  parsed on read. We only ever read them whole, so nothing is lost
+- The `->` and `->>` JSON operators are not supported. We do not query inside
+  those columns, so this costs nothing
+- CHECK constraints and triggers behave the same. Both were tested against the
+  real engine in step 0.1 before anything was built on them
+- Global `sql_mode` and the server time zone cannot be set on Hostinger, so
+  strict mode, UTC and READ-COMMITTED are set per connection when the pool
+  opens one
+
+Driver stays `mysql2`, from version 3.23.0, which added MariaDB type support
+and runs its own tests against MariaDB.
+
+Source: MariaDB documentation on character sets and collations, and on
+incompatibilities with MySQL. Confidence: high, and the behaviour is asserted
+by tests in `api/tests/database.test.js` rather than trusted.
+
+---
+
+### 042 — bcryptjs now, argon2id switchable later
+2026-10-01
+
+Supersedes decision 039.
+
+argon2 is a native module that has to compile on the server at deploy time.
+Hostinger's plan specification says nothing about whether that will work, and
+finding out needed a test deploy that was blocking real progress.
+
+Taken: bcryptjs at cost factor 12, which is pure JavaScript and cannot fail to
+install anywhere. For four internal users behind a login this is a sound
+choice, not a compromise.
+
+argon2id stays available. `api/core/password.js` supports both, and
+`verifyPassword` reads which method produced a stored hash from the hash
+itself, so switching never locks anyone out. Switching is: install the `argon2`
+package, change one line in `.env`. The tests for argon2 are already written
+and skip themselves until the package is present.
+
+Decided to switch on, or not, at the first real deploy at the end of Phase 0,
+when there are no real passwords to reset either way.
+
+Also settled here: a password over 72 bytes is refused rather than accepted,
+because bcrypt silently ignores everything past that point.
+
+---
+
+### 043 — Node's own test runner, no test framework
+2026-10-01
+
+Tests use `node --test`, built into Node since version 20. Jest and Vitest were
+not added.
+
+Reason: one less dependency to maintain, nothing to break when Hostinger moves
+Node version, and no configuration file. The test suite runs against the real
+MariaDB container, never a mock, so the thing a framework usually buys us,
+mocking, is deliberately unused.
+
+ESLint 9 with flat config and no plugins is the only development dependency.
+Two rules in it are about money rather than style: `Math.round` and
+`parseFloat` are blocked, because money here is whole paisa and must never
+become a decimal.
+
+---
+
+### 044 — supportBigNumbers on every database connection
+2026-10-01
+
+Found by a failing test in step 0.1, not by reading documentation.
+
+JavaScript holds whole numbers exactly only up to 9,007,199,254,740,991. The
+driver returned a BIGINT above that as a rounded number, changing the last four
+digits with no error. Money is BIGINT paisa, so that behaviour is not
+acceptable even though Winibex's real figures are around five orders of
+magnitude below the limit.
+
+Every connection sets `supportBigNumbers: true`. A value too large to hold
+exactly then arrives as exact text instead of a rounded number. Normal amounts
+still arrive as ordinary numbers.
+
+The test that caught it stays, so removing the setting fails the build.
 
 ---
 
@@ -476,3 +580,4 @@ Raised by Claude Code before migration 001 and accepted:
 | I | Table package: free grid or Syncfusion community licence. Needs a spike | Phase 1 |
 | J | Accountant review of TAXES.md and CHART-OF-ACCOUNTS.md | Phase 0 |
 | K | ~~PRA registration~~ Answered: not registered. Whether it should be is for the accountant | Phase 1 |
+| L | Switch to argon2id at first deploy, or stay on bcryptjs. See decision 042 | Phase 0 close |
