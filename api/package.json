@@ -8,8 +8,8 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "start": "node scripts/probe-deploy.js --serve",
-    "test": "node --env-file=.env --test",
+    "start": "node server.js",
+    "test": "node --env-file=.env --test --test-concurrency=1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "hash:password": "node --env-file=.env scripts/hash-password.js",
@@ -17,11 +17,20 @@
     "db:down": "docker compose -f ../docker-compose.yml down",
     "db:reset": "docker compose -f ../docker-compose.yml down -v && docker compose -f ../docker-compose.yml up -d",
     "db:shell": "docker exec -it winibex-mariadb mariadb -u winibex -pwinibex_local winibex",
-    "probe": "node --env-file=.env scripts/probe-deploy.js"
+    "probe": "node --env-file=.env scripts/probe-deploy.js",
+    "migrate": "node --env-file=.env scripts/migrate.js status",
+    "migrate:up": "node --env-file=.env scripts/migrate.js up",
+    "dev": "node --env-file=.env --watch server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "mysql2": "^3.23.0"
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.23.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
