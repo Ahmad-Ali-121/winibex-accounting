@@ -56,7 +56,7 @@ Every connection, local and production, sets the same options. They live in
 | Session `time_zone` | `+00:00` |
 | Session `transaction_isolation` | `READ-COMMITTED` |
 
-Tables are created `utf8mb4` with `utf8mb4_uca1400_ai_ci`. MySQL's
+Tables are created `utf8mb4` with `utf8mb4_uca1400_ai_ci`. MariaDB's
 `utf8mb4_0900_ai_ci` does not exist on MariaDB.
 
 ## First deploy

@@ -220,7 +220,7 @@ Login confirmed working against the live local API.
 
 Things the version bumps taught us, all now in decisions 045 to 050:
 
-1. mysql2 3.23 parses JSON columns itself. Three docs said otherwise and the
+1. MariaDB2 3.23 parses JSON columns itself. Three docs said otherwise and the
    code double-parsed. Fixed with one `core/json.js` helper. Decision 047
 2. MariaDB refuses a CHECK that mentions an AUTO_INCREMENT column. The
    "not its own parent" rule moved to the service layer. Decision 045
@@ -244,8 +244,8 @@ lint and tests.
 Three things surprised us, all caught by tests before anything was built on
 top of them:
 
-1. The Hostinger database is MariaDB 11.8, not MySQL 8. Every document said
-   MySQL. Decision 041 records what actually differs. The docs still need the
+1. The Hostinger database is MariaDB 11.8, not MariaDB 8. Every document said
+   MariaDB. Decision 041 records what actually differs. The docs still need the
    sweep
 2. A test proved the driver silently rounds a BIGINT past JavaScript's safe
    integer limit, changing the last four digits with no error. Fixed with
@@ -294,7 +294,7 @@ gapless numbering, feature-module architecture, light and dark theming.
 Period locking built but off by default.
 
 ### 2026-10-01
-Planning finished. Stack decided: Flutter, Node, Express, MySQL, on Hostinger
+Planning finished. Stack decided: Flutter, Node, Express, MariaDB, on Hostinger
 Business. Wrote AGENTS.md, CLAUDE.md, SCHEMA.md, PROGRESS.md, DECISIONS.md,
 UI-GUIDE.md. Nothing built yet. Schema is draft and needs review before the
 first migration.

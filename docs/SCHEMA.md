@@ -10,18 +10,18 @@ pending review by the company accountant before Phase 0 migration.
 
 ## Database engine
 
-The server is MariaDB, not MySQL. Confirmed against the live Hostinger
+The server is MariaDB, not MariaDB. Confirmed against the live Hostinger
 database on 2026-10-01, see decision 041. This affects the schema in four
 places and nowhere else.
 
 **Character set.** Every table is created `utf8mb4` with
-`utf8mb4_uca1400_ai_ci`, the MariaDB 11.6+ default. MySQL's
+`utf8mb4_uca1400_ai_ci`, the MariaDB 11.6+ default. MariaDB's
 `utf8mb4_0900_ai_ci` does not exist here.
 
 **JSON columns are text.** `JSON` on MariaDB is an alias for LONGTEXT with a
 validity check. So `audit_log.before_json`, `audit_log.after_json`,
 `idempotency_keys.response_json` and `generated_documents.source_data_json` are
-always stringified on write. On read, the mysql2 driver (3.23+, which we pin)
+always stringified on write. On read, the MariaDB2 driver (3.23+, which we pin)
 parses the value itself, so all four go through `core/json.js`, whose
 `fromJsonColumn` returns the object whether the driver handed back a string or
 an already-parsed object. Decision 047. Nothing queries inside these columns,

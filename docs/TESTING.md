@@ -5,7 +5,7 @@ there.
 
 ## API
 
-Run against a real MySQL instance locally, in Docker. Never mock the database
+Run against a real MariaDB instance locally, in Docker. Never mock the database
 for posting tests, because the guarantees being tested live in the database:
 transactions, triggers, constraints.
 

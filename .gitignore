@@ -33,3 +33,5 @@ dumps/
 .vscode/*
 !.vscode/extensions.json
 *.swp
+
+docs/PHASE-1-KICKOFF.md

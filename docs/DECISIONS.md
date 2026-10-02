@@ -51,14 +51,14 @@ rebuilt. The API and database are unaffected.
 
 ---
 
-### 005 — MySQL, not MongoDB
+### 005 — MariaDB, not MongoDB
 2026-10-01
 
 Double-entry accounting needs transactions, joins and referential integrity.
-MySQL is also what Hostinger provides as managed storage. MERN was considered
+MariaDB is also what Hostinger provides as managed storage. MERN was considered
 and the M was dropped.
 
-Superseded in part by decision 041: the Hostinger server is MariaDB, not MySQL.
+Superseded in part by decision 041: the Hostinger server is MariaDB, not MariaDB.
 The reasoning above is unchanged.
 
 ---
@@ -466,14 +466,14 @@ Raised by Claude Code before migration 001 and accepted:
 
 ---
 
-### 041 — The database is MariaDB 11.8, not MySQL 8
+### 041 — The database is MariaDB 11.8, not MariaDB 8
 2026-10-01
 
 Checked in phpMyAdmin at the start of step 0.1. Hostinger's managed database
-reports `11.8.9-MariaDB-log`. Every document that said MySQL 8 was assuming.
+reports `11.8.9-MariaDB-log`. Every document that said MariaDB 8 was assuming.
 
 Local development runs MariaDB 11.8 in Docker, the same major version.
-Developing against MySQL and deploying to MariaDB means finding the differences
+Developing against MariaDB and deploying to MariaDB means finding the differences
 in production.
 
 What actually differs, and what it costs us:
@@ -492,11 +492,11 @@ What actually differs, and what it costs us:
   strict mode, UTC and READ-COMMITTED are set per connection when the pool
   opens one
 
-Driver stays `mysql2`, from version 3.23.0, which added MariaDB type support
+Driver stays `MariaDB2`, from version 3.23.0, which added MariaDB type support
 and runs its own tests against MariaDB.
 
 Source: MariaDB documentation on character sets and collations, and on
-incompatibilities with MySQL. Confidence: high, and the behaviour is asserted
+incompatibilities with MariaDB. Confidence: high, and the behaviour is asserted
 by tests in `api/tests/database.test.js` rather than trusted.
 
 ---
@@ -610,7 +610,7 @@ Taxes are deliberately not seeded. They wait for the accountant.
 
 AGENTS.md, SCHEMA.md and decision 041 all say the MariaDB driver returns a
 JSON column as a string, so the code must parse it. That was true before
-`mysql2` 3.23, which added MariaDB type support and now parses the value for
+`MariaDB2` 3.23, which added MariaDB type support and now parses the value for
 you. We pinned `^3.23.0` for exactly that support and inherited the change.
 
 Four audit and idempotency tests failed on `JSON.parse` of an already-parsed
@@ -642,7 +642,7 @@ Settled while building Phase 0's API.
   server log is not buried under client typos
 
 Packages added, all noted here per the boundary rule: `express`, `helmet`,
-`cors`, `cookie-parser`, `zod`, `jsonwebtoken`, `mysql2`.
+`cors`, `cookie-parser`, `zod`, `jsonwebtoken`, `MariaDB2`.
 
 ---
 

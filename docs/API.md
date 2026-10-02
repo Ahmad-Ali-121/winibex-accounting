@@ -1,6 +1,6 @@
 # API
 
-Node, Express, MySQL. REST over JSON. Base path `/api/v1`.
+Node, Express, MariaDB. REST over JSON. Base path `/api/v1`.
 
 Status: Conventions fixed. Endpoint list is the plan, filled in per phase.
 
@@ -54,12 +54,12 @@ server. Never client-side.
 ### Auth
 - Short-lived access token, sent as `Authorization: Bearer`
 - Refresh token: httpOnly secure cookie on web, secure storage on Android
-- Passwords hashed with argon2id
+- Passwords hashed with bcrypt now, argon2id switchable (decision 042)
 - Rate limit on login
 - Every response is scoped by role and the `payroll_visible_to_all` setting
 
-### Transactions in MySQL
-Every write runs inside a MySQL transaction. The posting engine writes the
+### Transactions in MariaDB
+Every write runs inside a MariaDB transaction. The posting engine writes the
 transaction, its tax and charge lines, its journal lines and the audit entry
 in one unit. Any failure rolls everything back.
 
