@@ -38,8 +38,10 @@ Hostinger has no migration CLI, so they are applied through phpMyAdmin.
 Confirmed 2026-10-01: Hostinger reports `11.8.9-MariaDB-log`. See decision 041.
 Local development runs the same major version in Docker. What this changes:
 
-- `JSON` is an alias for LONGTEXT. Stringify on write, parse on read. Never
-  query inside a JSON column, and never use the `->` or `->>` operators
+- `JSON` is an alias for LONGTEXT. Always stringify on write. On read the
+  mysql2 driver (3.23+) parses it for you, so go through `core/json.js`, whose
+  `fromJsonColumn` copes whether the driver hands back a string or an object.
+  Decision 047. Never query inside a JSON column, and never use `->` or `->>`
 - Collation is `utf8mb4_uca1400_ai_ci`. MySQL's `utf8mb4_0900_ai_ci` does not
   exist here
 - Global `sql_mode` and server time zone cannot be set on Hostinger. Every

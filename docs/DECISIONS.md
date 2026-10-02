@@ -565,6 +565,123 @@ The test that caught it stays, so removing the setting fails the build.
 
 ---
 
+### 045 — Reserved-word columns renamed, and other schema shaping in migration 001
+2026-10-01
+
+Found while writing migration 001. `KEY` is reserved in MariaDB, so a column
+named `key` works only if every query quotes it, and one missed quote is a
+syntax error months later. Renamed before any data existed:
+`settings.key` to `settings.setting_key`, `idempotency_keys.key` to
+`idempotency_keys.idempotency_key`.
+
+Also settled while turning the schema into real SQL:
+
+- Timestamps are `DATETIME` holding UTC, not `TIMESTAMP`. TIMESTAMP breaks in
+  2038 and silently shifts by session time zone; books are kept ten years and
+  some dates are in the future, so neither is acceptable
+- `accounts` gained a `coa_id` column. SCHEMA.md said a balance is the sum of
+  posted journal lines on the account's ledger code, but no column linked an
+  account to that code, so the balance could not have been computed
+- A CHECK that an account is not its own parent was removed. MariaDB refuses a
+  CHECK that mentions an AUTO_INCREMENT column, and the case cannot arise on
+  insert anyway. It moves to the service layer
+- Migration 001 uses `CREATE TABLE` without `IF NOT EXISTS`, so re-running it
+  fails loudly. The runner, not the file, is what knows a migration is already
+  applied
+
+---
+
+### 046 — Migration numbering: seed and bootstrap are their own files
+2026-10-01
+
+Reference data (currencies, chart of accounts, categories, settings,
+sequences) is migration 002. Company bootstrap (the owner login, the company
+profile, the company accounts) is migration 003, created from a template so
+the two facts only Ahmad has, the owner email and password hash, are filled in
+locally rather than committed. Phase 1's tables therefore become migration 004
+and onwards. One migration per phase still holds; seeds are data, not a phase.
+
+Taxes are deliberately not seeded. They wait for the accountant.
+
+---
+
+### 047 — The driver parses JSON columns; do not double-parse
+2026-10-01
+
+AGENTS.md, SCHEMA.md and decision 041 all say the MariaDB driver returns a
+JSON column as a string, so the code must parse it. That was true before
+`mysql2` 3.23, which added MariaDB type support and now parses the value for
+you. We pinned `^3.23.0` for exactly that support and inherited the change.
+
+Four audit and idempotency tests failed on `JSON.parse` of an already-parsed
+object. Fixed with one helper, `core/json.js`: `toJsonColumn` always
+stringifies on write, `fromJsonColumn` parses only if handed a string. The
+code no longer depends on which driver version is installed.
+
+The three documents above are corrected to match.
+
+---
+
+### 048 — API shape: Express 5, token design, hand-written rate limiter
+2026-10-01
+
+Settled while building Phase 0's API.
+
+- Express 5. Async route handlers forward a rejection to the error middleware
+  on their own, so there is no wrapper around every handler
+- Two-token auth. The access token is a short-lived JWT, held only in memory,
+  not stored. The refresh token is a long random string; only its SHA-256 hash
+  is stored, it rotates on every use, and reuse of a rotated token revokes the
+  whole family. A wrong password and an unknown email return byte-identical
+  responses, so the login cannot be used to discover which emails have accounts
+- The login rate limiter is a small in-memory one in `core/rate-limit.js`, not
+  a package. One Node process on Hostinger and four users do not need a shared
+  store. It counts failed attempts only, so a normal run of successful logins
+  never contributes to a lockout
+- Malformed JSON and oversized bodies return 400 and 413, not 500, so the
+  server log is not buried under client typos
+
+Packages added, all noted here per the boundary rule: `express`, `helmet`,
+`cors`, `cookie-parser`, `zod`, `jsonwebtoken`, `mysql2`.
+
+---
+
+### 049 — Flutter foundation: Riverpod 3, go_router, package versions
+2026-10-01
+
+The app scaffold. One theme file and one strings file were already decided
+(026); this records what the build settled.
+
+- The package versions that actually resolve together today: Riverpod
+  (flutter_riverpod, riverpod_annotation) 3.x with riverpod_generator 4.x,
+  go_router 18, dio 5, flutter_secure_storage 11, shared_preferences 2. Pinned
+  by `flutter pub add`, never by hand
+- `custom_lint` and `riverpod_lint` are left out for now. They pin an older
+  analyzer than riverpod_generator wants, which blocks resolution. They add
+  editor hints only, nothing the build needs, and can return when their
+  versions line up
+- Two breaking changes from the version jump, fixed in code: Riverpod 3 removed
+  `AsyncValue.valueOrNull`, so use `.value`, which now returns null during
+  loading and error alike; flutter_secure_storage 11 removed
+  `encryptedSharedPreferences`, since Keystore-backed storage is the default
+- The refresh token is stored in the Keystore on Android and not stored at all
+  on web, where the httpOnly cookie carries it. This is why the API accepts the
+  refresh token both in a cookie and in the body
+- The API base URL is a `--dart-define`, so the same build points at localhost
+  in development and the real domain in production
+
+---
+
+### 050 — Password bootstrap uses a temporary hash, forced to change
+2026-10-01
+
+The owner's first password is set by migration 003 as a bcrypt hash of a
+temporary password, with `must_change_password = 1`. The real password is set
+at first login and never touches a file. Ahmad, Maryam and Fazal are added by
+the owner from the UI, so their passwords never pass through SQL at all.
+
+---
+
 ## Open, not yet decided
 
 | # | Question | Blocks |
@@ -580,4 +697,5 @@ The test that caught it stays, so removing the setting fails the build.
 | I | Table package: free grid or Syncfusion community licence. Needs a spike | Phase 1 |
 | J | Accountant review of TAXES.md and CHART-OF-ACCOUNTS.md | Phase 0 |
 | K | ~~PRA registration~~ Answered: not registered. Whether it should be is for the accountant | Phase 1 |
-| L | Switch to argon2id at first deploy, or stay on bcryptjs. See decision 042 | Phase 0 close |
+| L | Switch to argon2id at first deploy, or stay on bcryptjs. See decision 042 | Phase 0 close. Still open: decided at the first real Hostinger deploy |
+| M | Android emulator reaches the local API at 10.0.2.2, not localhost. Note for Phase 7 | Phase 7 |

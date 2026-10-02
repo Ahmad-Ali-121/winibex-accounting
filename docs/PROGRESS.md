@@ -3,23 +3,25 @@
 Read this first. Update it before ending any session.
 
 **Last updated:** 2026-10-01
-**Current phase:** 0, foundation
-**Where we stopped:** Step 0.1 complete and committed. Repo structure, local
-MariaDB 11.8 in Docker, password module, lint and test setup. 23 tests, 20
-passing, 3 skipped pending argon2. Next is step 0.2, the migration runner.
+**Current phase:** Phase 0 complete. Phase 1 next.
+**Where we stopped:** All of Phase 0 built and working. The API runs, login
+works end to end against the Flutter web app. 124 API tests passing (3 argon2
+skips), Flutter analyze clean, foundation and login widget tests passing.
+Migrations 000 to 003 apply. Next is Phase 1, money in and out.
 
 ---
 
 ## Next three things
 
-1. Sweep MySQL out of the docs. `AGENTS.md`, `docs/OVERVIEW.md`,
-   `docs/SCHEMA.md` and `docs/DEPLOY.md` all say MySQL 8. The server is
-   MariaDB 11.8, see decision 041
-2. Step 0.2: migration runner, `schema_migrations` table, applied in order
-   locally and through phpMyAdmin in production
-3. Step 0.3: migration 001 per the table in `docs/SCHEMA.md`, Migrations
-
-Accountant reviews TAXES and CHART-OF-ACCOUNTS in parallel, not blocking.
+1. First real Hostinger deploy. Throwaway `probe-deploy.js` to a subdomain to
+   confirm Node 24 runs the code, then decide argon2 versus bcryptjs with no
+   real passwords at stake. Open item L
+2. Phase 1 planning: the posting engine is the heart of it. Migration 004 for
+   the transactions table and the immutability trigger, then the guided entry
+   form. Everything in Phase 0's `core/` (withTransaction, audit, sequences,
+   idempotency) exists to support it
+3. Accountant review of TAXES and CHART-OF-ACCOUNTS, still not blocking, but
+   needed before taxes are seeded and before Phase 1 posts a real tax line
 
 ---
 
@@ -36,27 +38,32 @@ Accountant reviews TAXES and CHART-OF-ACCOUNTS in parallel, not blocking.
       mode on, rollback complete, JSON round trips, BIGINT exact
 - [x] argon2 decision settled without a blocking deploy. Decision 042
 
-### Remaining
+### Steps 0.2 to 0.14 — done 2026-10-01
 
-- [ ] Migration runner and `schema_migrations`
-- [ ] Migration 001 written and applied
-- [ ] Seed data: currencies, chart of accounts, categories, accounts, settings
-- [ ] Seed taxes and tax rules. Deliberately not in Phase 0, waits for the accountant
-- [ ] Company profile: NTN, PSEB number, logo, address
-- [ ] Express app with MariaDB pool and health check
-- [ ] Login, access tokens, refresh token rotation, logout
-- [ ] Owner bootstrap with forced password change
-- [ ] Role middleware: owner, admin, staff
-- [ ] Audit log helper used by every write
-- [ ] `sequences` table and gapless allocator
-- [ ] Idempotency middleware and the 24 hour purge
-- [ ] Flutter app scaffold with Riverpod and router
-- [x] Theme file: `app/lib/core/theme/app_theme.dart`, Graphite and petrol, Onest
-- [x] Strings file drafted: `app/lib/l10n/app_en.arb` and `l10n.yaml`
-- [ ] Bundle Onest static font files under `app/assets/fonts/`
-- [x] Glossary map drafted: `app/lib/core/glossary/glossary.dart`
-- [ ] Reusable tooltip widget used by every term and column header
-- [ ] Login screen wired to the API
+- [x] Migration runner and `schema_migrations`, with a DELIMITER-aware SQL
+      splitter so the Phase 1 trigger survives in one piece
+- [x] Migration 001: the twelve Phase 0 tables, with constraints proven by test
+- [x] Migration 002: seed currencies, chart of accounts, categories, settings,
+      sequences
+- [x] Taxes deliberately NOT seeded. Waits for the accountant
+- [x] Migration 003: owner bootstrap, company profile, company accounts
+- [x] Company profile holds the legal name; NTN, PSEB, logo, address are
+      edited from the UI later
+- [x] Express app, MariaDB pool, standard error shape, `/health`
+- [x] Login, access tokens, refresh rotation with families, logout
+- [x] Owner bootstrap with forced password change. Decision 050
+- [x] Role middleware: owner, admin, staff
+- [x] `withTransaction`, and the audit log helper that rolls back with it
+- [x] `sequences` table and gapless allocator, proven under concurrency
+- [x] Idempotency middleware and the 24 hour purge
+- [x] Flutter scaffold: ProviderScope, MaterialApp.router, go_router, gen-l10n
+- [x] Theme file wired: `app/lib/core/theme/app_theme.dart`
+- [x] Strings file: `app/lib/l10n/app_en.arb`, 201 keys
+- [ ] Bundle Onest static font files under `app/assets/fonts/` — Ahmad to
+      download the four weights from Google Fonts
+- [x] Glossary and the `TermTooltip` widget, with tests that no term repeats
+      its label and no two terms share an explanation
+- [x] Login screen wired to the API, with refresh-on-401 and a session guard
 
 ## Phase 1 — Money in and out
 
@@ -201,6 +208,34 @@ Accountant reviews TAXES and CHART-OF-ACCOUNTS in parallel, not blocking.
 ---
 
 ## Session log
+
+### 2026-10-01 (Phase 0 complete)
+Steps 0.2 through 0.15 in one run. The whole foundation: migration runner,
+migrations 001 to 003, the API (health, auth, roles), the core services the
+posting engine will sit on (transactions, audit, sequences, idempotency), the
+Flutter scaffold, the tooltip system, and a login screen that works end to end.
+
+124 API tests pass (3 argon2 skips). Flutter analyze clean, widget tests pass.
+Login confirmed working against the live local API.
+
+Things the version bumps taught us, all now in decisions 045 to 050:
+
+1. mysql2 3.23 parses JSON columns itself. Three docs said otherwise and the
+   code double-parsed. Fixed with one `core/json.js` helper. Decision 047
+2. MariaDB refuses a CHECK that mentions an AUTO_INCREMENT column. The
+   "not its own parent" rule moved to the service layer. Decision 045
+3. Riverpod 3 removed `valueOrNull` (use `.value`), flutter_secure_storage 11
+   removed `encryptedSharedPreferences` (Keystore is the default now),
+   go_router is at 18. Decision 049
+4. Node runs test files in parallel, and the database tests share one database,
+   so the suite runs with `--test-concurrency=1`
+5. `node --test tests/` breaks on Windows PowerShell; dropping the path works
+6. A browser login needs CORS_ORIGINS to match the Flutter web port exactly;
+   run on a fixed `--web-port`
+
+Reserved-word column renames and the DATETIME-over-TIMESTAMP choice are in
+decision 045. Still open: the first Hostinger deploy and the argon2 call
+(item L), the Onest font download, and the accountant review.
 
 ### 2026-10-01 (step 0.1)
 First code written. Repo structure, local MariaDB in Docker, password module,

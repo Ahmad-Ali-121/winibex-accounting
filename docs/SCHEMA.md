@@ -19,11 +19,13 @@ places and nowhere else.
 `utf8mb4_0900_ai_ci` does not exist here.
 
 **JSON columns are text.** `JSON` on MariaDB is an alias for LONGTEXT with a
-validity check. The driver returns a string. So `audit_log.before_json`,
-`audit_log.after_json`, `idempotency_keys.response_json` and
-`generated_documents.source_data_json` are stringified on write and parsed on
-read, in the repository layer. Nothing queries inside them, and the `->` and
-`->>` operators are not available.
+validity check. So `audit_log.before_json`, `audit_log.after_json`,
+`idempotency_keys.response_json` and `generated_documents.source_data_json` are
+always stringified on write. On read, the mysql2 driver (3.23+, which we pin)
+parses the value itself, so all four go through `core/json.js`, whose
+`fromJsonColumn` returns the object whether the driver handed back a string or
+an already-parsed object. Decision 047. Nothing queries inside these columns,
+and the `->` and `->>` operators are not available.
 
 **Session settings.** Hostinger does not allow global `sql_mode` or server
 time zone changes, so every connection sets `STRICT_ALL_TABLES`,
