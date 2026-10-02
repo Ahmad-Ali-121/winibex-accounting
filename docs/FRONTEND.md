@@ -8,7 +8,7 @@ Flutter, one codebase, web and Android.
 | --- | --- | --- |
 | State | `flutter_riverpod` 3.x | |
 | Codegen | `riverpod_annotation` 4.x, `riverpod_generator` 4.x, `build_runner` | |
-| Lints | `riverpod_lint` | |
+| Lints | `riverpod_lint` | **Not installed.** It pins an older analyzer than `riverpod_generator` needs, which blocks resolution. Editor hints only, nothing the build needs. Revisit when the versions line up. Decision 049 |
 | Models | `freezed`, `json_serializable` | immutable models, generated JSON |
 | Routing | `go_router` | URL-based, deep links work on web |
 | HTTP | `dio` | interceptors for auth and errors |

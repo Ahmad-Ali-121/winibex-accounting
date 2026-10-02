@@ -152,7 +152,7 @@ Organised by feature module on both sides, so a new feature is a new folder.
 Money is always integer minor units. One theme file and one strings file in
 the app. See `AGENTS.md`, `docs/API.md`, `docs/FRONTEND.md`.
 
-The database is MariaDB rather than MariaDB, confirmed against the live server.
+The database is MariaDB rather than MySQL, confirmed against the live server.
 It matters in a small number of places, listed in `AGENTS.md` and decision 041.
 Local development runs the same version in Docker.
 
@@ -191,7 +191,7 @@ and chart of accounts, and the open decisions listed in `docs/DECISIONS.md`.
 | Tax rates for tax year 2027 conflicted across sources | Rates are data, accountant sets them, bank figures win |
 | Flutter web cannot use the browser's Ctrl+F | Server search plus an in-app find bar |
 | Hostinger shared constraints: no SSH npm, no migration CLI, no headless Chrome | Documented in `docs/DEPLOY.md` and designed around |
-| MariaDB differs from MariaDB in JSON handling and collation | Differences listed in decision 041 and asserted by tests against the real engine |
+| MariaDB differs from MySQL in JSON handling and collation | Differences listed in decision 041 and asserted by tests against the real engine |
 | JavaScript rounds integers past 2^53 | `supportBigNumbers` on every connection, guarded by a test. Decision 044 |
 | The shared owner login approves, so an approval cannot always be tied to one person | Silent marker when it approves an entry made by someone who shares it. Accepted by Ahmad |
 | Books start mid-history | Opening entry on 1 July 2026, history entered later and merged only when it reconciles |

@@ -151,7 +151,10 @@ Invoices and payroll
 - Withholding from a local vendor with neither an NTN nor a CNIC recorded
 - Approving your own entry. Admins with auto-approve post directly instead
 - Approving an entry above your approval limit, where an admin has one
-- An opening or historical entry dated on or after 1 July 2026
+- A historical entry dated on or after 1 July 2026. History is, by
+  definition, before the books went live
+- An opening entry dated anything other than 1 July 2026, or a second
+  opening entry when one already exists
 - Merging history while any account still shows a difference
 - A payroll run for a month already paid
 - A salary line for an employee after their exit date

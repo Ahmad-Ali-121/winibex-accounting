@@ -10,18 +10,18 @@ pending review by the company accountant before Phase 0 migration.
 
 ## Database engine
 
-The server is MariaDB, not MariaDB. Confirmed against the live Hostinger
+The server is MariaDB, not MySQL. Confirmed against the live Hostinger
 database on 2026-10-01, see decision 041. This affects the schema in four
 places and nowhere else.
 
 **Character set.** Every table is created `utf8mb4` with
-`utf8mb4_uca1400_ai_ci`, the MariaDB 11.6+ default. MariaDB's
+`utf8mb4_uca1400_ai_ci`, the MariaDB 11.6+ default. MySQL's
 `utf8mb4_0900_ai_ci` does not exist here.
 
 **JSON columns are text.** `JSON` on MariaDB is an alias for LONGTEXT with a
 validity check. So `audit_log.before_json`, `audit_log.after_json`,
 `idempotency_keys.response_json` and `generated_documents.source_data_json` are
-always stringified on write. On read, the MariaDB2 driver (3.23+, which we pin)
+always stringified on write. On read, the `mysql2` driver (3.23+, which we pin)
 parses the value itself, so all four go through `core/json.js`, whose
 `fromJsonColumn` returns the object whether the driver handed back a string or
 an already-parsed object. Decision 047. Nothing queries inside these columns,
@@ -34,6 +34,12 @@ time zone changes, so every connection sets `STRICT_ALL_TABLES`,
 **Big numbers.** Every connection sets `supportBigNumbers`. Without it the
 driver rounds a BIGINT past JavaScript's safe integer limit with no error.
 Decision 044.
+
+**Integer types.** Every primary key and every foreign key is
+`BIGINT UNSIGNED`, as built by migration 001. A column referencing one must
+declare the same type or the foreign key cannot be created. Where this
+document writes `BIGINT` for an id, read `BIGINT UNSIGNED`. Money columns are
+signed `BIGINT`, because a journal line and a report figure can be negative.
 
 **Reserved words.** `KEY` is reserved, so the settings and idempotency tables
 use `setting_key` and `idempotency_key` rather than `key`. No column anywhere
@@ -164,7 +170,8 @@ Single row. Printed on every document.
 | id | BIGINT PK | |
 | name | VARCHAR(100) | "Winibex bank", "Office cash" |
 | type | ENUM | `bank`, `cash`, `petty_cash`, `cheque`, `pass_through` |
-| owner_user_id | BIGINT NULL | set for pass-through accounts |
+| coa_id | BIGINT UNSIGNED FK, UNIQUE | the ledger code whose posted journal lines make up this account's balance. One code per account. Decision 045 |
+| owner_user_id | BIGINT UNSIGNED NULL | set for pass-through accounts |
 | opening_date | DATE | earliest date any entry may carry. 2025-03-01, before the sheet's first row |
 | is_active | BOOL | |
 
@@ -214,6 +221,7 @@ mapped to the heads of the FBR annual return.
 | Column | Type | Notes |
 | --- | --- | --- |
 | id | BIGINT PK | |
+| journal_number | VARCHAR(20) NULL | the entry's number in the book, allocated from `sequences` at the moment of posting. Null while draft or pending. Decision 051 |
 | date | DATE | date of payment, not entry date |
 | account_id | BIGINT FK | |
 | direction | ENUM | `in`, `out` |
@@ -825,11 +833,14 @@ One migration per phase, applied in order through phpMyAdmin and recorded in
 uses it, so the accountant's review can still change tax and chart tables
 before they exist.
 
-| Migration | Contents |
-| --- | --- |
-| 001 | users, refresh_tokens, settings, company_profile, currencies, chart_of_accounts, fbr_return_heads, categories, accounts, sequences, audit_log, idempotency_keys, schema_migrations |
-| 002 | transactions and everything Phase 1 needs, plus the posted-row immutability trigger |
-| Later | one per phase |
+| Migration | Contents | Status |
+| --- | --- | --- |
+| 000 | `schema_migrations`, the runner's own record of what has been applied | applied |
+| 001 | the twelve Phase 0 tables: users, refresh_tokens, settings, company_profile, currencies, chart_of_accounts, fbr_return_heads, categories, accounts, sequences, audit_log, idempotency_keys | applied |
+| 002 | seed reference data: currencies, chart of accounts, categories, settings, sequences. Taxes deliberately not seeded | applied |
+| 003 | company bootstrap: owner login, company profile, company accounts | applied |
+| 004 | Phase 1: transactions, journal_lines, transaction_taxes, transaction_charges, entry_flags, attachments, vendors, reimbursements, reimbursement_items, cheques, plus the posted-row immutability trigger | next |
+| Later | one per phase | |
 
 Every migration file is plain SQL, numbered, idempotent where it can be, and
 records itself in `schema_migrations` as its last statement. Tables are created

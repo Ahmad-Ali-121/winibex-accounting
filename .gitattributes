@@ -1,0 +1,7 @@
+# SQL migrations are fingerprinted by the migration runner. Line endings are
+# bytes, so they must be identical on Windows and on the Linux server or every
+# checksum disagrees across machines.
+*.sql text eol=lf
+
+# Same reasoning for anything else whose exact bytes are checked.
+*.sh  text eol=lf

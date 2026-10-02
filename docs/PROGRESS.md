@@ -2,26 +2,28 @@
 
 Read this first. Update it before ending any session.
 
-**Last updated:** 2026-10-01
-**Current phase:** Phase 0 complete. Phase 1 next.
-**Where we stopped:** All of Phase 0 built and working. The API runs, login
-works end to end against the Flutter web app. 124 API tests passing (3 argon2
-skips), Flutter analyze clean, foundation and login widget tests passing.
-Migrations 000 to 003 apply. Next is Phase 1, money in and out.
+**Last updated:** 2026-10-02
+**Current phase:** Phase 1, money in and out. Step 1.1 done.
+**Where we stopped:** Phase 0 is built and working: the API runs, login works
+end to end against the Flutter web app, 124 API tests pass (3 argon2 skips),
+Flutter analyze is clean, migrations 000 to 003 apply. Phase 1 has started with
+step 1.1, a documentation pass that settled eight contradictions before any code
+was written. See decision 051. No code changed. Next is step 1.2, migration 004.
 
 ---
 
 ## Next three things
 
-1. First real Hostinger deploy. Throwaway `probe-deploy.js` to a subdomain to
+1. Step 1.2, migration 004: transactions, journal_lines, transaction_taxes,
+   transaction_charges, entry_flags, attachments, vendors, reimbursements,
+   reimbursement_items, cheques, with the posted-row immutability trigger,
+   CHECK constraints and indexes. Keys are `BIGINT UNSIGNED` to match
+   migration 001. Proved by raw SQL tests before anything is built on it
+2. Step 1.3 and 1.4, `core/money.js` and the posting engine. Every worked
+   posting in CHART-OF-ACCOUNTS.md becomes a test asserting exact journal lines
+3. First real Hostinger deploy. Throwaway `probe-deploy.js` to a subdomain to
    confirm Node 24 runs the code, then decide argon2 versus bcryptjs with no
    real passwords at stake. Open item L
-2. Phase 1 planning: the posting engine is the heart of it. Migration 004 for
-   the transactions table and the immutability trigger, then the guided entry
-   form. Everything in Phase 0's `core/` (withTransaction, audit, sequences,
-   idempotency) exists to support it
-3. Accountant review of TAXES and CHART-OF-ACCOUNTS, still not blocking, but
-   needed before taxes are seeded and before Phase 1 posts a real tax line
 
 ---
 
@@ -78,7 +80,7 @@ Migrations 000 to 003 apply. Next is Phase 1, money in and out.
 - [ ] ATL-based rate selection by the right party
 - [ ] Cheque register
 - [ ] Petty cash imprest and top-up suggestion
-- [ ] Posted-row immutability trigger, in migration 002
+- [ ] Posted-row immutability trigger, in migration 004
 - [ ] Opening entry at 2026-07-01, owner only, once
 - [ ] Historical entries excluded from live balances until merged
 - [ ] Optional approval limit on admins
@@ -209,6 +211,42 @@ Migrations 000 to 003 apply. Next is Phase 1, money in and out.
 
 ## Session log
 
+### 2026-10-02 (step 1.1, documentation pass before Phase 1 code)
+No code written. Read every document against the others and against the
+migrations already applied, and found eight disagreements. All are recorded in
+decision 051, with the rules adopted to stop them recurring at the end of
+DECISIONS.md.
+
+What was wrong:
+
+1. The MySQL to MariaDB sweep after decision 041 had replaced the word
+   everywhere, including in sentences contrasting the two, in facts that belong
+   to MySQL, and in the driver's package name. Repaired in DECISIONS 005, 041,
+   047 and 048, SCHEMA.md, OVERVIEW.md, DEPLOY.md and PROGRESS.md
+2. The driver is `mysql2` at `^3.23.0`, confirmed from `api/package.json`. Four
+   documents called it `MariaDB2`, which does not exist. AGENTS.md was right
+3. A stale chat instruction said the owner login cannot transact, which is
+   decision 034. Ahmad confirmed decision 036 stands: it can
+4. `transactions` had no column for the journal number that decision 015
+   requires. Added, allocated at posting rather than at draft creation
+5. `accounts.coa_id` exists in migration 001 but was absent from SCHEMA.md, so
+   the account balance had no documented join
+6. Migration 001 uses `BIGINT UNSIGNED` keys while SCHEMA.md says `BIGINT`.
+   Migration 004 must match or its foreign keys will not create
+7. SCHEMA.md's migration table and one Phase 1 checklist line still numbered
+   Phase 1 as migration 002, which decision 046 had already reassigned to seed
+   data. Phase 1 is migration 004
+8. UI-GUIDE.md's blocking rules forbade an opening entry dated on or after
+   1 July 2026, which is the only date the opening entry may carry. Split into
+   two rules
+9. FRONTEND.md listed `riverpod_lint` as a package in use. Decision 049 left it
+   out on purpose. Marked as not installed
+
+Still open: the guard script `api/scripts/check-docs.js`, the first Hostinger
+deploy and the argon2 call (item L), the Onest font download, and the accountant
+review of TAXES.md and CHART-OF-ACCOUNTS.md.
+
+
 ### 2026-10-01 (Phase 0 complete)
 Steps 0.2 through 0.15 in one run. The whole foundation: migration runner,
 migrations 001 to 003, the API (health, auth, roles), the core services the
@@ -220,7 +258,7 @@ Login confirmed working against the live local API.
 
 Things the version bumps taught us, all now in decisions 045 to 050:
 
-1. MariaDB2 3.23 parses JSON columns itself. Three docs said otherwise and the
+1. mysql2 3.23 parses JSON columns itself. Three docs said otherwise and the
    code double-parsed. Fixed with one `core/json.js` helper. Decision 047
 2. MariaDB refuses a CHECK that mentions an AUTO_INCREMENT column. The
    "not its own parent" rule moved to the service layer. Decision 045
@@ -244,8 +282,8 @@ lint and tests.
 Three things surprised us, all caught by tests before anything was built on
 top of them:
 
-1. The Hostinger database is MariaDB 11.8, not MariaDB 8. Every document said
-   MariaDB. Decision 041 records what actually differs. The docs still need the
+1. The Hostinger database is MariaDB 11.8, not MySQL 8. Every document said
+   MySQL. Decision 041 records what actually differs. The docs still need the
    sweep
 2. A test proved the driver silently rounds a BIGINT past JavaScript's safe
    integer limit, changing the last four digits with no error. Fixed with

@@ -58,7 +58,7 @@ Double-entry accounting needs transactions, joins and referential integrity.
 MariaDB is also what Hostinger provides as managed storage. MERN was considered
 and the M was dropped.
 
-Superseded in part by decision 041: the Hostinger server is MariaDB, not MariaDB.
+Superseded in part by decision 041: the Hostinger server is MariaDB, not MySQL.
 The reasoning above is unchanged.
 
 ---
@@ -466,19 +466,19 @@ Raised by Claude Code before migration 001 and accepted:
 
 ---
 
-### 041 — The database is MariaDB 11.8, not MariaDB 8
+### 041 — The database is MariaDB 11.8, not MySQL 8
 2026-10-01
 
 Checked in phpMyAdmin at the start of step 0.1. Hostinger's managed database
-reports `11.8.9-MariaDB-log`. Every document that said MariaDB 8 was assuming.
+reports `11.8.9-MariaDB-log`. Every document that said MySQL 8 was assuming.
 
 Local development runs MariaDB 11.8 in Docker, the same major version.
-Developing against MariaDB and deploying to MariaDB means finding the differences
+Developing against MySQL and deploying to MariaDB would mean finding the differences
 in production.
 
 What actually differs, and what it costs us:
 
-- `utf8mb4_0900_ai_ci` does not exist. The default from MariaDB 11.6 is
+- MySQL's `utf8mb4_0900_ai_ci` does not exist. The default from MariaDB 11.6 is
   `utf8mb4_uca1400_ai_ci`, which is what we use
 - `JSON` is an alias for LONGTEXT, stored as text. So `audit_log.before_json`,
   `audit_log.after_json`, `idempotency_keys.response_json` and
@@ -492,11 +492,11 @@ What actually differs, and what it costs us:
   strict mode, UTC and READ-COMMITTED are set per connection when the pool
   opens one
 
-Driver stays `MariaDB2`, from version 3.23.0, which added MariaDB type support
+Driver stays `mysql2`, from version 3.23.0, which added MariaDB type support
 and runs its own tests against MariaDB.
 
 Source: MariaDB documentation on character sets and collations, and on
-incompatibilities with MariaDB. Confidence: high, and the behaviour is asserted
+incompatibilities with MySQL. Confidence: high, and the behaviour is asserted
 by tests in `api/tests/database.test.js` rather than trusted.
 
 ---
@@ -608,9 +608,9 @@ Taxes are deliberately not seeded. They wait for the accountant.
 ### 047 — The driver parses JSON columns; do not double-parse
 2026-10-01
 
-AGENTS.md, SCHEMA.md and decision 041 all say the MariaDB driver returns a
+AGENTS.md, SCHEMA.md and decision 041 all say the `mysql2` driver returns a
 JSON column as a string, so the code must parse it. That was true before
-`MariaDB2` 3.23, which added MariaDB type support and now parses the value for
+`mysql2` 3.23, which added MariaDB type support and now parses the value for
 you. We pinned `^3.23.0` for exactly that support and inherited the change.
 
 Four audit and idempotency tests failed on `JSON.parse` of an already-parsed
@@ -642,7 +642,7 @@ Settled while building Phase 0's API.
   server log is not buried under client typos
 
 Packages added, all noted here per the boundary rule: `express`, `helmet`,
-`cors`, `cookie-parser`, `zod`, `jsonwebtoken`, `MariaDB2`.
+`cors`, `cookie-parser`, `zod`, `jsonwebtoken`, `mysql2`.
 
 ---
 
@@ -682,6 +682,72 @@ the owner from the UI, so their passwords never pass through SQL at all.
 
 ---
 
+### 051 — Step 1.1 corrections: journal number, migration 004, document repair
+2026-10-02
+
+Settled with Ahmad before the first line of Phase 1 code. Nothing here is a new
+direction. It is the documents being made to agree with each other and with the
+database that already exists.
+
+**The owner login can transact.** Decision 036 stands and decision 034 stays
+superseded. The role name remains `owner` in the `users` ENUM, because only one
+account carries settings, users and roles. Confirmed by Ahmad on 2026-10-02
+against a stale instruction that still quoted 034.
+
+**Phase 1 is migration 004.** Decision 046 moved seed data to 002 and company
+bootstrap to 003, so the Phase 1 tables shift to 004. Migrations 000 to 003 are
+applied, and a number recorded in `schema_migrations` can never be reused.
+SCHEMA.md's migration table and one line of the PROGRESS checklist still said
+002 and are corrected here.
+
+**`transactions` gains `journal_number`, allocated at posting.** Decision 015
+requires gapless numbering but no column existed to hold the number. The
+allocation point was the open part, and it is posting, not draft creation. A
+rejected or abandoned draft holding a number would leave a permanent hole in
+the series, which is the exact failure 015 exists to prevent. Drafts and pending
+entries are excluded from every balance and report, so they are not yet part of
+the book and do not need a book number. On screen a draft is identified by its
+row id. The allocation still happens inside the same database transaction as the
+posting, so a failed posting hands the number back.
+
+**`accounts.coa_id` is documented.** Migration 001 built it `NOT NULL`,
+`UNIQUE`, `BIGINT UNSIGNED`, with a foreign key to `chart_of_accounts`. Decision
+045 recorded why it was added; SCHEMA.md's account table never listed it. One
+ledger code per account, so a balance can never belong to two places at once.
+
+**Integer types.** Migration 001 uses `BIGINT UNSIGNED` for every key. SCHEMA.md
+said `BIGINT`. Migration 004 must match exactly or its foreign keys cannot be
+created. Money columns stay signed.
+
+**The opening entry was blocked by its own rule.** UI-GUIDE.md listed "an
+opening or historical entry dated on or after 1 July 2026" as blocked, which
+refuses the opening entry itself, since SCHEMA.md dates it exactly 2026-07-01.
+Split into two rules: historical entries must be before 2026-07-01, and the
+opening entry must be dated exactly 2026-07-01 and may exist only once.
+
+**The driver is `mysql2`, pinned `^3.23.0`.** Confirmed from
+`api/package.json`. Decisions 041, 047 and 048 and SCHEMA.md named it
+`MariaDB2`, which is not a package that exists. `mysql2` is the correct driver
+for a MariaDB server, and 3.23 is the version that added MariaDB type support,
+which is the subject of decision 047.
+
+**The MySQL and MariaDB sweep is repaired.** When decision 041 found the server
+was MariaDB, the word MySQL was replaced globally across the documents. That
+broke every sentence contrasting the two ("MariaDB, not MariaDB"), mislabelled
+facts that belong to MySQL (`utf8mb4_0900_ai_ci` is MySQL's collation and does
+not exist on MariaDB), and corrupted the driver's package name. Repaired in
+DECISIONS 005, 041, 047 and 048, SCHEMA.md, OVERVIEW.md, DEPLOY.md and
+PROGRESS.md. AGENTS.md was already correct and is unchanged.
+
+**`riverpod_lint` is not installed.** FRONTEND.md's package table listed it as
+though it were. Decision 049 left it out because it pins an older analyzer than
+`riverpod_generator` needs. The table now says so.
+
+Rules adopted to stop this recurring are in the Documentation rules section at
+the end of this file.
+
+---
+
 ## Open, not yet decided
 
 | # | Question | Blocks |
@@ -699,3 +765,34 @@ the owner from the UI, so their passwords never pass through SQL at all.
 | K | ~~PRA registration~~ Answered: not registered. Whether it should be is for the accountant | Phase 1 |
 | L | Switch to argon2id at first deploy, or stay on bcryptjs. See decision 042 | Phase 0 close. Still open: decided at the first real Hostinger deploy |
 | M | Android emulator reaches the local API at 10.0.2.2, not localhost. Note for Phase 7 | Phase 7 |
+
+---
+
+## Documentation rules
+
+Added 2026-10-02 after step 1.1 found eight places where the documents
+disagreed with each other or with the database. The cause was the same every
+time: one fact written in several files, and only one copy corrected.
+
+1. **One home per fact.** Database engine facts live in decision 041. Permission
+   rules live in SCHEMA.md under Permissions. Migration numbers live in
+   SCHEMA.md's migration table. Package versions live in `package.json` and
+   `pubspec.yaml`, never retyped into prose. Other documents point at the home,
+   they do not restate it.
+2. **Never find-and-replace across files.** One file at a time, reading every
+   hit. The sweep that caused this damage would have been harmless done that
+   way.
+3. **Anything in backticks is code, not prose.** `mysql2`,
+   `utf8mb4_0900_ai_ci`, `coa_id`. A rename sweep never touches it.
+4. **Decisions are appended, never rewritten.** Add a new entry that supersedes
+   the old one and says so. Editing a decision in place is how a document ends
+   up disagreeing with the code that was written from it.
+5. **A document that describes a table is checked against the migration that
+   built it,** not against an earlier draft of the document.
+6. **Instructions given in chat are not a source of truth.** The files are. When
+   the two disagree, say so and ask, rather than following either one silently.
+   Two conflicts in step 1.1 came from chat instructions quoting superseded
+   decisions.
+7. **A guard script, `api/scripts/check-docs.js`,** greps the documents for
+   known contradictions and runs with the test suite. Not yet written; next
+   step.
