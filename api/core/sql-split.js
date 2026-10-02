@@ -7,6 +7,15 @@
 // this splitter honours it, so one file works in both places.
 //
 // Semicolons inside quotes and comments are left alone.
+//
+// A bare `--` line, with nothing after the dashes, is a comment in MariaDB.
+// LINE_COMMENT accepts one. isOnlyComments did not, so a block of comments
+// containing a bare `--` line was judged to hold real SQL, and the empty
+// string left after stripping it was sent to the server, which answered
+// "Query was empty". Found by migration 004, the first file where a comment
+// block stands alone between two statements, because DELIMITER forces a push.
+// Both functions now agree on what a comment is, and push refuses to emit an
+// empty statement even if they ever disagree again.
 
 const LINE_COMMENT = /^--[ \t\r\n]/;
 
@@ -22,7 +31,9 @@ export function splitSqlStatements(sql) {
     if (trimmed.length > 0 && !isOnlyComments(trimmed)) {
       // Leading comments belong to the file, not the statement. Dropping them
       // keeps error messages about the SQL that actually failed.
-      statements.push(stripLeadingComments(trimmed));
+      const statement = stripLeadingComments(trimmed);
+      // Belt and braces: never hand the server an empty string.
+      if (statement.length > 0) statements.push(statement);
     }
     buffer = '';
   };
@@ -124,7 +135,9 @@ export function stripLeadingComments(text) {
 export function isOnlyComments(text) {
   const stripped = text
     .replace(/\/\*(?!!)[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*(--[ \t].*|#.*)$/gm, '')
+    // `--([ \t].*)?` so that a line of nothing but dashes counts as a comment,
+    // matching LINE_COMMENT above.
+    .replace(/^[ \t]*(--([ \t].*)?|#.*)$/gm, '')
     .trim();
   return stripped.length === 0;
 }
