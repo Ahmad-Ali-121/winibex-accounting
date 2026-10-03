@@ -748,6 +748,148 @@ the end of this file.
 
 ---
 
+### 052 — Phase 1 posting: account, withholding, rounding, and when a migration may be edited
+2026-10-02
+
+Settled while building migration 004 and the posting engine. Each item was
+found by the database or a test refusing something that should have worked.
+
+**`account_id` is nullable, with a CHECK both ways.** Three legitimate entries
+move no company money: one a person paid personally (worked example 1b credits
+2114 and touches no company account), the opening entry, which belongs to every
+account at once, and a manual journal entry such as depreciation. The journal
+lines carry the accounting in all three. `account_id` drives the ledger view and
+the balance query, and does not apply. The CHECK requires an account exactly
+when `paid_by_type = 'company'` and `entry_type` is `normal` or `historical`,
+and forbids one otherwise.
+
+**`transactions.withheld_total`, and the reconciliation rule splits in two.**
+The old rule, `amount = gross + tax + charges` for money out, assumed every tax
+is taken from Winibex. Tax Winibex withholds from a payee under s.153 or s.149
+is held back rather than paid out: paying a vendor 100,000 with 4% withheld
+sends 96,000 to the bank and credits 4,000 to 2132. The database would have
+refused that entry. `withheld_total` is its own non-negative column, money out
+only, and it is the figure the quarterly s.165 statement reports. The rule is
+now `amount = gross + tax_total + charges_total - withheld_total` for money out
+and `amount = gross - tax_total - charges_total` for money in.
+
+**`entry_type` gains `journal`, `method` gains `card`.** UI-GUIDE requires a
+manual Journal Entry screen for depreciation, FX revaluation and year-end
+adjustments. Without a type of its own each would have to pretend to be a
+normal entry on an arbitrary account. `card` was added because most foreign
+payments leave on a card and s.236Y is specifically a tax on card payments, so
+`online` was hiding the distinction the tax engine needs.
+
+**Rounding is half away from zero.** 1.5 paisa becomes 2, -1.5 becomes -2.
+Chosen over banker's rounding for two reasons: it is what a person doing the
+sum by hand produces, so a system figure matches a hand-checked one, and it is
+symmetric, so a reversal is exactly equal and opposite with no half paisa left
+behind. Banker's rounding suits large statistical runs, which this is not.
+
+**An applied migration may be edited only while every database holding it can
+be rebuilt.** Migration 004 was edited twice after being applied locally,
+because nothing is deployed and there is no real data. The rule that an applied
+migration is never edited exists to protect a database that cannot be rebuilt.
+From the first Hostinger deploy onwards, a correction is a new migration,
+without exception.
+
+**A reversal is flipped, never recalculated.** `reverseJournalLines` swaps debit
+and credit on the stored lines. Recomputing from the form would use today's
+exchange rate and today's tax rules, which may both have changed since posting,
+and the pair would not net to zero.
+
+**A reversing entry carries no tax or charge breakdown.** Found by a failing
+test. For money in, `amount = gross - tax - charges`, so repeating the
+original's split does not reconcile. The reversal carries
+`gross_amount = amount` with no tax or charge lines, and its journal lines
+mirror the original. Consequence for Phase 6: a tax report must exclude tax
+lines belonging to entries whose status is `reversed`, or it will overstate what
+is reported to FBR.
+
+---
+
+### 053 — Phase 1 build: transfers, validation tiers, and what the database refused
+2026-10-02
+
+Settled while building steps 1.5 to 1.12. As with 052, most of these were
+found by something refusing to work rather than by being planned.
+
+**A reversed entry still counts towards a balance.** The balance query filtered
+`status = 'posted'`, so reversing an entry dropped its lines out of the
+balance and the correction counted twice: once by removing the original's
+effect, once by adding the reversal's. Both rows stay in the book and cancel
+each other, decision 012, so both must be counted. Caught by a test asserting
+that a reversal returns a balance to where it was, which no constraint could
+have caught because the data was valid and the trial balance still summed to
+zero. SCHEMA.md's lifecycle section is corrected.
+
+**Transfers post through 1118 Funds in transit, internal.** SCHEMA.md says a
+transfer is two rows sharing `transfer_group_id`; AGENTS.md says every
+money-moving row writes balanced journal lines. Both legs posting a full entry
+would record the movement twice. Each leg therefore passes through a transit
+account: out of the source debits 1118 and credits the source, into the
+destination debits the destination and credits 1118. 1118 returns to zero the
+moment both land, so a half-finished transfer is visible rather than invisible.
+Seeded in migration 002 as a system control account that nothing can post to by
+hand, with two categories, Transfer in and Transfer out, which only the
+transfer engine selects. A bank fee is a charge on the out leg, which is the
+UI-GUIDE exception for legs that do not match.
+
+**Manual journal lines are written once, with the draft, and never rewritten.**
+The opening entry and any `journal` entry have no form to derive lines from, so
+they are supplied and stored at draft time. The posting path originally deleted
+and reinserted them, and the delete trigger from migration 004 refused. It now
+validates that they balance and leaves them alone. The rule being enforced in
+two places, as decision 012 requires, is what caught the service doing
+something it should never have done.
+
+**The merge check compares positions only.** Assets, liabilities and equity.
+An opening entry carries what the company held and owed at 30 June, not what it
+earned getting there: last year's income and expense are absorbed into equity,
+so comparing an income account would report a permanent difference and the
+merge could never happen. 3400 is excluded as well, being the balancing figure
+with no history behind it.
+
+**Opening balances are supplied on each account's normal side.** A bank holding
+500,000 and a director loan of 300,000 are both given as positive figures. The
+service reads `normal_balance` to decide the posting side, so nobody has to
+think in debits and credits to open the books, and the balancing figure to 3400
+is never supplied by a person because it is a consequence rather than a fact.
+
+**Cross-feature calls go through `createDraftWithin` and `approveWithin`.**
+Reimbursements, transfers and the opening entry all need to create and post an
+entry inside their own database transaction, so a failure in their second half
+leaves no orphan payment. Those two exports take a connection instead of
+opening one. No module reaches into another's repository, which is the
+interface decision 016 asks for.
+
+**The cheque register posts nothing.** It records what was written and whether
+it cleared; the money is an ordinary transaction with `method = cheque` linked
+to it. Two sets of books would eventually disagree. Whether an uncleared cheque
+should sit in 1114 until it clears is a question for the accountant, noted in
+CHART-OF-ACCOUNTS.md.
+
+**Vendors are never deleted, only deactivated,** and only the owner or an admin
+may add or change one, because `atl_status` silently decides a withholding
+rate. A vendor with unknown status gets the non-filer rate and a warning naming
+them: guessing the lower rate leaves Winibex owing FBR the difference.
+
+**Validation runs at create and at update, not at posting.** Blocked throws,
+warned returns 409 with the matched records named and goes through when the
+same request returns with `acknowledged_warnings`, and the acknowledgement is
+written to `entry_flags` with who confirmed it. Editing a draft replaces its
+warnings and flags, because the old ones described figures that no longer
+exist.
+
+**The property test carries a seed.** 150 random operations, with the seed
+printed on every run and settable through `PROPERTY_SEED`, so a failure is
+reproducible rather than a story about something that happened once. It also
+asserts that a refused operation leaves the transaction count, the line count
+and the debit total unchanged, which is the only check in the suite that would
+catch a half-finished write.
+
+---
+
 ## Open, not yet decided
 
 | # | Question | Blocks |

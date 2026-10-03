@@ -49,7 +49,7 @@ void main() {
     await tester.pumpWidget(harness(FakeAuthController((e, p) async {
       called = true;
       return null;
-    })));
+    }),),);
 
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 
@@ -68,7 +68,7 @@ void main() {
         message: 'That email or password is not right.',
         status: 401,
       );
-    })));
+    }),),);
 
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 
@@ -84,7 +84,7 @@ void main() {
   testWidgets('being rate limited shows the throttle message', (tester) async {
     await tester.pumpWidget(harness(FakeAuthController((e, p) async {
       throw const ApiException(code: 'RATE_LIMITED', message: 'x', status: 429);
-    })));
+    }),),);
 
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 
@@ -99,7 +99,7 @@ void main() {
   testWidgets('a network failure tells the user to check their connection', (tester) async {
     await tester.pumpWidget(harness(FakeAuthController((e, p) async {
       throw const ApiException(code: 'NETWORK', message: 'x');
-    })));
+    }),),);
 
     final l10n = await AppLocalizations.delegate.load(const Locale('en'));
 

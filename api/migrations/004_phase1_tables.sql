@@ -23,6 +23,13 @@
 --      A CHECK only ever sees a single row. It lives in the posting engine,
 --      proved by the trial balance test.
 --
+--   3a. Edited on 2026-10-02, before any deploy, to make account_id nullable.
+--       Three legitimate entries move no company money: one a person paid
+--       personally, the opening entry, and a manual journal entry. Editing an
+--       applied migration is only acceptable while every database holding it
+--       can be rebuilt. After the first Hostinger deploy, a correction is a
+--       new migration, always.
+--
 --   3. "Historical entries are dated before books_live_from, the opening entry
 --      is dated exactly on it" depends on a value in the settings table.
 --      A CHECK cannot read another table, and hardcoding 2026-07-01 here would
@@ -189,14 +196,14 @@ CREATE TABLE transactions (
   id                     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   journal_number         VARCHAR(20)     NULL COMMENT 'From sequences, at posting. Null while draft or pending',
   date                   DATE            NOT NULL COMMENT 'Date of payment, not the date it was entered',
-  account_id             BIGINT UNSIGNED NOT NULL,
+  account_id             BIGINT UNSIGNED NULL COMMENT 'The company account the money moved on. Null when none did: paid by a person, the opening entry, a manual journal entry',
   direction              ENUM('in', 'out') NOT NULL COMMENT 'Direction carries the sign. Amounts are never negative',
   amount                 BIGINT          NOT NULL COMMENT 'PKR paisa. Net effect on the account, the figure balances use',
   currency               CHAR(3)         NOT NULL DEFAULT 'PKR',
   foreign_amount         BIGINT          NULL COMMENT 'Minor units of the foreign currency. Null for PKR',
   fx_rate                DECIMAL(18,6)   NULL COMMENT 'PKR per one unit of the foreign currency',
   fx_rate_source         ENUM('manual', 'bank_advice', 'derived') NULL,
-  method                 ENUM('cash', 'account', 'cheque', 'online') NOT NULL,
+  method                 ENUM('cash', 'account', 'card', 'cheque', 'online') NOT NULL,
   description            VARCHAR(255)    NOT NULL,
   category_id            BIGINT UNSIGNED NOT NULL,
   client_id              BIGINT UNSIGNED NULL COMMENT 'No FK until Phase 2 creates clients',
@@ -212,10 +219,11 @@ CREATE TABLE transactions (
   gross_amount           BIGINT          NOT NULL COMMENT 'PKR paisa before taxes and charges',
   tax_total              BIGINT          NOT NULL DEFAULT 0,
   charges_total          BIGINT          NOT NULL DEFAULT 0,
+  withheld_total         BIGINT          NOT NULL DEFAULT 0 COMMENT 'Tax Winibex deducted from the payee and owes FBR. Reduces the payment rather than adding to it. The figure the quarterly s.165 statement reports',
   reference              VARCHAR(50)     NULL COMMENT 'Cheque or voucher number',
   transfer_group_id      CHAR(36)        NULL COMMENT 'Links the two legs of a transfer',
   status                 ENUM('draft', 'pending', 'posted', 'rejected', 'reversed') NOT NULL DEFAULT 'draft',
-  entry_type             ENUM('normal', 'opening', 'historical') NOT NULL DEFAULT 'normal',
+  entry_type             ENUM('normal', 'opening', 'historical', 'journal') NOT NULL DEFAULT 'normal' COMMENT 'journal is the manual entry that fits no guided form: depreciation, FX revaluation, year end',
   rejection_reason       VARCHAR(255)    NULL,
   reversal_of_id         BIGINT UNSIGNED NULL COMMENT 'This entry reverses that one',
   reversed_by_id         BIGINT UNSIGNED NULL COMMENT 'That entry reverses this one',
@@ -261,14 +269,27 @@ CREATE TABLE transactions (
 
   -- Money is never zero or negative. Direction carries the sign.
   CONSTRAINT chk_transactions_amounts
-    CHECK (amount > 0 AND gross_amount > 0 AND tax_total >= 0 AND charges_total >= 0),
+    CHECK (amount > 0 AND gross_amount > 0 AND tax_total >= 0
+           AND charges_total >= 0 AND withheld_total >= 0),
 
-  -- The four money columns must reconcile. SCHEMA.md, Money and currency.
+  -- Winibex only withholds from someone it is paying.
+  CONSTRAINT chk_transactions_withheld_direction
+    CHECK (direction = 'out' OR withheld_total = 0),
+
+  -- The money columns must reconcile. SCHEMA.md, Money and currency.
+  --
+  -- Tax deducted FROM Winibex is a cost on top of the payment: the bank takes
+  -- s.236Y as well as the subscription. Tax Winibex deducts from a payee is
+  -- money held back and owed to FBR, so it reduces the payment instead.
+  -- Paying a vendor 100,000 with 4% s.153 withheld sends 96,000 to the bank
+  -- and 4,000 to 2132.
   CONSTRAINT chk_transactions_reconcile
     CHECK (
-      (direction = 'out' AND amount = gross_amount + tax_total + charges_total)
+      (direction = 'out'
+        AND amount = gross_amount + tax_total + charges_total - withheld_total)
       OR
-      (direction = 'in'  AND amount = gross_amount - tax_total - charges_total)
+      (direction = 'in'
+        AND amount = gross_amount - tax_total - charges_total)
     ),
 
   -- A PKR entry carries no conversion. A foreign entry carries all of it.
@@ -277,6 +298,21 @@ CREATE TABLE transactions (
       (currency = 'PKR' AND foreign_amount IS NULL AND fx_rate IS NULL AND fx_rate_source IS NULL)
       OR
       (currency <> 'PKR' AND foreign_amount > 0 AND fx_rate > 0 AND fx_rate_source IS NOT NULL)
+    ),
+
+  -- An entry names a company account exactly when company money moved. The
+  -- journal lines carry the accounting in every case; account_id drives the
+  -- ledger view and the account balance query, and genuinely does not apply
+  -- to an entry a person paid personally, to the opening entry, or to a
+  -- manual journal entry that spans several accounts.
+  CONSTRAINT chk_transactions_account
+    CHECK (
+      (account_id IS NOT NULL
+        AND paid_by_type = 'company'
+        AND entry_type IN ('normal', 'historical'))
+      OR
+      (account_id IS NULL
+        AND (paid_by_type = 'person' OR entry_type IN ('opening', 'journal')))
     ),
 
   -- Paid by a person means naming the person. Decision 020.

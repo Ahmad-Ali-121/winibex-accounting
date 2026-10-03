@@ -65,6 +65,7 @@ return figures come straight out of the Trial Balance.
 | 1115 | Funds in transit, Fazal | pass-through, system |
 | 1116 | Funds in transit, Ahmad | pass-through, system |
 | 1117 | Funds held on platforms | Upwork and similar balances not yet withdrawn |
+| 1118 | Funds in transit, internal | system, control. Both legs of a transfer between company accounts pass through it, so each leg balances on its own and a half-finished transfer is visible. Returns to zero when both legs post. Decision 053 |
 
 **1120 Trade receivables**
 | Code | Name | Notes |
@@ -332,6 +333,42 @@ Never income. The Balance Sheet must show the company owes this.
 
 ---
 
+### 8. A transfer between two company accounts
+
+PKR 50,000 drawn from the bank into office cash, with a PKR 50 bank fee.
+Two entries sharing one `transfer_group_id`, never one.
+
+Out of the bank:
+| Account | Debit | Credit |
+| --- | --- | --- |
+| 1118 Funds in transit, internal | 50,000 | |
+| 8100 Bank charges and FED | 50 | |
+| 1113 Bank | | 50,050 |
+
+Into office cash:
+| Account | Debit | Credit |
+| --- | --- | --- |
+| 1111 Cash in hand, office | 50,000 | |
+| 1118 Funds in transit, internal | | 50,000 |
+
+1118 is back at zero once both legs post. The fee is why the two legs are
+allowed to differ: the bank loses 50,050 and the cash tin gains 50,000.
+
+### 9. Paying a local vendor with Section 153 withheld
+
+PKR 100,000 to an IT company on the Active Taxpayers List, 4% withheld.
+
+| Account | Debit | Credit |
+| --- | --- | --- |
+| 5100 Outsourcing and subcontractors | 100,000 | |
+| 2132 Withholding payable, s.153 | | 4,000 |
+| 1113 Bank | | 96,000 |
+
+The cost is the full 100,000. Only 96,000 leaves the bank, and the 4,000 is
+owed to FBR until it is deposited and reported on the quarterly s.165
+statement. This is the posting the old reconciliation rule could not express,
+which is why `withheld_total` exists. Decision 052.
+
 ## Year-end foreign exchange
 
 Open foreign currency receivables and payables are revalued at the closing rate
@@ -345,6 +382,10 @@ in `docs/SCHEMA.md`.
 1. AFRS for SSEs, IFRS for SMEs, or full IFRS
 1a. Confirm the audit exemption for paid-up capital up to PKR 1 million
 1b. Treatment of 236Y on personal cards, and whether it is reimbursed
+1c. Whether a cheque written but not yet cleared should sit in 1114 Cheques in
+   hand until it clears, rather than leaving the bank on the day it was
+   written. Today it leaves the bank immediately and the cheque register makes
+   the uncleared ones visible
 2. Partner profit share: a cost of services (5500) or a deduction from revenue
 3. Whether Section 153 tax suffered on local receipts is adjustable or minimum
    tax for Winibex in the current year

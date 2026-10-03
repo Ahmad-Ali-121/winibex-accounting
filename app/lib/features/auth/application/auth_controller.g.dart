@@ -48,7 +48,7 @@ final class AuthControllerProvider
   AuthController create() => AuthController();
 }
 
-String _$authControllerHash() => r'a058425caf42633fc76e81f30dba38e4f6d03aa0';
+String _$authControllerHash() => r'b7e0d23a14d338d70eb0bf5aeaa375ae0f3ab8ff';
 
 /// The session. null data means signed out; a value means signed in.
 ///

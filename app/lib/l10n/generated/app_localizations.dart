@@ -1299,6 +1299,414 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This account has been deactivated. Ask the owner.'**
   String get errAccountInactive;
+
+  /// Navigation label for the accounts screen
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get navAccounts;
+
+  /// Heading on the accounts screen
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get accountsTitle;
+
+  /// Line under the accounts heading
+  ///
+  /// In en, this message translates to:
+  /// **'What the company holds today'**
+  String get accountsSubtitle;
+
+  /// No description provided for @accountsColumnAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get accountsColumnAccount;
+
+  /// No description provided for @accountsColumnLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'LEDGER'**
+  String get accountsColumnLedger;
+
+  /// No description provided for @accountsColumnBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'BALANCE'**
+  String get accountsColumnBalance;
+
+  /// Label on the totals row of the accounts table
+  ///
+  /// In en, this message translates to:
+  /// **'Total held'**
+  String get accountsTotal;
+
+  /// Tag on an account that is no longer in use
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get accountsInactive;
+
+  /// Shown while history_merged is false
+  ///
+  /// In en, this message translates to:
+  /// **'These balances start from 1 July 2026. Entries before that are excluded until history has been checked against the opening entry.'**
+  String get accountsHistoryNotMerged;
+
+  /// No description provided for @accountTypeBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get accountTypeBank;
+
+  /// No description provided for @accountTypeCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get accountTypeCash;
+
+  /// No description provided for @accountTypePettyCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Petty cash'**
+  String get accountTypePettyCash;
+
+  /// No description provided for @accountTypeCheque.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheques'**
+  String get accountTypeCheque;
+
+  /// No description provided for @accountTypePassThrough.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass-through'**
+  String get accountTypePassThrough;
+
+  /// No description provided for @emptyAccountsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No accounts yet'**
+  String get emptyAccountsTitle;
+
+  /// No description provided for @emptyAccountsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts are set up once, in Settings.'**
+  String get emptyAccountsDetail;
+
+  /// No description provided for @navNewEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'New entry'**
+  String get navNewEntry;
+
+  /// Progress above the entry form
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String stepCounter(int current, int total);
+
+  /// No description provided for @stepDirectionQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Did money come in, or go out?'**
+  String get stepDirectionQuestion;
+
+  /// No description provided for @stepDateQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'When did it move?'**
+  String get stepDateQuestion;
+
+  /// No description provided for @stepAmountQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How much?'**
+  String get stepAmountQuestion;
+
+  /// No description provided for @stepPaidFromQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Which account did it leave?'**
+  String get stepPaidFromQuestion;
+
+  /// No description provided for @stepReceivedIntoQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Which account did it arrive in?'**
+  String get stepReceivedIntoQuestion;
+
+  /// No description provided for @stepPaidByPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Or someone paid it personally'**
+  String get stepPaidByPerson;
+
+  /// No description provided for @stepCategoryQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'What was it for?'**
+  String get stepCategoryQuestion;
+
+  /// No description provided for @stepReviewQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Check this before saving'**
+  String get stepReviewQuestion;
+
+  /// No description provided for @currencyPkr.
+  ///
+  /// In en, this message translates to:
+  /// **'Rupees'**
+  String get currencyPkr;
+
+  /// No description provided for @currencyForeign.
+  ///
+  /// In en, this message translates to:
+  /// **'Foreign currency'**
+  String get currencyForeign;
+
+  /// No description provided for @fieldForeignAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount in the original currency'**
+  String get fieldForeignAmount;
+
+  /// No description provided for @fieldRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange rate'**
+  String get fieldRate;
+
+  /// No description provided for @fieldPkrReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Rupees actually received'**
+  String get fieldPkrReceived;
+
+  /// No description provided for @fieldHoldsNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Holds'**
+  String get fieldHoldsNow;
+
+  /// No description provided for @hintDateIsPaymentDate.
+  ///
+  /// In en, this message translates to:
+  /// **'The date the money moved, not the date you are entering it.'**
+  String get hintDateIsPaymentDate;
+
+  /// No description provided for @hintAmountIsGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Before any tax or bank charges. Those come next.'**
+  String get hintAmountIsGross;
+
+  /// No description provided for @hintRateOrPkr.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the rate, or leave it and type the rupees the bank gave.'**
+  String get hintRateOrPkr;
+
+  /// No description provided for @hintDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enough that you will recognise it in a year.'**
+  String get hintDescription;
+
+  /// No description provided for @hintRebillable.
+  ///
+  /// In en, this message translates to:
+  /// **'It will not count as a cost. It sits as money owed until you invoice it.'**
+  String get hintRebillable;
+
+  /// No description provided for @hintPaidByPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'No company account moves. The company owes them instead.'**
+  String get hintPaidByPerson;
+
+  /// No description provided for @previewNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in the amount, the account and the category to see the journal entry.'**
+  String get previewNotReady;
+
+  /// No description provided for @journalColumnAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get journalColumnAccount;
+
+  /// No description provided for @journalBalanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get journalBalanced;
+
+  /// No description provided for @actionSaveAndPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and post'**
+  String get actionSaveAndPost;
+
+  /// No description provided for @actionSubmitForApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit for approval'**
+  String get actionSubmitForApproval;
+
+  /// No description provided for @actionGoBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back and check'**
+  String get actionGoBack;
+
+  /// No description provided for @actionSaveAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Save anyway'**
+  String get actionSaveAnyway;
+
+  /// No description provided for @warnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check these first'**
+  String get warnTitle;
+
+  /// No description provided for @warnIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is wrong with the entry. These are worth a look before it goes in.'**
+  String get warnIntro;
+
+  /// No description provided for @entrySavedPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved and posted.'**
+  String get entrySavedPosted;
+
+  /// No description provided for @entrySavedPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted. Someone else will approve it.'**
+  String get entrySavedPending;
+
+  /// No description provided for @hintSearchLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'Search descriptions, journal numbers and references'**
+  String get hintSearchLedger;
+
+  /// Under the ledger list
+  ///
+  /// In en, this message translates to:
+  /// **'Showing {shown} of {total}'**
+  String ledgerShowing(int shown, int total);
+
+  /// No description provided for @ledgerFlagged.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry has something to review'**
+  String get ledgerFlagged;
+
+  /// No description provided for @ledgerReversedNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry was reversed. Both it and its reversal stay in the book.'**
+  String get ledgerReversedNotice;
+
+  /// No description provided for @emptyLedgerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get emptyLedgerTitle;
+
+  /// No description provided for @emptyLedgerDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries appear here as soon as they are submitted.'**
+  String get emptyLedgerDetail;
+
+  /// No description provided for @emptyApprovalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing waiting'**
+  String get emptyApprovalsTitle;
+
+  /// No description provided for @emptyApprovalsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries submitted for approval show up here.'**
+  String get emptyApprovalsDetail;
+
+  /// No description provided for @approvalsYourOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'You entered this, so someone else has to approve it.'**
+  String get approvalsYourOwn;
+
+  /// Flag count on an approval card
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 thing to review} other{{count} things to review}}'**
+  String approvalsHasFlags(int count);
+
+  /// No description provided for @rejectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send it back'**
+  String get rejectTitle;
+
+  /// No description provided for @hintRejectReason.
+  ///
+  /// In en, this message translates to:
+  /// **'They will see this, so say what needs changing.'**
+  String get hintRejectReason;
+
+  /// No description provided for @actionPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get actionPrevious;
+
+  /// No description provided for @actionNextPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Next page'**
+  String get actionNextPage;
+
+  /// No description provided for @actionClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get actionClose;
+
+  /// No description provided for @stepReceiptQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach the receipt'**
+  String get stepReceiptQuestion;
+
+  /// No description provided for @hintReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'A photo or a PDF. A payment over the limit in Settings cannot be posted without one, and you can also add it later.'**
+  String get hintReceipt;
+
+  /// No description provided for @actionRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get actionRemove;
+
+  /// Under the name of an attached file
+  ///
+  /// In en, this message translates to:
+  /// **'{kb} KB'**
+  String receiptSize(int kb);
 }
 
 class _AppLocalizationsDelegate

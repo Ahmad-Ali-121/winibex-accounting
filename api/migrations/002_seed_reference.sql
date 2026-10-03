@@ -44,6 +44,7 @@ INSERT INTO chart_of_accounts
   ('1115', 'Funds in transit, Fazal',             'asset', 'debit',  0, 1, 1),
   ('1116', 'Funds in transit, Ahmad',             'asset', 'debit',  0, 1, 1),
   ('1117', 'Funds held on platforms',             'asset', 'debit',  0, 0, 1),
+  ('1118', 'Funds in transit, internal',          'asset', 'debit',  0, 1, 0),
 
   ('1120', 'Trade receivables',                   'asset', 'debit',  1, 1, 0),
   ('1121', 'Trade receivables, local',            'asset', 'debit',  0, 1, 0),
@@ -191,6 +192,9 @@ FROM (
   UNION ALL SELECT 'Investor funds received',              'balance_sheet', 'in',  '2210'
   UNION ALL SELECT 'Client advance received',              'balance_sheet', 'in',  '2140'
   UNION ALL SELECT 'Rebillable spend recovered',           'balance_sheet', 'in',  '1123'
+  UNION ALL SELECT 'Transfer in',                          'balance_sheet', 'in',  '1118'
+  UNION ALL SELECT 'Transfer out',                         'balance_sheet', 'out', '1118'
+  UNION ALL SELECT 'Opening balance',                      'balance_sheet', 'in',  '3400'
 
   UNION ALL SELECT 'Outsourcing and subcontractors',       'cgs',           'out', '5100'
   UNION ALL SELECT 'Client advertising spend, absorbed',   'cgs',           'out', '5200'

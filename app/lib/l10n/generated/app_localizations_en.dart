@@ -681,4 +681,237 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errAccountInactive =>
       'This account has been deactivated. Ask the owner.';
+
+  @override
+  String get navAccounts => 'Accounts';
+
+  @override
+  String get accountsTitle => 'Accounts';
+
+  @override
+  String get accountsSubtitle => 'What the company holds today';
+
+  @override
+  String get accountsColumnAccount => 'ACCOUNT';
+
+  @override
+  String get accountsColumnLedger => 'LEDGER';
+
+  @override
+  String get accountsColumnBalance => 'BALANCE';
+
+  @override
+  String get accountsTotal => 'Total held';
+
+  @override
+  String get accountsInactive => 'Closed';
+
+  @override
+  String get accountsHistoryNotMerged =>
+      'These balances start from 1 July 2026. Entries before that are excluded until history has been checked against the opening entry.';
+
+  @override
+  String get accountTypeBank => 'Bank';
+
+  @override
+  String get accountTypeCash => 'Cash';
+
+  @override
+  String get accountTypePettyCash => 'Petty cash';
+
+  @override
+  String get accountTypeCheque => 'Cheques';
+
+  @override
+  String get accountTypePassThrough => 'Pass-through';
+
+  @override
+  String get emptyAccountsTitle => 'No accounts yet';
+
+  @override
+  String get emptyAccountsDetail => 'Accounts are set up once, in Settings.';
+
+  @override
+  String get navNewEntry => 'New entry';
+
+  @override
+  String stepCounter(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get stepDirectionQuestion => 'Did money come in, or go out?';
+
+  @override
+  String get stepDateQuestion => 'When did it move?';
+
+  @override
+  String get stepAmountQuestion => 'How much?';
+
+  @override
+  String get stepPaidFromQuestion => 'Which account did it leave?';
+
+  @override
+  String get stepReceivedIntoQuestion => 'Which account did it arrive in?';
+
+  @override
+  String get stepPaidByPerson => 'Or someone paid it personally';
+
+  @override
+  String get stepCategoryQuestion => 'What was it for?';
+
+  @override
+  String get stepReviewQuestion => 'Check this before saving';
+
+  @override
+  String get currencyPkr => 'Rupees';
+
+  @override
+  String get currencyForeign => 'Foreign currency';
+
+  @override
+  String get fieldForeignAmount => 'Amount in the original currency';
+
+  @override
+  String get fieldRate => 'Exchange rate';
+
+  @override
+  String get fieldPkrReceived => 'Rupees actually received';
+
+  @override
+  String get fieldHoldsNow => 'Holds';
+
+  @override
+  String get hintDateIsPaymentDate =>
+      'The date the money moved, not the date you are entering it.';
+
+  @override
+  String get hintAmountIsGross =>
+      'Before any tax or bank charges. Those come next.';
+
+  @override
+  String get hintRateOrPkr =>
+      'Enter the rate, or leave it and type the rupees the bank gave.';
+
+  @override
+  String get hintDescription => 'Enough that you will recognise it in a year.';
+
+  @override
+  String get hintRebillable =>
+      'It will not count as a cost. It sits as money owed until you invoice it.';
+
+  @override
+  String get hintPaidByPerson =>
+      'No company account moves. The company owes them instead.';
+
+  @override
+  String get previewNotReady =>
+      'Fill in the amount, the account and the category to see the journal entry.';
+
+  @override
+  String get journalColumnAccount => 'ACCOUNT';
+
+  @override
+  String get journalBalanced => 'Balanced';
+
+  @override
+  String get actionSaveAndPost => 'Save and post';
+
+  @override
+  String get actionSubmitForApproval => 'Submit for approval';
+
+  @override
+  String get actionGoBack => 'Go back and check';
+
+  @override
+  String get actionSaveAnyway => 'Save anyway';
+
+  @override
+  String get warnTitle => 'Check these first';
+
+  @override
+  String get warnIntro =>
+      'Nothing is wrong with the entry. These are worth a look before it goes in.';
+
+  @override
+  String get entrySavedPosted => 'Saved and posted.';
+
+  @override
+  String get entrySavedPending => 'Submitted. Someone else will approve it.';
+
+  @override
+  String get hintSearchLedger =>
+      'Search descriptions, journal numbers and references';
+
+  @override
+  String ledgerShowing(int shown, int total) {
+    return 'Showing $shown of $total';
+  }
+
+  @override
+  String get ledgerFlagged => 'This entry has something to review';
+
+  @override
+  String get ledgerReversedNotice =>
+      'This entry was reversed. Both it and its reversal stay in the book.';
+
+  @override
+  String get emptyLedgerTitle => 'Nothing here yet';
+
+  @override
+  String get emptyLedgerDetail =>
+      'Entries appear here as soon as they are submitted.';
+
+  @override
+  String get emptyApprovalsTitle => 'Nothing waiting';
+
+  @override
+  String get emptyApprovalsDetail =>
+      'Entries submitted for approval show up here.';
+
+  @override
+  String get approvalsYourOwn =>
+      'You entered this, so someone else has to approve it.';
+
+  @override
+  String approvalsHasFlags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count things to review',
+      one: '1 thing to review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rejectTitle => 'Send it back';
+
+  @override
+  String get hintRejectReason =>
+      'They will see this, so say what needs changing.';
+
+  @override
+  String get actionPrevious => 'Previous';
+
+  @override
+  String get actionNextPage => 'Next page';
+
+  @override
+  String get actionClose => 'Close';
+
+  @override
+  String get stepReceiptQuestion => 'Attach the receipt';
+
+  @override
+  String get hintReceipt =>
+      'A photo or a PDF. A payment over the limit in Settings cannot be posted without one, and you can also add it later.';
+
+  @override
+  String get actionRemove => 'Remove';
+
+  @override
+  String receiptSize(int kb) {
+    return '$kb KB';
+  }
 }

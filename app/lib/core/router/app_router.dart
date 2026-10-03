@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../api/api_client.dart';
+import '../../features/accounts/presentation/accounts_screen.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/transactions/presentation/approvals_screen.dart';
+import '../../features/transactions/presentation/entry_screen.dart';
+import '../../features/transactions/presentation/ledger_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
 import '../../l10n/generated/app_localizations.dart';
 
@@ -16,7 +21,9 @@ part 'app_router.g.dart';
 abstract final class Routes {
   static const login = '/login';
   static const dashboard = '/';
+  static const accounts = '/accounts';
   static const transactions = '/transactions';
+  static const newEntry = '/transactions/new';
   static const approvals = '/approvals';
   static const clients = '/clients';
   static const invoices = '/invoices';
@@ -81,12 +88,21 @@ GoRouter appRouter(Ref ref) {
             builder: (context, state) => const DashboardScreen(),
           ),
           GoRoute(
+            path: Routes.accounts,
+            builder: (context, state) => const AccountsScreen(),
+          ),
+          // Declared before /transactions, so the longer path wins.
+          GoRoute(
+            path: Routes.newEntry,
+            builder: (context, state) => const _NewEntry(),
+          ),
+          GoRoute(
             path: Routes.transactions,
-            builder: (context, state) => const _ComingSoon(module: 'transactions'),
+            builder: (context, state) => const LedgerScreen(),
           ),
           GoRoute(
             path: Routes.approvals,
-            builder: (context, state) => const _ComingSoon(module: 'approvals'),
+            builder: (context, state) => const ApprovalsScreen(),
           ),
           GoRoute(
             path: Routes.clients,
@@ -121,6 +137,20 @@ GoRouter appRouter(Ref ref) {
       ),
     ),
   );
+}
+
+/// Whether this person may post rather than submit for approval decides what
+/// the final button says. The server decides for real: a staff login pressing
+/// a button labelled "Save and post" would still get a 403, which is why the
+/// label is the only thing this changes.
+class _NewEntry extends ConsumerWidget {
+  const _NewEntry();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final role = ref.watch(authControllerProvider).value?.role;
+    return EntryScreen(canPost: role == 'owner' || role == 'admin');
+  }
 }
 
 /// Placeholder until each module arrives in its phase. Deliberately plain:

@@ -97,33 +97,62 @@ api/
 | GET | /health | |
 
 ### Phase 1
+Built. Every path below exists and is covered by tests.
+
 | Method | Path | Purpose |
 | --- | --- | --- |
-| GET | /accounts | with computed balances |
-| GET | /categories | grouped by main head |
-| GET | /currencies | |
-| GET | /taxes/suggest | taxes for a draft situation |
-| POST | /transactions | create draft |
-| PATCH | /transactions/:id | edit draft only |
+| GET | /accounts | with balances computed from posted and reversed journal lines |
+| GET | /accounts/petty-cash | imprest float, shortfall and suggested top-up |
+| GET | /accounts/:id | |
+| POST | /transactions | create a draft. Needs `Idempotency-Key` |
+| PATCH | /transactions/:id | edit a draft. Tax and charge lines are replaced, not patched |
 | POST | /transactions/:id/submit | draft to pending |
-| POST | /transactions/:id/approve | pending to posted |
-| POST | /transactions/:id/reject | with reason |
-| POST | /transactions/:id/reverse | with reason |
-| GET | /transactions | list, search, filter, paginate |
-| GET | /transactions/:id | with taxes, charges, journal, flags, history |
-| GET | /transactions/:id/journal | debit and credit lines |
-| POST | /transfers | creates both legs |
-| POST | /attachments | multipart |
-| GET | /flags | review list |
-| GET | /approvals | entries the current user may approve: owner or admin, not their own, within any limit |
-| GET, POST, PATCH | /users | owner only: roles, limits, auto-approve, shares_owner_login |
-| POST | /opening-entry | owner only, once. Balances at 2026-06-30 |
-| GET | /history/merge-check | differences per account between history and the opening entry |
+| POST | /transactions/:id/approve | posts it: allocates the journal number, writes the lines |
+| POST | /transactions/:id/reject | reason required |
+| POST | /transactions/:id/reverse | reason required, once only |
+| GET | /transactions/:id | with lines, taxes and charges |
+| GET | /transactions/:id/journal | the debit and credit lines, for the journal panel |
+| POST | /transfers | both legs, created and posted together or not at all |
+| GET | /transfers/:groupId | both legs of one transfer |
+| GET | /taxes | taxes in force on a date |
+| GET | /taxes/suggest | what to suggest for a draft situation, with the ATL status used |
+| GET | /vendors, /vendors/:id | |
+| POST, PATCH | /vendors | owner or admin only: ATL status decides a tax rate |
+| GET | /cheques, /cheques/:id | the register, with what is still outstanding |
+| POST | /cheques | issue |
+| PATCH | /cheques/:id/status | issued, presented, cleared, bounced, cancelled |
+| PATCH | /cheques/:id/transaction | link to the payment it represents |
+| GET | /people/balances | what the company owes each person |
+| GET | /people/:id/outstanding | the costs behind that figure |
+| POST | /reimbursements | pays a person back and clears the payable, in one transaction |
+| POST | /opening-entry | owner only, once. Balances at 2026-06-30, equity takes the difference |
+| GET | /history/merge-check | difference per account between history and the opening entry |
 | POST | /history/merge | owner only. Refused while any difference remains |
-| GET | /people/balances | owed to each person |
-| GET, POST, PATCH | /vendors | with NTN, CNIC, ATL status |
-| GET, POST | /cheques | register |
-| POST | /reimbursements | |
+
+Still to build in Phase 1: `GET /transactions` with search, filter and
+pagination, `GET /categories`, `GET /currencies`, `GET /flags`, `GET /approvals`
+and attachments.
+
+### Error codes
+
+Stable, and each maps one to one to an `err` key in `app_en.arb`.
+
+| Code | Status | Meaning |
+| --- | --- | --- |
+| VALIDATION_FAILED | 400 | the request is malformed, with `field` naming where |
+| VALIDATION_WARNINGS | 409 | warnings to confirm, in `details.warnings`. Resubmit with `acknowledged_warnings` |
+| NOT_RECONCILED | 400 | the money figures do not agree with each other |
+| UNBALANCED_JOURNAL | 400 | debits do not equal credits |
+| ENTRY_NOT_EDITABLE | 409 | only a draft can be changed |
+| INVALID_STATUS | 409 | that move is not allowed from the current status |
+| ALREADY_REVERSED | 409 | an entry is reversed once |
+| APPROVAL_LIMIT_EXCEEDED | 403 | above this admin's limit |
+| REIMBURSEMENT_EXCEEDS_OWED | 400 | more than the company owes that person |
+| MISSING_VENDOR_TAX_ID | 400 | no NTN or CNIC, so a deduction cannot be reported |
+| TRANSFER_SAME_ACCOUNT | 400 | a transfer needs two different accounts |
+| OPENING_ALREADY_EXISTS | 409 | there is only ever one |
+| HISTORY_DOES_NOT_RECONCILE | 409 | merge refused, differences in `details` |
+| CASH_BELOW_ZERO, FUTURE_DATE, INACTIVE_ACCOUNT, INACTIVE_CATEGORY, BEFORE_OPENING_DATE, HISTORICAL_AFTER_GO_LIVE, LIVE_BEFORE_GO_LIVE, OPENING_WRONG_DATE | 400 | blocking validation |
 
 ### Phase 2
 Clients, projects, time entries, earning accounts, earning receipts, client

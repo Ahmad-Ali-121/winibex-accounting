@@ -18,8 +18,13 @@ class AppShell extends ConsumerWidget {
 
   static const _mobileBreakpoint = 840.0;
 
+  /// Order matters twice over. The rail reads top to bottom, and the bottom
+  /// bar on mobile shows only the first five, so the five that earn their
+  /// place on a phone are at the top.
   List<_Destination> _destinations(AppLocalizations l10n) => [
         _Destination(Routes.dashboard, l10n.navDashboard, Icons.dashboard_outlined),
+        _Destination(Routes.accounts, l10n.navAccounts, Icons.account_balance_outlined),
+        _Destination(Routes.newEntry, l10n.navNewEntry, Icons.add_circle_outline),
         _Destination(Routes.transactions, l10n.navTransactions, Icons.receipt_long_outlined),
         _Destination(Routes.approvals, l10n.navApprovals, Icons.fact_check_outlined),
         _Destination(Routes.clients, l10n.navClients, Icons.people_outline),

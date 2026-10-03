@@ -60,15 +60,24 @@ Every transaction stores:
 | `gross_amount` | PKR before taxes and charges |
 | `tax_total` | PKR, sum of `transaction_taxes` |
 | `charges_total` | PKR, sum of `transaction_charges` |
+| `withheld_total` | PKR, tax Winibex deducted from the payee and owes FBR. Money out only. Decision 052 |
 | `amount` | PKR net effect on the account. The number balances use |
 
 The user enters either the rate or the PKR amount and the other is calculated.
 Both are stored. When a bank advice shows the actual figure, it wins over a
 manually entered rate, because the books must match the bank statement.
 
-`gross_amount`, `tax_total`, `charges_total` and `amount` must reconcile:
-for Money Out, `amount = gross + tax + charges`. For Money In,
-`amount = gross - tax - charges`. A mismatch blocks the save.
+The money columns must reconcile, and the rule turns on who the tax belongs to.
+`tax_total` is tax taken **from** Winibex, a cost on top of a payment or a
+deduction from a receipt. `withheld_total` is tax Winibex deducts **from a
+payee** under s.153 or s.149: that money is held back rather than paid out, so
+it reduces the payment and creates a liability.
+
+    Money Out:  amount = gross + tax_total + charges_total - withheld_total
+    Money In:   amount = gross - tax_total - charges_total
+
+A mismatch blocks the save, in the service layer and by a CHECK constraint.
+Decision 052.
 
 ### currencies
 | Column | Type | Notes |
@@ -223,11 +232,11 @@ mapped to the heads of the FBR annual return.
 | id | BIGINT PK | |
 | journal_number | VARCHAR(20) NULL | the entry's number in the book, allocated from `sequences` at the moment of posting. Null while draft or pending. Decision 051 |
 | date | DATE | date of payment, not entry date |
-| account_id | BIGINT FK | |
+| account_id | BIGINT FK NULL | the company account the money moved on. Null when none did: paid by a person, the opening entry, a manual journal entry. A CHECK enforces it both ways. Decision 052 |
 | direction | ENUM | `in`, `out` |
 | amount | BIGINT | PKR paisa |
 | currency, foreign_amount, fx_rate | see above | |
-| method | ENUM | `cash`, `account`, `cheque`, `online` |
+| method | ENUM | `cash`, `account`, `card`, `cheque`, `online` |
 | description | VARCHAR(255) | |
 | category_id | BIGINT FK | |
 | client_id | BIGINT FK NULL | |
@@ -240,11 +249,11 @@ mapped to the heads of the FBR annual return.
 | received_by_user_id | BIGINT NULL | set when money landed with a person |
 | vendor_id | BIGINT FK NULL | who was paid, for withholding and statements |
 | cheque_id | BIGINT FK NULL | links to the cheque register |
-| gross_amount, tax_total, charges_total | BIGINT | see Money and currency |
+| gross_amount, tax_total, charges_total, withheld_total | BIGINT | see Money and currency |
 | reference | VARCHAR(50) NULL | cheque or voucher number |
 | transfer_group_id | CHAR(36) NULL | links the two legs of a transfer |
 | status | ENUM | `draft`, `pending`, `posted`, `rejected`, `reversed` |
-| entry_type | ENUM | `normal`, `opening`, `historical`. See Opening entry and history |
+| entry_type | ENUM | `normal`, `opening`, `historical`, `journal`. `journal` is the manual entry that fits no guided form: depreciation, FX revaluation, year end. See Opening entry and history |
 | rejection_reason | VARCHAR(255) NULL | |
 | reversal_of_id | BIGINT NULL | this entry reverses that one |
 | reversed_by_id | BIGINT NULL | that entry reverses this one |
@@ -271,8 +280,12 @@ draft  →  pending  →  posted  →  reversed
 - `reversed` means a reversing entry exists. Both rows stay visible and link to
   each other
 
-Only `posted` rows affect a balance. `draft` and `pending` are visible but
-excluded from every balance, report and export.
+`posted` and `reversed` rows both affect a balance. A reversed entry's journal
+lines stay in the book and are cancelled by the lines of the entry that
+reversed it, so the pair nets to nothing on every account. Dropping the
+original would subtract its effect once and add the reversal's again, moving
+the balance by twice the amount. `draft` and `pending` are visible but
+excluded from every balance, report and export. Decision 053.
 
 A correction is never an edit. It is a reversing entry of equal and opposite
 value plus a new correct entry. `reversal_reason` is required and appears in
@@ -839,7 +852,8 @@ before they exist.
 | 001 | the twelve Phase 0 tables: users, refresh_tokens, settings, company_profile, currencies, chart_of_accounts, fbr_return_heads, categories, accounts, sequences, audit_log, idempotency_keys | applied |
 | 002 | seed reference data: currencies, chart of accounts, categories, settings, sequences. Taxes deliberately not seeded | applied |
 | 003 | company bootstrap: owner login, company profile, company accounts | applied |
-| 004 | Phase 1: transactions, journal_lines, transaction_taxes, transaction_charges, entry_flags, attachments, vendors, reimbursements, reimbursement_items, cheques, plus the posted-row immutability trigger | next |
+| 002 | also seeds 1118 Funds in transit and the Transfer in, Transfer out and Opening balance categories. Decision 053 | applied |
+| 004 | Phase 1, thirteen tables: taxes, tax_rules, vendors, cheques, transactions, journal_lines, transaction_taxes, transaction_charges, entry_flags, attachments, reimbursements, reimbursement_items, period_locks, plus four immutability triggers | applied |
 | Later | one per phase | |
 
 Every migration file is plain SQL, numbered, idempotent where it can be, and
