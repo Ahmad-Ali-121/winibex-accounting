@@ -1,5 +1,15 @@
 # Frontend
 
+> **Correction, 2026-10-03 (decision 055).** The folder layout below predates
+> the Phase 0 build and does not match the code. The code uses `core/api/` (not
+> `core/http/`), `core/router/app_router.dart` (not `routes.dart`), and puts
+> each feature's providers in `features/<name>/application/`, with `data/`,
+> `domain/` and `presentation/` beside it. Money lives in `core/money/money.dart`
+> and every amount on screen goes through `core/widgets/money_text.dart`. Read
+> the tree in the repository, not the one described here, until this document is
+> rewritten.
+
+
 Flutter, one codebase, web and Android.
 
 ## Packages

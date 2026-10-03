@@ -8,6 +8,7 @@ import '../../features/accounts/presentation/accounts_screen.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/flags/presentation/flags_screen.dart';
 import '../../features/transactions/presentation/approvals_screen.dart';
 import '../../features/transactions/presentation/entry_screen.dart';
 import '../../features/transactions/presentation/ledger_screen.dart';
@@ -25,6 +26,7 @@ abstract final class Routes {
   static const transactions = '/transactions';
   static const newEntry = '/transactions/new';
   static const approvals = '/approvals';
+  static const flags = '/flags';
   static const clients = '/clients';
   static const invoices = '/invoices';
   static const payroll = '/payroll';
@@ -103,6 +105,10 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: Routes.approvals,
             builder: (context, state) => const ApprovalsScreen(),
+          ),
+          GoRoute(
+            path: Routes.flags,
+            builder: (context, state) => const FlagsScreen(),
           ),
           GoRoute(
             path: Routes.clients,

@@ -68,6 +68,47 @@ export async function balanceFromTransactions(runner = getPool(), accountId, { h
   return Number(rows[0].balance);
 }
 
+// What the dashboard shows: cash held, money in and out this month, and what
+// is waiting. All computed, never stored.
+export async function dashboardTotals(runner = getPool(), { historyMerged, monthStart }) {
+  const historyFilter = historyMerged ? '1=1' : "t.entry_type <> 'historical'";
+
+  const [cash] = await runner.query(
+    `SELECT COALESCE(SUM(j.debit - j.credit), 0) AS net
+       FROM journal_lines j
+       JOIN transactions t ON t.id = j.transaction_id
+       JOIN chart_of_accounts c ON c.id = j.coa_id
+       JOIN accounts a ON a.coa_id = c.coa_id
+      WHERE t.status IN ('posted','reversed') AND ${historyFilter}`,
+  );
+
+  const [month] = await runner.query(
+    `SELECT
+        COALESCE(SUM(CASE WHEN t.direction='in'  THEN t.amount ELSE 0 END),0) AS money_in,
+        COALESCE(SUM(CASE WHEN t.direction='out' THEN t.amount ELSE 0 END),0) AS money_out
+       FROM transactions t
+      WHERE t.status IN ('posted','reversed')
+        AND t.entry_type = 'normal'
+        AND t.date >= ?`,
+    [monthStart],
+  );
+
+  const [pending] = await runner.query(
+    `SELECT COUNT(*) AS n FROM transactions WHERE status = 'pending'`,
+  );
+  const [flags] = await runner.query(
+    `SELECT COUNT(*) AS n FROM entry_flags WHERE resolved = 0`,
+  );
+
+  return {
+    cashNet: Number(cash[0].net),
+    moneyIn: Number(month[0].money_in),
+    moneyOut: Number(month[0].money_out),
+    pendingCount: Number(pending[0].n),
+    openFlagCount: Number(flags[0].n),
+  };
+}
+
 export async function readSetting(runner = getPool(), key) {
   const [rows] = await runner.query('SELECT value, value_type FROM settings WHERE setting_key = ?', [key]);
   return rows[0] ?? null;

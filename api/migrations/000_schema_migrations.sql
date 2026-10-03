@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
   PRIMARY KEY (filename)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 INSERT INTO schema_migrations (filename)
 VALUES ('000_schema_migrations.sql')

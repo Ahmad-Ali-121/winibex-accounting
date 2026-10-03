@@ -23,6 +23,10 @@ accountRoutes.get('/accounts', requireAuth, async (req, res) => {
   res.json(await service.listAccounts({ includeInactive: query.includeInactive === 'true' }));
 });
 
+accountRoutes.get('/dashboard', requireAuth, async (req, res) => {
+  res.json(await service.dashboard());
+});
+
 // Declared before /accounts/:id, or Express matches "petty-cash" as an id.
 accountRoutes.get('/accounts/petty-cash', requireAuth, async (req, res) => {
   res.json(await service.pettyCashStatus());

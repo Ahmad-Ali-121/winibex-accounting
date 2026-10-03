@@ -466,8 +466,26 @@
   "@receiptSize": {
     "description": "Under the name of an attached file",
     "placeholders": { "kb": { "type": "int" } }
-  }
-
-
-
+  },
+  "navFlags": "To review",
+  "dashboardTitle": "Overview",
+  "dashboardCashHeld": "Cash the company holds",
+  "dashboardBeforeHistory": "From 1 July 2026 onward. Earlier entries are excluded until history is checked.",
+  "dashboardInThisMonth": "In this month",
+  "dashboardOutThisMonth": "Out this month",
+  "dashboardWaitingApproval": "{count, plural, =1{1 entry waiting for approval} other{{count} entries waiting for approval}}",
+  "@dashboardWaitingApproval": { "placeholders": { "count": { "type": "int" } } },
+  "dashboardOpenFlags": "{count, plural, =1{1 entry to review} other{{count} entries to review}}",
+  "@dashboardOpenFlags": { "placeholders": { "count": { "type": "int" } } },
+  "emptyFlagsTitle": "Nothing to review",
+  "emptyFlagsDetail": "Warnings people confirmed, and flags like a missing receipt, show up here.",
+  "flagsConfirmedBy": "confirmed by {name}",
+  "@flagsConfirmedBy": { "placeholders": { "name": { "type": "String" } } },
+  "flagPossibleDuplicate": "Possible duplicate",
+  "flagUnusualAmount": "Unusual amount",
+  "flagBackdated": "Backdated",
+  "flagBankBelowZero": "Bank went below zero",
+  "flagLargeCash": "Large cash payment",
+  "flagRateDeviation": "Rate differs from last time",
+  "flagRepeatedDescription": "Same as a recent entry"
 }

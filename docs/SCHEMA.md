@@ -15,8 +15,10 @@ database on 2026-10-01, see decision 041. This affects the schema in four
 places and nowhere else.
 
 **Character set.** Every table is created `utf8mb4` with
-`utf8mb4_uca1400_ai_ci`, the MariaDB 11.6+ default. MySQL's
-`utf8mb4_0900_ai_ci` does not exist here.
+`utf8mb4_unicode_ci`, which is what Hostinger's MariaDB 11.8.9 defaults to.
+MariaDB's own `utf8mb4_uca1400_ai_ci` is not available on that server even
+though the local Docker 11.8 has it, and MySQL's `utf8mb4_0900_ai_ci` is
+available there. Decision 054.
 
 **JSON columns are text.** `JSON` on MariaDB is an alias for LONGTEXT with a
 validity check. So `audit_log.before_json`, `audit_log.after_json`,

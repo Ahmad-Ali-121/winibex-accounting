@@ -115,7 +115,7 @@ test('every table is utf8mb4 with the MariaDB collation', async () => {
   for (const row of rows) {
     assert.equal(
       row.collation,
-      'utf8mb4_uca1400_ai_ci',
+      'utf8mb4_unicode_ci',
       `${row.name} is ${row.collation}`,
     );
   }

@@ -21,7 +21,7 @@ Status: Plan. Fill in exact values as each step is done.
 | --- | --- |
 | Database | `11.8.9-MariaDB-log`, checked with `SELECT VERSION()` in phpMyAdmin |
 | Node | 24.x selected in hPanel. 18, 20, 22 and 24 are offered |
-| Connections | 75 maximum per database user. The pool limit must stay well under this |
+| Connections | `max_connections` reports 2000, not the 75 recorded before the first deploy. The pool limit stays well under it regardless: the figure is shared |
 
 Re-check both after any Hostinger platform change. A major version move on
 either is a migration, not a surprise to discover in production.
@@ -56,20 +56,24 @@ Every connection, local and production, sets the same options. They live in
 | Session `time_zone` | `+00:00` |
 | Session `transaction_isolation` | `READ-COMMITTED` |
 
-Tables are created `utf8mb4` with `utf8mb4_uca1400_ai_ci`. MySQL's
-`utf8mb4_0900_ai_ci` does not exist on MariaDB.
+Tables are created `utf8mb4` with `utf8mb4_unicode_ci`. Hostinger's MariaDB
+11.8.9 does not have MariaDB's `utf8mb4_uca1400_ai_ci`, although the local
+Docker 11.8 does, and it does have MySQL's `utf8mb4_0900_ai_ci`. Decision 054.
 
 ## First deploy
 
 - A throwaway deploy of `api/scripts/probe-deploy.js` confirms the app runs,
   reports the Node version, and proves password hashing works on the real
-  server. Deleted once step 0.6 lands the real server
+  server. **Done 2026-10-03, decision 054.** It also found that the collation
+  every migration used does not exist on this server, before a single table was
+  created. Delete the file once the real server is deployed
 - The owner's first password hash is generated locally with
   `npm run hash:password` and pasted into the seed SQL in phpMyAdmin.
   `must_change_password` forces a new password on first login
-- Decide at this point whether to switch from bcryptjs to argon2id. There are
-  no real passwords yet, so the cost either way is zero. Open item L in
-  `docs/DECISIONS.md`
+- **Settled: bcryptjs stays.** 295 ms to hash and 282 ms to verify on the real
+  server, well under the second that makes a login feel broken. argon2id is a
+  native module and decision 042 records what a failed compile does to a
+  Hostinger deploy. Open item L is closed, decision 054
 
 ## Environment variables
 

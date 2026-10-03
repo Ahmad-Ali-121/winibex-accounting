@@ -126,12 +126,23 @@ Built. Every path below exists and is covered by tests.
 | GET | /people/:id/outstanding | the costs behind that figure |
 | POST | /reimbursements | pays a person back and clears the payable, in one transaction |
 | POST | /opening-entry | owner only, once. Balances at 2026-06-30, equity takes the difference |
+| GET | /transactions | ledger: search, filter by account/category/status/direction/date, paginated |
+| GET | /transactions/:id/attachments | receipts and advices on an entry |
+| POST | /transactions/:id/attachments | upload a receipt (multipart). multer, 10 MB, images and PDF |
+| GET | /attachments/:id/file | stream a stored file. Login required; never a static folder |
+| POST | /transactions/preview | the journal lines an entry would post, saved nowhere |
+| GET | /approvals | the approval inbox, oldest first, each marked isOwnEntry |
+| GET | /flags | the review list: confirmed warnings and raised flags |
+| GET | /categories | grouped by main head, control accounts excluded |
+| GET | /users | thin list for the people picker: id, name, role |
+| GET | /dashboard | cash held, money in and out this month, pending and flag counts |
 | GET | /history/merge-check | difference per account between history and the opening entry |
 | POST | /history/merge | owner only. Refused while any difference remains |
 
-Still to build in Phase 1: `GET /transactions` with search, filter and
-pagination, `GET /categories`, `GET /currencies`, `GET /flags`, `GET /approvals`
-and attachments.
+All of Phase 1's endpoints are built. `GET /currencies` was not needed: the app
+reads the currency list it needs from `/accounts` and the entry form. Edit
+history on a transaction is deferred to a later phase; the audit log holds it
+but no endpoint exposes it yet.
 
 ### Error codes
 
@@ -152,6 +163,9 @@ Stable, and each maps one to one to an `err` key in `app_en.arb`.
 | TRANSFER_SAME_ACCOUNT | 400 | a transfer needs two different accounts |
 | OPENING_ALREADY_EXISTS | 409 | there is only ever one |
 | HISTORY_DOES_NOT_RECONCILE | 409 | merge refused, differences in `details` |
+| RECEIPT_REQUIRED | 400 | a payment over the threshold has no receipt |
+| UNSUPPORTED_FILE | 400 | a receipt that is not an image or a PDF |
+| FILE_TOO_LARGE | 400 | over the upload size limit |
 | CASH_BELOW_ZERO, FUTURE_DATE, INACTIVE_ACCOUNT, INACTIVE_CATEGORY, BEFORE_OPENING_DATE, HISTORICAL_AFTER_GO_LIVE, LIVE_BEFORE_GO_LIVE, OPENING_WRONG_DATE | 400 | blocking validation |
 
 ### Phase 2

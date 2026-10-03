@@ -104,6 +104,26 @@ export async function getAccount(id) {
   return present(row);
 }
 
+export async function dashboard() {
+  const pool = getPool();
+  const historyMerged = await isHistoryMerged(pool);
+
+  const now = new Date();
+  const monthStart = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+
+  const totals = await repo.dashboardTotals(pool, { historyMerged, monthStart });
+
+  return {
+    cashHeld: money(totals.cashNet, BASE_CURRENCY),
+    monthIn: money(totals.moneyIn, BASE_CURRENCY),
+    monthOut: money(totals.moneyOut, BASE_CURRENCY),
+    monthNet: money(totals.moneyIn - totals.moneyOut, BASE_CURRENCY),
+    pendingCount: totals.pendingCount,
+    openFlagCount: totals.openFlagCount,
+    historyMerged,
+  };
+}
+
 // Exposed for the invariant test: the balance from journal lines and the
 // balance from transactions must be the same number.
 export async function balanceFromTransactions(accountId) {

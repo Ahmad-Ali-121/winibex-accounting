@@ -206,7 +206,7 @@ test('every Phase 1 table is utf8mb4 with the MariaDB collation', async () => {
      FROM information_schema.tables WHERE table_schema = DATABASE()`,
   );
   for (const row of rows.filter((r) => PHASE1_TABLES.includes(r.name))) {
-    assert.equal(row.collation, 'utf8mb4_uca1400_ai_ci', `${row.name} is ${row.collation}`);
+    assert.equal(row.collation, 'utf8mb4_unicode_ci', `${row.name} is ${row.collation}`);
   }
 });
 

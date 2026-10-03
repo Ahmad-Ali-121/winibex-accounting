@@ -25,7 +25,7 @@ CREATE TABLE currencies (
   is_active    TINYINT(1)       NOT NULL DEFAULT 1,
   PRIMARY KEY (code),
   CONSTRAINT chk_currencies_minor_units CHECK (minor_units BETWEEN 0 AND 4)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Users
@@ -57,7 +57,7 @@ CREATE TABLE users (
     CHECK (approval_limit IS NULL OR role = 'admin'),
   CONSTRAINT chk_users_auto_approve_not_staff
     CHECK (auto_approve_own = 0 OR role IN ('owner', 'admin'))
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Sessions
@@ -82,7 +82,7 @@ CREATE TABLE refresh_tokens (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT fk_refresh_tokens_replaced_by
     FOREIGN KEY (replaced_by_id) REFERENCES refresh_tokens (id) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Settings
@@ -98,7 +98,7 @@ CREATE TABLE settings (
   PRIMARY KEY (setting_key),
   CONSTRAINT fk_settings_updated_by
     FOREIGN KEY (updated_by) REFERENCES users (id) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Company profile, one row only
@@ -124,7 +124,7 @@ CREATE TABLE company_profile (
   updated_at          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   CONSTRAINT chk_company_profile_single_row CHECK (id = 1)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- FBR return heads, seeded empty until the accountant supplies the mapping
@@ -139,7 +139,7 @@ CREATE TABLE fbr_return_heads (
   PRIMARY KEY (code),
   CONSTRAINT chk_fbr_return_heads_years
     CHECK (tax_year_to IS NULL OR tax_year_from IS NULL OR tax_year_to >= tax_year_from)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Chart of accounts
@@ -171,7 +171,7 @@ CREATE TABLE chart_of_accounts (
   -- the case cannot arise on insert anyway because the id does not exist yet.
   CONSTRAINT chk_chart_of_accounts_header_not_postable
     CHECK (is_header = 0 OR allow_manual_posting = 0)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Categories, what the user picks on the entry form
@@ -191,7 +191,7 @@ CREATE TABLE categories (
   KEY idx_categories_head (main_head, direction, is_active),
   CONSTRAINT fk_categories_coa
     FOREIGN KEY (coa_id) REFERENCES chart_of_accounts (id) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Accounts, the real places money sits
@@ -216,7 +216,7 @@ CREATE TABLE accounts (
     FOREIGN KEY (owner_user_id) REFERENCES users (id) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT chk_accounts_pass_through_has_owner
     CHECK (type <> 'pass_through' OR owner_user_id IS NOT NULL)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Sequences, gapless numbering
@@ -228,7 +228,7 @@ CREATE TABLE sequences (
   next_value  BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'Allocated with SELECT ... FOR UPDATE inside the caller transaction, so a rollback leaves no gap',
   PRIMARY KEY (name),
   CONSTRAINT chk_sequences_next_value CHECK (next_value >= 1)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Audit log, append only
@@ -249,7 +249,7 @@ CREATE TABLE audit_log (
   KEY idx_audit_log_user (user_id, created_at),
   CONSTRAINT fk_audit_log_user
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- Idempotency keys, the only table anything ever deletes from
@@ -265,7 +265,7 @@ CREATE TABLE idempotency_keys (
   KEY idx_idempotency_keys_expiry (created_at),
   CONSTRAINT fk_idempotency_keys_user
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 

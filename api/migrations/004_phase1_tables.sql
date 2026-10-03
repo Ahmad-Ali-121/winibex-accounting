@@ -74,7 +74,7 @@ CREATE TABLE taxes (
   CONSTRAINT chk_taxes_period CHECK (effective_to IS NULL OR effective_to >= effective_from)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- tax_rules
@@ -104,7 +104,7 @@ CREATE TABLE tax_rules (
     FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- vendors
@@ -142,7 +142,7 @@ CREATE TABLE vendors (
     CHECK (atl_status = 'unknown' OR atl_checked_on IS NOT NULL)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- cheques
@@ -176,7 +176,7 @@ CREATE TABLE cheques (
     CHECK (status <> 'cleared' OR cleared_on IS NOT NULL)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- transactions
@@ -349,7 +349,7 @@ CREATE TABLE transactions (
     CHECK (reversal_of_id IS NULL OR reversal_reason IS NOT NULL)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- journal_lines
@@ -378,7 +378,7 @@ CREATE TABLE journal_lines (
     CHECK (debit >= 0 AND credit >= 0 AND (debit = 0 OR credit = 0) AND (debit > 0 OR credit > 0))
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- transaction_taxes
@@ -413,7 +413,7 @@ CREATE TABLE transaction_taxes (
     CHECK (tax_amount <= base_amount)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- transaction_charges
@@ -438,7 +438,7 @@ CREATE TABLE transaction_charges (
   CONSTRAINT chk_transaction_charges_amount CHECK (amount > 0)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- entry_flags
@@ -468,7 +468,7 @@ CREATE TABLE entry_flags (
     CHECK ((acknowledged_by IS NULL) = (acknowledged_at IS NULL))
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- attachments
@@ -499,7 +499,7 @@ CREATE TABLE attachments (
   CONSTRAINT chk_attachments_size CHECK (size_bytes > 0)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- reimbursements
@@ -528,7 +528,7 @@ CREATE TABLE reimbursements (
   CONSTRAINT chk_reimbursements_amount CHECK (amount > 0)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- reimbursement_items
@@ -551,7 +551,7 @@ CREATE TABLE reimbursement_items (
   CONSTRAINT chk_reimbursement_items_amount CHECK (amount > 0)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- period_locks
@@ -575,7 +575,7 @@ CREATE TABLE period_locks (
   CONSTRAINT chk_period_locks_month CHECK (period_month BETWEEN 1 AND 12)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_uca1400_ai_ci;
+  COLLATE = utf8mb4_unicode_ci;
 
 -- ===========================================================================
 -- The link that had to wait

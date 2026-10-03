@@ -1707,6 +1707,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{kb} KB'**
   String receiptSize(int kb);
+
+  /// No description provided for @navFlags.
+  ///
+  /// In en, this message translates to:
+  /// **'To review'**
+  String get navFlags;
+
+  /// No description provided for @dashboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get dashboardTitle;
+
+  /// No description provided for @dashboardCashHeld.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash the company holds'**
+  String get dashboardCashHeld;
+
+  /// No description provided for @dashboardBeforeHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'From 1 July 2026 onward. Earlier entries are excluded until history is checked.'**
+  String get dashboardBeforeHistory;
+
+  /// No description provided for @dashboardInThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'In this month'**
+  String get dashboardInThisMonth;
+
+  /// No description provided for @dashboardOutThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Out this month'**
+  String get dashboardOutThisMonth;
+
+  /// No description provided for @dashboardWaitingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry waiting for approval} other{{count} entries waiting for approval}}'**
+  String dashboardWaitingApproval(int count);
+
+  /// No description provided for @dashboardOpenFlags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry to review} other{{count} entries to review}}'**
+  String dashboardOpenFlags(int count);
+
+  /// No description provided for @emptyFlagsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to review'**
+  String get emptyFlagsTitle;
+
+  /// No description provided for @emptyFlagsDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Warnings people confirmed, and flags like a missing receipt, show up here.'**
+  String get emptyFlagsDetail;
+
+  /// No description provided for @flagsConfirmedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'confirmed by {name}'**
+  String flagsConfirmedBy(String name);
+
+  /// No description provided for @flagPossibleDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible duplicate'**
+  String get flagPossibleDuplicate;
+
+  /// No description provided for @flagUnusualAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Unusual amount'**
+  String get flagUnusualAmount;
+
+  /// No description provided for @flagBackdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Backdated'**
+  String get flagBackdated;
+
+  /// No description provided for @flagBankBelowZero.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank went below zero'**
+  String get flagBankBelowZero;
+
+  /// No description provided for @flagLargeCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Large cash payment'**
+  String get flagLargeCash;
+
+  /// No description provided for @flagRateDeviation.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate differs from last time'**
+  String get flagRateDeviation;
+
+  /// No description provided for @flagRepeatedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as a recent entry'**
+  String get flagRepeatedDescription;
 }
 
 class _AppLocalizationsDelegate

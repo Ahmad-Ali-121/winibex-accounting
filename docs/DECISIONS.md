@@ -478,7 +478,9 @@ in production.
 
 What actually differs, and what it costs us:
 
-- MySQL's `utf8mb4_0900_ai_ci` does not exist. The default from MariaDB 11.6 is
+- MySQL's `utf8mb4_0900_ai_ci` does not exist. **Wrong, see decision 054.**
+  It does exist on Hostinger's MariaDB 11.8.9, which provides the MySQL 8
+  collations for compatibility and omits MariaDB's own uca1400 family. The default from MariaDB 11.6 is
   `utf8mb4_uca1400_ai_ci`, which is what we use
 - `JSON` is an alias for LONGTEXT, stored as text. So `audit_log.before_json`,
   `audit_log.after_json`, `idempotency_keys.response_json` and
@@ -887,6 +889,117 @@ reproducible rather than a story about something that happened once. It also
 asserts that a refused operation leaves the transaction count, the line count
 and the debit total unchanged, which is the only check in the suite that would
 catch a half-finished write.
+
+---
+
+### 054 — The first deploy, and the collation that was not there
+2026-10-03
+
+A throwaway deploy of `scripts/probe-deploy.js` to api-accounting.winibex.com,
+before anything real was uploaded and before a single table was created on
+production. It answered five questions and found one problem that would have
+stopped migration 001 on its first statement.
+
+**Every table is `utf8mb4_unicode_ci`, not `utf8mb4_uca1400_ai_ci`.** Decision
+041 chose uca1400 as the MariaDB 11.6+ default. Hostinger's server reports
+`11.8.9-MariaDB-log` and does not have it: 78 utf8mb4 collations, none of them
+uca1400, and the server's own default is `utf8mb4_unicode_ci`. The local Docker
+`mariadb:11.8` does have it, which is the same develop-here deploy-there trap
+decision 041 was written to prevent, arriving from a different direction.
+
+`utf8mb4_unicode_ci` was chosen over `utf8mb4_0900_ai_ci`, which is also
+present, because 0900 is a MySQL collation that this MariaDB build provides for
+compatibility and another build might not. `unicode_ci` exists everywhere and
+is already this server's default, so a table created without an explicit
+collation gets the same answer. Sorting differs from uca1400 only in edge cases
+of accented and non-Latin text, which does not affect account names, vendor
+names or descriptions.
+
+Changed in migrations 001 and 004 and in the tests that assert it, before any
+table existed on production. After the first real deploy this would have been a
+rebuild of every table.
+
+**Correction to decision 041.** It says MySQL's `utf8mb4_0900_ai_ci` does not
+exist on MariaDB. On this server it does. The claim is corrected there and in
+SCHEMA.md and DEPLOY.md.
+
+**bcryptjs stays. Open item L is closed.** Hashing takes 295 ms on the real
+server and verifying 282 ms, both well under the second that would make a login
+feel broken. argon2id would be stronger, but it is a native module, and
+decision 042 records that a module failing to compile fails the whole Hostinger
+deploy with no readable log. There is no reason to take that risk for 295 ms.
+
+**Confirmed on the real server:** Node 24.20.0, TZ UTC, NODE_ENV production.
+MariaDB 11.8.9, the same major version as local. All three session statements
+accepted, so strict mode, UTC and READ-COMMITTED apply. A BIGINT past
+JavaScript's safe integer limit survives the round trip exactly, which is the
+one that silently corrupts money if it fails. Decision 044. UPLOAD_DIR writable
+at `/home/u871859756/winibex-uploads` and outside the web root.
+
+**`max_connections` is 2000, not 75.** DEPLOY.md recorded 75 per database user.
+The server reports 2000. The pool limit stays conservative regardless, since
+the figure is shared and a Node app holding connections open helps nobody.
+
+**`DB_TEST_NAME` is deliberately absent on production.** It names the database
+the test suite drops and rebuilds. Set to anything real there, running the
+tests would destroy it. Absent beats blank.
+
+---
+
+### 055 — Phase 1 closed: receipts, ledger UI, dashboard, flags, and the live deploy
+2026-10-03
+
+Covers everything from the tax engine onward. Phase 1 is built, tested and
+deployed. 346 API tests and 62 Flutter tests pass.
+
+**Receipt uploads use multer, storing files outside the web root.** Chosen over
+busboy (more code to get wrong) and base64-in-JSON (33% larger, whole file in
+memory, and the 1 MB JSON cap would have to rise). Files are written with a
+random name, never the uploaded one, so a crafted name cannot choose where a
+file lands. The database stores the path relative to UPLOAD_DIR, and reading a
+file refuses any path that climbs out of that folder. Hashed with SHA-256 so a
+later copy can be proved identical. Kept ten financial years from the entry
+date, Companies Act 2017 s.220.
+
+**A payment above receipt_required_above is blocked from posting without a
+receipt, not merely warned.** Ahmad's call. The threshold is a setting. The
+rule is checked at posting, not at draft, because the photo is usually taken
+after the form is filled in. It exempts money in, transfers between the
+company's own accounts, the opening entry, manual journals, and reimbursements:
+none of those is a purchase and several never have a receipt. A receipt may be
+attached after posting, because late evidence beats none.
+
+**The app uses file_picker for attachments.** Chosen over image_picker because
+the API accepts PDFs and a bank advice often arrives as one. Note: file_picker
+changed its API shape in three consecutive majors (11, 12, 13). Pinned to
+^13.1.0, and 13's pickFile returns one PlatformFile with bytes read on demand.
+Most of what is written online describes version 11; read the changelog, not a
+tutorial.
+
+**The journal preview comes from the server, from the same buildJournalLines
+the real posting uses.** The app shows the double entry before the person
+commits but never computes it, per AGENTS.md. A preview built by a second code
+path would be a second opinion, and the one on screen would be the one nobody
+checked. A test asserts the preview and the posted entry produce identical
+lines.
+
+**The ledger searches on the server.** The app holds one page, so searching
+what it holds would miss everything else. An unsubmitted draft is private to
+whoever created it; everything from pending onward is visible to all, because a
+ledger that hides posted rows from some people is two different books.
+
+**Nobody approves their own entry under the same login,** and the approval inbox
+says so on the row rather than letting someone press approve and get a 403.
+Rejecting always carries a reason, which the person who entered it sees.
+
+**The dashboard and flags figures are all the server's.** Nothing is added up in
+the app, and after any write the screen asks again rather than adjusting a
+number locally.
+
+**Flutter reads the API base URL from a build-time define.** The source keeps a
+localhost default; production is passed at build with
+`--dart-define=API_BASE_URL=...`, so the same code serves both and nothing in
+the repository names the production host.
 
 ---
 

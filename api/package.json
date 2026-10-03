@@ -8,7 +8,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "start": "node server.js",
+    "start": "node scripts/probe-deploy.js",
     "test": "node --env-file=.env --test --test-concurrency=1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

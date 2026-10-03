@@ -3,30 +3,45 @@
 Read this first. Update it before ending any session.
 
 **Last updated:** 2026-10-02
-**Current phase:** Phase 1, money in and out. Steps 1.1 to 1.12 done. The API
+**Current phase:** Phase 1 complete, built and deployed. Phase 2 next.
 side of Phase 1 is complete; what remains is Flutter.
-**Where we stopped:** The whole API side of Phase 1 is built and tested. 313
-tests pass (3 argon2 skips). Nine modules: transactions with the posting
-engine, accounts, taxes, vendors, cheques, reimbursements, history, auth and
-health. An entry created over HTTP moves the balance the accounts endpoint
-reports, every worked posting in CHART-OF-ACCOUNTS.md is a test, and a property
-test runs 150 random operations checking the books after every one. Next is
-Flutter: the accounts list, the guided entry form, then the ledger and the
-approval inbox.
+**Where we stopped:** Phase 1 is finished and live. The API runs on Hostinger
+at api-accounting.winibex.com against the production MariaDB; migrations 000 to
+004 are applied there. 346 API tests and 62 Flutter tests pass. All fifteen
+steps are done, plus receipts, the dashboard and the flags review list. The
+accountant review document has been prepared and is with the accountant. What
+is left is not Phase 1 features: the web app onto accounting.winibex.com and
+its smoke test, seeding real tax rates once the accountant confirms them, the
+opening entry at 2026-07-01, and a few deferred niceties listed below.
 
----
+## Deployed, 2026-10-03
+
+- API on Hostinger, Node 24, MariaDB 11.8.9, bcrypt confirmed at ~295ms so
+  bcryptjs stays (decision 054, open item L closed)
+- Collation changed everywhere from utf8mb4_uca1400_ai_ci to utf8mb4_unicode_ci,
+  because Hostinger's 11.8.9 lacks the uca1400 family (decision 054)
+- Migrations applied through phpMyAdmin; Hostinger's SSH shell has no Node, so
+  the runner could not execute there
+- Owner password hash set directly on production, never committed
+
 
 ## Next three things
 
-1. Step 1.13, Flutter: the accounts list with live balances from `GET /accounts`
-2. Step 1.14, Flutter: the guided entry form, step by step, with the journal
-   preview before submitting
-3. Step 1.15, Flutter: the ledger list with server-side search, the journal
-   panel, and the approval inbox
+1. Finish the web deploy: force HTTPS in .htaccess, set CORS_ORIGINS to the
+   https origin, run the DEPLOY.md smoke test end to end against the live API
+2. Accountant's answers, then seed the tax rates and rules (migration 005 or a
+   seed run) and record the opening balances at 2026-07-01
+3. Start Phase 2, clients and projects
 
-Then what is still missing from the Phase 1 API: `GET /transactions` with
-search and pagination, `GET /categories`, `GET /flags`, `GET /approvals`, and
-attachments.
+Deferred, not blocking use:
+
+- Edit history shown on a transaction (the audit log exists, it is not surfaced)
+- FRONTEND.md still describes core/http, core/money, core/router/routes.dart;
+  the code uses core/api, core/money, core/router/app_router.dart and puts
+  providers in features/<x>/application. Fix the document to match the code
+- The check-docs.js guard script (rule 7 in the documentation rules)
+- Hash prettier URLs on web (cosmetic)
+
 
 Done this session, for reference:
 
@@ -240,6 +255,34 @@ Flutter:
 ---
 
 ## Session log
+
+### 2026-10-03 (Phase 1 finished and deployed)
+Steps 1.8 to 1.15, receipts, dashboard, flags, and the first real deploy.
+Recorded in decisions 052 to 055.
+
+API: taxes, vendors, cheques, petty cash, reimbursements, transfers, the
+opening entry and history merge, the ledger with server-side search, approvals,
+flags, the dashboard summary, the journal preview, categories, a thin users
+list, and receipt upload. Nine feature modules in all.
+
+App: the accounts list, the guided entry form with the journal preview and the
+warnings dialog, the ledger with the journal panel, the approval inbox, the
+dashboard, and the flags review list. Money never passes through a double on
+either side of the wire.
+
+Deploy: a throwaway probe to the real server first, which caught that the
+collation every migration used does not exist on Hostinger's MariaDB, before a
+single table was created. Fixed to utf8mb4_unicode_ci. bcrypt timing on the
+real server closed the argon2 question. Migrations applied by hand through
+phpMyAdmin because the SSH shell has no Node.
+
+Three package choices, each recorded: multer for uploads, file_picker for the
+app (with a warning that it breaks its own API every major version), and the
+collation change.
+
+Still open: the accountant review, the web app's final CORS and HTTPS wiring,
+real tax rates and the opening entry, and the deferred niceties above.
+
 
 ### 2026-10-02 (steps 1.5 to 1.12, the rest of the Phase 1 API)
 Nine modules, about forty endpoints, 190 tests became 313. Everything recorded

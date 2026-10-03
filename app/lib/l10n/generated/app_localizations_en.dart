@@ -914,4 +914,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String receiptSize(int kb) {
     return '$kb KB';
   }
+
+  @override
+  String get navFlags => 'To review';
+
+  @override
+  String get dashboardTitle => 'Overview';
+
+  @override
+  String get dashboardCashHeld => 'Cash the company holds';
+
+  @override
+  String get dashboardBeforeHistory =>
+      'From 1 July 2026 onward. Earlier entries are excluded until history is checked.';
+
+  @override
+  String get dashboardInThisMonth => 'In this month';
+
+  @override
+  String get dashboardOutThisMonth => 'Out this month';
+
+  @override
+  String dashboardWaitingApproval(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries waiting for approval',
+      one: '1 entry waiting for approval',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardOpenFlags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries to review',
+      one: '1 entry to review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get emptyFlagsTitle => 'Nothing to review';
+
+  @override
+  String get emptyFlagsDetail =>
+      'Warnings people confirmed, and flags like a missing receipt, show up here.';
+
+  @override
+  String flagsConfirmedBy(String name) {
+    return 'confirmed by $name';
+  }
+
+  @override
+  String get flagPossibleDuplicate => 'Possible duplicate';
+
+  @override
+  String get flagUnusualAmount => 'Unusual amount';
+
+  @override
+  String get flagBackdated => 'Backdated';
+
+  @override
+  String get flagBankBelowZero => 'Bank went below zero';
+
+  @override
+  String get flagLargeCash => 'Large cash payment';
+
+  @override
+  String get flagRateDeviation => 'Rate differs from last time';
+
+  @override
+  String get flagRepeatedDescription => 'Same as a recent entry';
 }

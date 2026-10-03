@@ -27,6 +27,7 @@ class AppShell extends ConsumerWidget {
         _Destination(Routes.newEntry, l10n.navNewEntry, Icons.add_circle_outline),
         _Destination(Routes.transactions, l10n.navTransactions, Icons.receipt_long_outlined),
         _Destination(Routes.approvals, l10n.navApprovals, Icons.fact_check_outlined),
+        _Destination(Routes.flags, l10n.navFlags, Icons.flag_outlined),
         _Destination(Routes.clients, l10n.navClients, Icons.people_outline),
         _Destination(Routes.invoices, l10n.navInvoices, Icons.description_outlined),
         _Destination(Routes.payroll, l10n.navPayroll, Icons.payments_outlined),
