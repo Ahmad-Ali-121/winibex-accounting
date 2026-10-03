@@ -200,6 +200,25 @@ test('the balance from journal lines equals the balance from transactions', asyn
   );
 });
 
+test('the dashboard summary runs against real data and totals cash', async () => {
+  // This is the test that was missing: the dashboard query joins across
+  // accounts and journal lines, and a wrong column name parses fine but throws
+  // the moment it runs. Posting one entry and reading the summary proves the
+  // query executes, not just that it compiles.
+  const before = await accounts.dashboard();
+  const beforeCash = before.cashHeld.minor;
+
+  const posted = await postEntry({ direction: 'in', gross: 1500000, categoryId: inCategoryId });
+  assert.ok(posted.journalNumber);
+
+  const after = await accounts.dashboard();
+  assert.equal(after.cashHeld.minor, beforeCash + 1500000, 'cash did not move by the posted amount');
+  // monthIn covers the current calendar month only; the helper dates its
+  // entries in July, so this entry is deliberately outside it. The cash
+  // assertion above is what proves the dashboard query runs.
+  assert.ok(after.cashHeld.minor > beforeCash);
+}); 
+
 test('the trial balance is zero across every ledger account', async () => {
   const [rows] = await setup.query(
     `SELECT COALESCE(SUM(j.debit), 0) AS debits, COALESCE(SUM(j.credit), 0) AS credits

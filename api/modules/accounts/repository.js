@@ -73,12 +73,14 @@ export async function balanceFromTransactions(runner = getPool(), accountId, { h
 export async function dashboardTotals(runner = getPool(), { historyMerged, monthStart }) {
   const historyFilter = historyMerged ? '1=1' : "t.entry_type <> 'historical'";
 
+  // Cash the company holds: the sum over every account's ledger code. The join
+  // is accounts.coa_id = journal_lines.coa_id directly; chart_of_accounts is
+  // not needed here and its key is `id`, not `coa_id`.
   const [cash] = await runner.query(
     `SELECT COALESCE(SUM(j.debit - j.credit), 0) AS net
        FROM journal_lines j
        JOIN transactions t ON t.id = j.transaction_id
-       JOIN chart_of_accounts c ON c.id = j.coa_id
-       JOIN accounts a ON a.coa_id = c.coa_id
+       JOIN accounts a ON a.coa_id = j.coa_id
       WHERE t.status IN ('posted','reversed') AND ${historyFilter}`,
   );
 
