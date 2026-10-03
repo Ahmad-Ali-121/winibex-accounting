@@ -1,0 +1,106 @@
+# Builds the Flutter web app and uploads it to Hostinger on every push to main.
+#
+# Hostinger cannot build Flutter, so the build runs here in the cloud and only
+# the finished static files are sent. The API deploys separately through
+# Hostinger's own Git integration; this file is the app half.
+#
+# It runs only when something under app/ changes, so an API-only push does not
+# rebuild and reupload the app for nothing.
+#
+# Four secrets must be set in GitHub (Settings, Secrets and variables, Actions):
+#   FTP_HOST      the Hostinger FTP host for accounting.winibex.com
+#   FTP_USERNAME  the FTP account whose folder is that domain's public_html
+#   FTP_PASSWORD  that account's password
+#   API_BASE_URL  https://api-accounting.winibex.com/api/v1
+#
+# The API URL is a secret only so the host is not hard-coded in the repo; it is
+# not sensitive. Everything else is.
+
+name: Deploy web app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/deploy-app.yml'
+  # Lets you run it by hand from the Actions tab without pushing.
+  workflow_dispatch:
+
+# One deploy at a time. A second push while one is uploading cancels the first,
+# so a half-finished upload never sits on the server.
+concurrency:
+  group: deploy-app
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        working-directory: app
+        run: flutter pub get
+
+      - name: Generate code and localisations
+        working-directory: app
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          flutter gen-l10n
+
+      # The tests are the gate. A build that fails them never reaches the
+      # server, so a broken push cannot take the live site down.
+      - name: Run tests
+        working-directory: app
+        run: flutter test
+
+      - name: Build the web app
+        working-directory: app
+        run: flutter build web --release --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }}
+
+      # The redirect and SPA-fallback rules travel with the build, so a fresh
+      # upload never loses them. Without the fallback, refreshing on /accounts
+      # would 404; without the redirect, a plain-http visit breaks CORS.
+      - name: Add .htaccess
+        working-directory: app/build/web
+        run: |
+          cat > .htaccess <<'HTACCESS'
+          <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteCond %{HTTPS} off
+            RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+          </IfModule>
+          <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteRule ^index\.html$ - [L]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule . /index.html [L]
+          </IfModule>
+          HTACCESS
+
+      - name: Upload to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./app/build/web/
+          # Trailing slash matters: it means "the contents of public_html",
+          # so index.html lands at the web root rather than in a subfolder.
+          server-dir: ./
+          # Files on the server that the deploy must not delete. Without this,
+          # the sync would remove anything not in the build, including these.
+          exclude: |
+            **/.htaccess.bak
+            **/.well-known/**
