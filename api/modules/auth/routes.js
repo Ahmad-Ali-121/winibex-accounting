@@ -16,6 +16,17 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Enter your password.').max(1024),
 });
 
+// The new password must meet the same floor the hashing module enforces, said
+// here in words so the person is told before the request is made rather than
+// after. Ten characters matches core/password.js.
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Enter your current password.').max(1024),
+  newPassword: z
+    .string()
+    .min(10, 'Use at least 10 characters.')
+    .max(1024),
+});
+
 // Five failed attempts per fifteen minutes, counted per IP and email address
 // together, so one person guessing cannot lock out everyone behind an office
 // connection, and attempts on one account cannot be spread across hosts.
@@ -24,6 +35,15 @@ export const loginLimiter = createRateLimiter({
   limit: 5,
   keyOf: (req) => `${req.ip}|${String(req.body?.email ?? '').toLowerCase()}`,
   message: 'Too many sign-in attempts. Try again in a few minutes.',
+});
+
+// Changing a password is also a credential attempt, so it is throttled too.
+// Keyed by the signed-in user, since there is no email in the body.
+export const changePasswordLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  keyOf: (req) => `change|${req.user?.id ?? req.ip}`,
+  message: 'Too many attempts. Try again in a few minutes.',
 });
 
 function setRefreshCookie(res, token, expiresAt) {
@@ -88,6 +108,21 @@ authRoutes.post('/auth/logout', async (req, res) => {
   await service.logout({ refreshToken: readRefreshToken(req) });
   res.clearCookie(REFRESH_COOKIE, { path: '/api/v1/auth' });
   res.json({ status: 'signed out' });
+});
+
+// Requires a login, because the person has to be signed in to change their own
+// password. The current password is verified inside the service regardless.
+authRoutes.post('/auth/change-password', requireAuth, changePasswordLimiter, async (req, res) => {
+  const { currentPassword, newPassword } = parseOrThrow(changePasswordSchema, req.body ?? {});
+
+  const result = await service.changePassword({
+    userId: req.user.id,
+    currentPassword,
+    newPassword,
+    ip: req.ip,
+  });
+
+  res.json({ user: result.user });
 });
 
 authRoutes.get('/me', requireAuth, (req, res) => {

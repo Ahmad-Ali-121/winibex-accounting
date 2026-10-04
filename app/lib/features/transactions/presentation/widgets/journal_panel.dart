@@ -6,6 +6,7 @@ import '../../../../core/widgets/money_text.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../application/ledger_providers.dart';
 import '../../domain/ledger.dart';
+import 'history_panel.dart';
 
 /// The double entry behind one posted transaction.
 ///
@@ -116,9 +117,19 @@ class _JournalPanel extends ConsumerWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Align(
             alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.actionClose),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => showHistoryPanel(context, entry.id, entry.description),
+                  child: Text(l10n.actionViewHistory),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.actionClose),
+                ),
+              ],
             ),
           ),
         ),

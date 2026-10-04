@@ -158,6 +158,10 @@ transactionRoutes.get('/transactions/:id', requireAuth, async (req, res) => {
   res.json(await service.getDetail(id));
 });
 
+transactionRoutes.get('/transactions/:id/history', requireAuth, async (req, res) => {
+  const { id } = parseOrThrow(idParamSchema, req.params);
+  res.json(await service.getHistory(id));
+});
 // The journal preview and the read-only view behind "View journal entry" on
 // every posted transaction, required by docs/UI-GUIDE.md.
 transactionRoutes.get('/transactions/:id/journal', requireAuth, async (req, res) => {

@@ -28,6 +28,30 @@ class AuthController extends _$AuthController {
     return result.hasError ? result.error : null;
   }
 
+  /// Changes the password and updates the held user, so mustChangePassword
+  /// flips to false and the router stops forcing the change screen.
+  ///
+  /// Returns null on success, or the error on failure, the same shape as login
+  /// so the screen handles both the same way.
+  Future<Object?> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final repo = ref.read(authRepositoryProvider);
+    try {
+      final updated = await repo.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      state = AsyncData(updated);
+      return null;
+    } catch (error) {
+      // The session is unchanged, so the held user stays as it was. Only the
+      // error goes back to the screen.
+      return error;
+    }
+  }
+
   Future<void> logout() async {
     await ref.read(authRepositoryProvider).logout();
     state = const AsyncData(null);

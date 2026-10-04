@@ -1,5 +1,5 @@
-import { AppError, ErrorCode, unauthorized } from '../../core/errors.js';
-import { verifyPassword } from '../../core/password.js';
+import { AppError, ErrorCode, unauthorized, badRequest } from '../../core/errors.js';
+import { verifyPassword, hashPassword } from '../../core/password.js';
 import {
   signAccessToken,
   createRefreshToken,
@@ -114,6 +114,48 @@ export async function logout({ refreshToken }) {
   // Logout ends the session, not just the one token, so a refresh token kept
   // on another device cannot quietly continue it.
   return { revoked: await repo.revokeFamily(stored.family_id) };
+}
+
+/**
+ * Change a password.
+ *
+ * The current password is required and verified even for the bootstrapped
+ * owner who is being forced to change: it proves the person at the keyboard is
+ * the one who logged in, not someone who walked up to an unlocked screen.
+ *
+ * On success every other session for this user is revoked, because anyone
+ * holding the old password has refresh tokens that must stop working. The
+ * caller's own session is left alone so they are not logged out of the change
+ * they just made.
+ */
+export async function changePassword({ userId, currentPassword, newPassword, ip = null }) {
+  const user = await repo.findUserById(userId);
+  if (!user) throw unauthorized(ErrorCode.NOT_AUTHENTICATED, 'Sign in to continue.');
+
+  const correct = await verifyPassword(user.password_hash, currentPassword);
+  if (!correct) {
+    throw badRequest(ErrorCode.INVALID_CREDENTIALS, 'Your current password is not right.', {
+      field: 'currentPassword',
+    });
+  }
+
+  // A new password that equals the old one is not a change. Checked after the
+  // current-password check so the message order makes sense.
+  const sameAsOld = await verifyPassword(user.password_hash, newPassword);
+  if (sameAsOld) {
+    throw badRequest(ErrorCode.VALIDATION_FAILED, 'The new password must be different from the old one.', {
+      field: 'newPassword',
+    });
+  }
+
+  const hash = await hashPassword(newPassword);
+  await repo.updatePassword(userId, hash);
+
+  // Everyone who had the old password is now holding dead tokens.
+  await repo.revokeAllForUser(userId);
+
+  const fresh = await repo.findUserById(userId);
+  return { user: publicUser(fresh) };
 }
 
 export { publicUser };

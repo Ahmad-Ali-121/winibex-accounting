@@ -1815,6 +1815,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Same as a recent entry'**
   String get flagRepeatedDescription;
+
+  /// No description provided for @changePasswordHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your password'**
+  String get changePasswordHeading;
+
+  /// No description provided for @changePasswordForcedHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a new password'**
+  String get changePasswordForcedHeading;
+
+  /// No description provided for @changePasswordSubheading.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password and choose a new one.'**
+  String get changePasswordSubheading;
+
+  /// No description provided for @changePasswordForcedSubheading.
+  ///
+  /// In en, this message translates to:
+  /// **'This account still uses its first password. Choose a new one to continue.'**
+  String get changePasswordForcedSubheading;
+
+  /// No description provided for @changePasswordRule.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 10 characters.'**
+  String get changePasswordRule;
+
+  /// No description provided for @fieldCurrentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get fieldCurrentPassword;
+
+  /// No description provided for @fieldNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get fieldNewPassword;
+
+  /// No description provided for @fieldConfirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get fieldConfirmPassword;
+
+  /// No description provided for @changePasswordCurrentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password.'**
+  String get changePasswordCurrentRequired;
+
+  /// No description provided for @changePasswordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 10 characters.'**
+  String get changePasswordTooShort;
+
+  /// No description provided for @changePasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The two passwords do not match.'**
+  String get changePasswordMismatch;
+
+  /// No description provided for @changePasswordSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving'**
+  String get changePasswordSaving;
+
+  /// No description provided for @changePasswordDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed.'**
+  String get changePasswordDone;
+
+  /// No description provided for @actionSetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Set password'**
+  String get actionSetPassword;
+
+  /// No description provided for @actionViewHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'View history'**
+  String get actionViewHistory;
+
+  /// No description provided for @historyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit history'**
+  String get historyTitle;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has changed on this entry.'**
+  String get historyEmpty;
+
+  /// No description provided for @historyCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get historyCreated;
+
+  /// No description provided for @historyUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get historyUpdated;
+
+  /// No description provided for @historyStatusChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Status changed'**
+  String get historyStatusChanged;
 }
 
 class _AppLocalizationsDelegate

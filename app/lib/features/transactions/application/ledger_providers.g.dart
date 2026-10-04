@@ -297,3 +297,90 @@ abstract class _$ApprovalActions extends $Notifier<void> {
     return element.handleCreate(ref, build);
   }
 }
+
+/// The edit history of one entry, fetched when the history panel opens.
+
+@ProviderFor(entryHistory)
+final entryHistoryProvider = EntryHistoryFamily._();
+
+/// The edit history of one entry, fetched when the history panel opens.
+
+final class EntryHistoryProvider extends $FunctionalProvider<
+        AsyncValue<List<HistoryEvent>>,
+        List<HistoryEvent>,
+        FutureOr<List<HistoryEvent>>>
+    with
+        $FutureModifier<List<HistoryEvent>>,
+        $FutureProvider<List<HistoryEvent>> {
+  /// The edit history of one entry, fetched when the history panel opens.
+  EntryHistoryProvider._(
+      {required EntryHistoryFamily super.from, required int super.argument})
+      : super(
+          retry: noRetry,
+          name: r'entryHistoryProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$entryHistoryHash();
+
+  @override
+  String toString() {
+    return r'entryHistoryProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<HistoryEvent>> $createElement(
+          $ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<HistoryEvent>> create(Ref ref) {
+    final argument = this.argument as int;
+    return entryHistory(
+      ref,
+      transactionId: argument,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is EntryHistoryProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$entryHistoryHash() => r'4ce292603e28b8341ee92a8020fed7506188d52b';
+
+/// The edit history of one entry, fetched when the history panel opens.
+
+final class EntryHistoryFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<HistoryEvent>>, int> {
+  EntryHistoryFamily._()
+      : super(
+          retry: noRetry,
+          name: r'entryHistoryProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// The edit history of one entry, fetched when the history panel opens.
+
+  EntryHistoryProvider call({
+    required int transactionId,
+  }) =>
+      EntryHistoryProvider._(argument: transactionId, from: this);
+
+  @override
+  String toString() => r'entryHistoryProvider';
+}

@@ -211,3 +211,56 @@ class TransactionsRepository {
     }
   }
 }
+
+// Appended: edit history. Placed here so all transaction reads live in one
+// repository.
+extension TransactionHistory on TransactionsRepository {
+  Future<List<HistoryEvent>> history(int id) async {
+    try {
+      final response = await this.dio.get<Map<String, dynamic>>('/transactions/$id/history');
+      return ((response.data!['events'] as List<dynamic>?) ?? const [])
+          .map((item) => HistoryEvent.fromJson(item as Map<String, dynamic>))
+          .toList(growable: false);
+    } catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+}
+
+/// One recorded change to an entry: who, when, and which fields moved.
+class HistoryEvent {
+  const HistoryEvent({
+    required this.action,
+    required this.changes,
+    this.userName,
+    this.at,
+  });
+
+  factory HistoryEvent.fromJson(Map<String, dynamic> json) => HistoryEvent(
+        action: json['action'] as String? ?? '',
+        userName: json['userName'] as String?,
+        at: json['at'] as String?,
+        changes: ((json['changes'] as List<dynamic>?) ?? const [])
+            .map((item) => HistoryChange.fromJson(item as Map<String, dynamic>))
+            .toList(growable: false),
+      );
+
+  final String action;
+  final String? userName;
+  final String? at;
+  final List<HistoryChange> changes;
+}
+
+class HistoryChange {
+  const HistoryChange({required this.field, this.from, this.to});
+
+  factory HistoryChange.fromJson(Map<String, dynamic> json) => HistoryChange(
+        field: json['field'] as String? ?? '',
+        from: json['from'],
+        to: json['to'],
+      );
+
+  final String field;
+  final dynamic from;
+  final dynamic to;
+}

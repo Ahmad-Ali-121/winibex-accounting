@@ -988,4 +988,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flagRepeatedDescription => 'Same as a recent entry';
+
+  @override
+  String get changePasswordHeading => 'Change your password';
+
+  @override
+  String get changePasswordForcedHeading => 'Set a new password';
+
+  @override
+  String get changePasswordSubheading =>
+      'Enter your current password and choose a new one.';
+
+  @override
+  String get changePasswordForcedSubheading =>
+      'This account still uses its first password. Choose a new one to continue.';
+
+  @override
+  String get changePasswordRule => 'At least 10 characters.';
+
+  @override
+  String get fieldCurrentPassword => 'Current password';
+
+  @override
+  String get fieldNewPassword => 'New password';
+
+  @override
+  String get fieldConfirmPassword => 'Confirm new password';
+
+  @override
+  String get changePasswordCurrentRequired => 'Enter your current password.';
+
+  @override
+  String get changePasswordTooShort => 'Use at least 10 characters.';
+
+  @override
+  String get changePasswordMismatch => 'The two passwords do not match.';
+
+  @override
+  String get changePasswordSaving => 'Saving';
+
+  @override
+  String get changePasswordDone => 'Password changed.';
+
+  @override
+  String get actionSetPassword => 'Set password';
+
+  @override
+  String get actionViewHistory => 'View history';
+
+  @override
+  String get historyTitle => 'Edit history';
+
+  @override
+  String get historyEmpty => 'Nothing has changed on this entry.';
+
+  @override
+  String get historyCreated => 'Created';
+
+  @override
+  String get historyUpdated => 'Edited';
+
+  @override
+  String get historyStatusChanged => 'Status changed';
 }

@@ -76,3 +76,9 @@ class ApprovalActions extends _$ApprovalActions {
     ref.invalidate(accountsProvider);
   }
 }
+
+/// The edit history of one entry, fetched when the history panel opens.
+@Riverpod(retry: noRetry)
+Future<List<HistoryEvent>> entryHistory(Ref ref, {required int transactionId}) {
+  return ref.watch(transactionsRepositoryProvider).history(transactionId);
+}

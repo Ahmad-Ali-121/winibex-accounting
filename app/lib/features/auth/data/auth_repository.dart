@@ -53,6 +53,32 @@ class AuthRepository {
     }
   }
 
+  /// Changes the signed-in user's password.
+  ///
+  /// The server verifies the current password, writes the new one, clears the
+  /// must-change flag, and revokes every other session. The response carries
+  /// the updated user, whose mustChangePassword is now false, which is what
+  /// lets the router stop forcing the change screen.
+  ///
+  /// This caller's own session is untouched by the server, so no token work is
+  /// needed here.
+  Future<AuthUser> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await dio.post(
+        '/auth/change-password',
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      );
+      return AuthUser.fromJson(
+        (response.data as Map<String, dynamic>)['user'] as Map<String, dynamic>,
+      );
+    } catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+
   Future<void> logout() async {
     try {
       final stored = await tokens.readRefresh();

@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../api/api_client.dart';
 import '../../features/accounts/presentation/accounts_screen.dart';
 import '../../features/auth/application/auth_controller.dart';
+import '../../features/auth/presentation/change_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/flags/presentation/flags_screen.dart';
@@ -21,6 +22,7 @@ part 'app_router.g.dart';
 /// so nothing anywhere else writes one.
 abstract final class Routes {
   static const login = '/login';
+  static const changePassword = '/change-password';
   static const dashboard = '/';
   static const accounts = '/accounts';
   static const transactions = '/transactions';
@@ -70,17 +72,33 @@ GoRouter appRouter(Ref ref) {
       // finishes.
       if (auth.isLoading) return null;
 
-      final signedIn = auth.value != null;
+      final user = auth.value;
+      final signedIn = user != null;
       final atLogin = state.matchedLocation == Routes.login;
+      final atChange = state.matchedLocation == Routes.changePassword;
 
       if (!signedIn && !atLogin) return Routes.login;
       if (signedIn && atLogin) return Routes.dashboard;
+
+      // The owner is bootstrapped with a temporary password. Until it is
+      // changed, the only screen reachable is the change-password one.
+      if (signedIn && user.mustChangePassword && !atChange) {
+        return Routes.changePassword;
+      }
+      // Once changed, nobody should sit on that screen.
+      if (signedIn && !user.mustChangePassword && atChange) {
+        return Routes.dashboard;
+      }
       return null;
     },
     routes: [
       GoRoute(
         path: Routes.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: Routes.changePassword,
+        builder: (context, state) => const ChangePasswordScreen(forced: true),
       ),
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),

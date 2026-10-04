@@ -449,6 +449,20 @@ export async function listFlags(runner = getPool(), { resolved = false, severity
   return rows;
 }
 
+// The audit trail for one transaction: who did what and when. The rows are
+// written on every change by core/audit.js; this only reads them back.
+export async function auditHistory(runner, transactionId) {
+  const [rows] = await runner.query(
+    `SELECT a.id, a.action, a.before_json, a.after_json, a.created_at,
+            u.name AS user_name
+       FROM audit_log a
+       LEFT JOIN users u ON u.id = a.user_id
+      WHERE a.table_name = 'transactions' AND a.record_id = ?
+      ORDER BY a.id`,
+    [transactionId],
+  );
+  return rows;
+}
 export async function findUser(runner, id) {
   const [rows] = await runner.query(
     'SELECT id, role, approval_limit, auto_approve_own, shares_owner_login, is_active FROM users WHERE id = ?',

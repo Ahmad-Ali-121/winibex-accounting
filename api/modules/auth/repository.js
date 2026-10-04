@@ -25,6 +25,17 @@ export async function findUserById(id) {
   return rows[0] ?? null;
 }
 
+// Writes the new hash and clears the must-change flag in one statement, so a
+// change can never half-apply: a new password with the flag still set would
+// trap the person on the change screen forever.
+export async function updatePassword(userId, passwordHash) {
+  const [result] = await getPool().query(
+    'UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?',
+    [passwordHash, userId],
+  );
+  return result.affectedRows;
+}
+
 export async function insertRefreshToken({
   userId,
   tokenHash,
@@ -64,6 +75,18 @@ export async function revokeFamily(familyId) {
   const [result] = await getPool().query(
     'UPDATE refresh_tokens SET revoked_at = UTC_TIMESTAMP() WHERE family_id = ? AND revoked_at IS NULL',
     [familyId],
+  );
+  return result.affectedRows;
+}
+
+// Every session for a user. Used after a password change: whoever had the old
+// password is holding tokens that must stop working.
+export async function revokeAllForUser(userId, exceptFamilyId = null) {
+  const [result] = await getPool().query(
+    `UPDATE refresh_tokens SET revoked_at = UTC_TIMESTAMP()
+      WHERE user_id = ? AND revoked_at IS NULL
+        AND (? IS NULL OR family_id <> ?)`,
+    [userId, exceptFamilyId, exceptFamilyId],
   );
   return result.affectedRows;
 }

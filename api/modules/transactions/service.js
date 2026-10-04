@@ -18,6 +18,7 @@ import { MoneyError, addMinor, reconcileAmount, pkrFromForeign } from '../../cor
 import { buildJournalLines, buildManualLines, reverseJournalLines, LedgerCode } from './posting.js';
 import { collectBlocking, collectWarnings, collectFlags } from './validation.js';
 import { assertReceiptRules } from '../attachments/service.js';
+import { fromJsonColumn } from '../../core/json.js';
 import * as repo from './repository.js';
 
 const POSTABLE_BY = new Set(['owner', 'admin']);
@@ -867,6 +868,50 @@ export async function listFlags({ resolved = false, severity = null } = {}) {
   };
 }
 
+// --- edit history -----------------------------------------------------------
+
+// Every change to an entry, in plain terms the person can read: who, when, and
+// what moved. The raw audit rows store before/after as JSON; this turns them
+// into a short list of changed fields. docs/UI-GUIDE.md, the "View history"
+// panel.
+export async function getHistory(id) {
+  const pool = getPool();
+  const transaction = await repo.findById(pool, id);
+  if (!transaction) throw notFound('That entry does not exist.');
+
+  const rows = await repo.auditHistory(pool, id);
+
+  return {
+    transactionId: Number(id),
+    events: rows.map((row) => {
+      const before = fromJsonColumn(row.before_json) ?? {};
+      const after = fromJsonColumn(row.after_json) ?? {};
+      return {
+        id: Number(row.id),
+        action: row.action,
+        userName: row.user_name ?? null,
+        at: row.created_at,
+        changes: describeChanges(before, after),
+      };
+    }),
+  };
+}
+
+// Which fields differ between the before and after snapshots. Only the keys
+// that actually changed, so a status change does not list every unchanged
+// field beside it.
+function describeChanges(before, after) {
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  const changes = [];
+  for (const key of keys) {
+    const from = before[key];
+    const to = after[key];
+    if (JSON.stringify(from) !== JSON.stringify(to)) {
+      changes.push({ field: key, from: from ?? null, to: to ?? null });
+    }
+  }
+  return changes;
+}
 export async function getDetail(id) {
   const detail = await repo.findDetail(getPool(), id);
   if (!detail) throw notFound('That entry does not exist.');
