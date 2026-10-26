@@ -70,7 +70,22 @@ export async function balanceFromTransactions(runner = getPool(), accountId, { h
 
 // What the dashboard shows: cash held, money in and out this month, and what
 // is waiting. All computed, never stored.
-export async function dashboardTotals(runner = getPool(), { historyMerged, monthStart }) {
+//
+// "In" and "Out" are money that entered or left the company's own accounts,
+// decision 057 (D11). Four rules turn that into SQL:
+//
+//   - only rows on a company account count, so a cost paid on someone's
+//     personal card is left out; paying them back is counted, because that is
+//     when the money leaves
+//   - a transfer between two company accounts moves nothing in or out, so its
+//     legs count only for the bank fee on the out leg, which did leave
+//   - a reversal cancels its original on the original's side: reversing money
+//     in lowers In rather than adding to Out
+//   - the opening entry and history are not this month's trading
+//
+// With these rules, cash held at the start of the month plus In minus Out is
+// cash held now. A test asserts exactly that.
+export async function dashboardTotals(runner = getPool(), { historyMerged, monthStart, monthEnd }) {
   const historyFilter = historyMerged ? '1=1' : "t.entry_type <> 'historical'";
 
   // Cash the company holds: the sum over every account's ledger code. The join
@@ -84,15 +99,33 @@ export async function dashboardTotals(runner = getPool(), { historyMerged, month
       WHERE t.status IN ('posted','reversed') AND ${historyFilter}`,
   );
 
+  // For each row: which side it belongs to (its own direction, or for a
+  // reversal its original's), its factor (+1, or -1 for a reversal), and how much
+  // of it actually crossed the company's boundary (the amount, or for a
+  // transfer leg only its charges). A reversal carries no breakdown of its own,
+  // decision 052, so the original's charges are read.
   const [month] = await runner.query(
     `SELECT
-        COALESCE(SUM(CASE WHEN t.direction='in'  THEN t.amount ELSE 0 END),0) AS money_in,
-        COALESCE(SUM(CASE WHEN t.direction='out' THEN t.amount ELSE 0 END),0) AS money_out
-       FROM transactions t
-      WHERE t.status IN ('posted','reversed')
-        AND t.entry_type = 'normal'
-        AND t.date >= ?`,
-    [monthStart],
+        COALESCE(SUM(CASE WHEN m.side = 'in'  THEN m.factor * m.counted ELSE 0 END), 0) AS money_in,
+        COALESCE(SUM(CASE WHEN m.side = 'out' THEN m.factor * m.counted ELSE 0 END), 0) AS money_out
+       FROM (
+         SELECT
+           CASE WHEN o.id IS NULL THEN t.direction ELSE o.direction END AS side,
+           CASE WHEN o.id IS NULL THEN 1 ELSE -1 END AS factor,
+           CASE
+             WHEN (CASE WHEN o.id IS NULL THEN t.transfer_group_id ELSE o.transfer_group_id END) IS NULL
+               THEN t.amount
+             ELSE (CASE WHEN o.id IS NULL THEN t.charges_total ELSE o.charges_total END)
+           END AS counted
+           FROM transactions t
+           LEFT JOIN transactions o ON o.id = t.reversal_of_id
+          WHERE t.status IN ('posted', 'reversed')
+            AND t.entry_type = 'normal'
+            AND t.account_id IS NOT NULL
+            AND t.date >= ?
+            AND t.date < ?
+       ) AS m`,
+    [monthStart, monthEnd],
   );
 
   const [pending] = await runner.query(

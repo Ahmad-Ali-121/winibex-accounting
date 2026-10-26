@@ -1,6 +1,7 @@
 # Frontend
 
-The Flutter app. Rewritten 2026-10-03 to match the code as built. Where this
+The Flutter app. Rewritten 2026-10-03 to match the code as built, updated
+2026-10-26 for the defect fixes. Where this
 document and the code ever disagree, the code wins and this file is wrong.
 
 ## Stack
@@ -25,6 +26,7 @@ lib/
       api_client.dart           dioProvider, the access-token holder, refresh
       api_config.dart           base URL, from --dart-define at build
       api_exception.dart        the server error shape as one Dart type
+      error_message.dart        errorMessageFor: the sentence to show for a refusal
       api_retry.dart            noRetry, used by every read provider
       idempotency_key.dart      a v4 key per money-creating request
     auth/
@@ -77,6 +79,51 @@ form, the ledger, approvals, the journal and history panels), `dashboard`,
   retry leaves the screen on a spinner saying nothing.
 - **Writes carry an idempotency key**, generated when the form opens, so a
   double tap or a dropped reply cannot post the same thing twice.
+- **A refusal is shown, never swallowed.** A 4xx from the server is shown in
+  the server's own words through `errorMessageFor`, because they carry the
+  figure that explains it ("It holds PKR 9,700 today."). No answer gets
+  `errNetwork`, a 5xx gets the generic server text, both from `app_en.arb`. The
+  server keeps its messages free of SQL, paths and stack traces. Defect D3.
+- **Action providers that write are `keepAlive`.** `ApprovalActions` and
+  `FlagActions` are `@Riverpod(keepAlive: true, retry: noRetry)`. An
+  auto-disposed action provider can be dropped mid-request, and the list
+  refresh after it would never run. They return `ApiException?`: null when it
+  worked, the refusal otherwise, so the screen decides how to show it.
+
+## The entry form's save
+
+`EntrySave` in `entry_draft_controller.dart` holds what happened to the last
+press of the button: `SaveIdle`, `SaveInProgress`, `SaveNeedsConfirmation`
+with the warnings, `SaveSucceeded`, or `SaveFailed` with the refusal.
+
+- A press while `SaveInProgress` does nothing, and the button is disabled, so
+  a double click sends one request
+- The save is create, then upload the receipt if there is one, then approve
+  or submit. The receipt goes before posting because a payment at or above
+  the threshold is refused without it
+- `SaveFailed` shows a red box on the review step with the reason. Going back
+  a step clears it. Pressing the button again reuses the same idempotency key,
+  so a refused posting retried after attaching a receipt posts the same draft
+  rather than creating a second one
+- `SaveSucceeded` shows the confirmation, then throws the draft away and
+  returns to step 1, so the next entry gets empty fields and a new key.
+  Defect D10
+- Known limit: after a refused posting, changing a field and pressing again
+  sends a different body under the same key, which the server refuses as a
+  reused key. Go back to step 1 or reload to start a new entry
+
+Whether the button reads "Save and post" or "Submit for approval" comes from
+`AuthUser.canPostOwnEntries`: the owner, or an admin with `autoApproveOwn`.
+Every other admin, and all staff, submit. It used to be "owner or admin",
+which offered posting to admins the server refuses. Defect D4.
+
+## The review list
+
+`FlagsScreen(canReview:)` shows a Mark reviewed button on each flag when
+`canReview` is true, which the router sets from `AuthUser.canApprove`. The
+dialog asks why it needs nothing more; under 3 characters nothing is sent.
+After it works, the list is fetched again rather than edited in place.
+Decision 056.
 - **The API base URL is a build-time define.** The source defaults to
   localhost; production is passed with
   `--dart-define=API_BASE_URL=https://api-accounting.winibex.com/api/v1`.
@@ -113,4 +160,6 @@ frame once and swaps the child.
 
 Widget tests replace the repository with a fake and let the real providers,
 widgets and models run, so parsing and rendering are exercised; only the
-network is stubbed. Both themes are covered. 62 tests at the end of Phase 1.
+network is stubbed. Both themes are covered. 62 tests at the end of Phase 1,
+78 after the defect fixes: refused saves and approvals, the key reused on a
+retry, the form resetting, the review list, and who may post.

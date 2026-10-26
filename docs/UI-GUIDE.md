@@ -91,7 +91,8 @@ Direction Money In, currency USD, amount, received into (Winibex bank, a
 pass-through account, or an earning account such as an Upwork ID), rate or
 PKR received, then suggested deductions: Section 154A final tax if the company
 is marked PSEB registered, platform fee, partner share where the earning account
-has a split. Receipt mandatory. Optional link to the invoice being paid.
+has a split. Receipt optional; the bank advice can be attached. Optional link
+to the invoice being paid.
 
 ### Other form rules
 
@@ -103,17 +104,22 @@ has a split. Receipt mandatory. Optional link to the invoice being paid.
 
 ## Receipt rules
 
+Corrected 2026-10-26 to match decision 055, which decision 057 kept. Decision
+021 is superseded on this point.
+
 | Situation | Receipt |
 | --- | --- |
-| Any Money In from a client | Required |
-| Any foreign currency transaction | Required, since it is the proof of the rate |
-| Paid by a person, to be reimbursed | Required |
-| Money Out at or above the threshold (setting, default 5,000 PKR) | Required |
-| Transfers between company accounts | Optional |
+| Money Out at or above the threshold (setting, default 5,000 PKR), including one paid by a person | Required before it can post |
+| Money Out below the threshold | Optional. Flagged "No receipt" until one is attached |
+| Money In, from a client or otherwise, in any currency | Optional. Not flagged. Attach the bank advice where there is one |
+| Paying a person back | Not needed. The receipt belongs on the original cost |
+| Transfers between company accounts | Not needed |
+| The opening entry and manual journal entries | Not needed |
+| Historical entries | Not needed |
 | Payroll | System generates the salary slip, which counts |
-| Money Out below the threshold | Optional, flagged when missing |
 
-The threshold is a setting, not code.
+The threshold is a setting, not code. A receipt may be attached after posting.
+Attaching one clears the entry's "No receipt" flag by itself. Decision 056.
 
 ## Preventing false entries
 
@@ -183,7 +189,8 @@ Receipts and records
 
 ### Flagged, visible in a review list
 
-- No receipt where optional
+- No receipt on money out below the threshold. Clears itself when a receipt
+  is attached
 - Description under five characters
 - Category unusual for that client
 - Rebillable spend not yet invoiced after 30 days
@@ -196,6 +203,10 @@ Receipts and records
 - PSEB certificate expiring within 30 days
 - Quarterly withholding statement due within 10 days and not filed
 - Petty cash below its imprest float
+
+Any flag or confirmed warning can be marked reviewed by the owner or an admin,
+with a note saying why it needs nothing more. Staff cannot. The note and who
+wrote it stay with the flag. Decision 056.
 
 Warnings must name the specific record they matched against and link to it. A
 warning the user cannot investigate becomes a warning they dismiss by reflex.

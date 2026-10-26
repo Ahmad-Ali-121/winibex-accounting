@@ -84,6 +84,19 @@ transactionRoutes.get('/flags', requireAuth, async (req, res) => {
   }));
 });
 
+const resolveFlagBody = z.object({
+  note: z.string().trim().min(3, 'Say why it needs nothing more, in a few words.').max(255),
+});
+
+// Marking a flag reviewed, with the reason. The owner or an admin only; the
+// service checks the role. A flag whose cause went away, such as a receipt
+// arriving, resolves itself and never comes here. Decision 056.
+transactionRoutes.post('/flags/:id/resolve', requireAuth, async (req, res) => {
+  const { id } = parseOrThrow(idParamSchema, req.params);
+  const { note } = parseOrThrow(resolveFlagBody, req.body ?? {});
+  res.json({ flag: await service.resolveFlag({ user: actorFrom(req), id, note, ip: req.ip }) });
+});
+
 // The journal entry this draft would produce, worked out but not saved. The
 // app shows it before the person commits; it never builds it itself.
 transactionRoutes.post('/transactions/preview', requireAuth, async (req, res) => {
@@ -162,6 +175,7 @@ transactionRoutes.get('/transactions/:id/history', requireAuth, async (req, res)
   const { id } = parseOrThrow(idParamSchema, req.params);
   res.json(await service.getHistory(id));
 });
+
 // The journal preview and the read-only view behind "View journal entry" on
 // every posted transaction, required by docs/UI-GUIDE.md.
 transactionRoutes.get('/transactions/:id/journal', requireAuth, async (req, res) => {

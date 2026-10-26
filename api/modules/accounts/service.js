@@ -7,6 +7,7 @@
 import { getPool } from '../../core/db.js';
 import { notFound } from '../../core/errors.js';
 import { money } from '../../core/money.js';
+import { businessToday, monthStart as firstOfMonth, nextMonthStart } from '../../core/dates.js';
 import * as repo from './repository.js';
 
 const BASE_CURRENCY = 'PKR';
@@ -108,10 +109,13 @@ export async function dashboard() {
   const pool = getPool();
   const historyMerged = await isHistoryMerged(pool);
 
-  const now = new Date();
-  const monthStart = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+  // This month in Pakistan, not in UTC. For the first five hours of every
+  // month the UTC month is still the previous one. D9.
+  const today = businessToday();
+  const monthStart = firstOfMonth(today);
+  const monthEnd = nextMonthStart(today);
 
-  const totals = await repo.dashboardTotals(pool, { historyMerged, monthStart });
+  const totals = await repo.dashboardTotals(pool, { historyMerged, monthStart, monthEnd });
 
   return {
     cashHeld: money(totals.cashNet, BASE_CURRENCY),

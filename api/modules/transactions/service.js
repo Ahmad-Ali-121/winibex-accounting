@@ -17,7 +17,8 @@ import { AppError, ErrorCode, badRequest, forbidden, notFound } from '../../core
 import { MoneyError, addMinor, reconcileAmount, pkrFromForeign } from '../../core/money.js';
 import { buildJournalLines, buildManualLines, reverseJournalLines, LedgerCode } from './posting.js';
 import { collectBlocking, collectWarnings, collectFlags } from './validation.js';
-import { assertReceiptRules } from '../attachments/service.js';
+import { assertReceiptRules, receiptExpected } from '../attachments/service.js';
+import { assertCanWithholdFrom } from '../vendors/service.js';
 import { fromJsonColumn } from '../../core/json.js';
 import * as repo from './repository.js';
 
@@ -94,12 +95,33 @@ async function runValidation(connection, { user, input, amount, acknowledged = [
     });
   }
 
-  const flags = collectFlags({ input, hasReceipt: false });
+  // "No receipt" only on an entry that should carry one and does not yet.
+  // A new entry has nothing attached. An edited draft may already have its
+  // receipt, which is why the check reads the attachments when editing. D1.
+  const expected = await receiptExpected(connection, input);
+  const hasReceipt = expected && excludeId ? await repo.hasReceipt(connection, excludeId) : false;
+  const flags = collectFlags({ input, receiptMissing: expected && !hasReceipt });
 
   return [
     ...warnings.map((warning) => ({ ...warning, severity: 'warning', acknowledgedBy: user.id })),
     ...flags.map((flag) => ({ ...flag, severity: 'flag' })),
   ];
+}
+
+// Tax Winibex withholds is reported on the quarterly s.165 statement under the
+// payee's NTN or CNIC. A local vendor with neither cannot be reported, so
+// withholding from them is refused before anything is written. UI-GUIDE lists
+// it as a blocking rule; the check existed in the vendors module and was never
+// called. D7.
+//
+// Only checked when a vendor is named. Requiring a vendor on every withheld
+// line is the stricter rule and a separate decision, because existing entries
+// and tests may withhold without one.
+async function assertWithholdingPayee(connection, input) {
+  const withholds = (input.taxes ?? []).some((tax) => tax.deductedBy === 'us');
+  if (withholds && input.vendorId) {
+    await assertCanWithholdFrom(connection, input.vendorId);
+  }
 }
 
 // --- create -----------------------------------------------------------------
@@ -116,6 +138,8 @@ export async function createDraftWithin(connection, { user, input, ip = null }) 
   } catch (error) {
     throw asMoneyError(error);
   }
+
+  await assertWithholdingPayee(connection, input);
 
   const findings = await runValidation(connection, {
     user, input, amount: totals.amount, acknowledged: input.acknowledgedWarnings ?? [],
@@ -188,6 +212,8 @@ export async function updateDraft({ user, id, input, ip = null }) {
     } catch (error) {
       throw asMoneyError(error);
     }
+
+    await assertWithholdingPayee(connection, input);
 
     const findings = await runValidation(connection, {
       user, input, amount: totals.amount,
@@ -844,28 +870,69 @@ export async function listApprovals({ user }) {
   };
 }
 
+function presentFlag(row) {
+  return {
+    id: Number(row.id),
+    transactionId: Number(row.transaction_id),
+    severity: row.severity,
+    code: row.code,
+    detail: row.detail,
+    resolved: Boolean(row.resolved),
+    acknowledgedByName: row.acknowledged_by_name ?? null,
+    createdAt: row.created_at,
+    resolvedAt: row.resolved_at ?? null,
+    resolvedByName: row.resolved_by_name ?? null,
+    // Resolved with nobody named means the cause went away on its own, such
+    // as the receipt arriving. Decision 056.
+    resolvedAutomatically: Boolean(row.resolved) && row.resolved_by === null,
+    resolutionNote: row.resolution_note ?? null,
+    transaction: {
+      journalNumber: row.journal_number ?? null,
+      date: row.date,
+      description: row.description,
+      amount: { minor: Number(row.amount), currency: 'PKR' },
+      status: row.status,
+    },
+  };
+}
+
 export async function listFlags({ resolved = false, severity = null } = {}) {
   const rows = await repo.listFlags(getPool(), { resolved, severity });
+  return { flags: rows.map(presentFlag) };
+}
 
-  return {
-    flags: rows.map((row) => ({
-      id: Number(row.id),
-      transactionId: Number(row.transaction_id),
-      severity: row.severity,
-      code: row.code,
-      detail: row.detail,
-      resolved: Boolean(row.resolved),
-      acknowledgedByName: row.acknowledged_by_name ?? null,
-      createdAt: row.created_at,
-      transaction: {
-        journalNumber: row.journal_number ?? null,
-        date: row.date,
-        description: row.description,
-        amount: { minor: Number(row.amount), currency: 'PKR' },
-        status: row.status,
-      },
-    })),
-  };
+// Marking a flag reviewed. The owner or an admin, with a note saying why it
+// needs nothing more, because "reviewed" with no reason is a flag dismissed
+// by reflex. The flag is kept, never deleted. Decision 056, defect D2.
+export async function resolveFlag({ user, id, note, ip = null }) {
+  if (!POSTABLE_BY.has(user.role)) {
+    throw forbidden('Only the owner or an admin can mark a flag reviewed.');
+  }
+  if (!note || note.trim().length < 3) {
+    throw badRequest(ErrorCode.VALIDATION_FAILED, 'Say why it needs nothing more, in a few words.', { field: 'note' });
+  }
+
+  await withTransaction(async (connection) => {
+    const flag = await repo.lockFlag(connection, id);
+    if (!flag) throw notFound('That flag does not exist.');
+    if (flag.resolved) {
+      throw new AppError(409, ErrorCode.INVALID_STATUS, 'That flag has already been dealt with.');
+    }
+
+    const changed = await repo.markFlagResolved(connection, id, { userId: user.id, note: note.trim() });
+    if (changed !== 1) {
+      throw new AppError(409, ErrorCode.INVALID_STATUS, 'That flag has already been dealt with.');
+    }
+
+    await writeAudit(connection, {
+      userId: user.id, ip, table: 'entry_flags', recordId: Number(id),
+      action: AuditAction.UPDATE,
+      before: { resolved: false },
+      after: { resolved: true, note: note.trim() },
+    });
+  });
+
+  return presentFlag(await repo.findFlag(getPool(), id));
 }
 
 // --- edit history -----------------------------------------------------------
@@ -912,6 +979,7 @@ function describeChanges(before, after) {
   }
   return changes;
 }
+
 export async function getDetail(id) {
   const detail = await repo.findDetail(getPool(), id);
   if (!detail) throw notFound('That entry does not exist.');

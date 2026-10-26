@@ -180,7 +180,7 @@ final class EntrySaveProvider
   }
 }
 
-String _$entrySaveHash() => r'f936a673a59c54af761429bf131e54862c665464';
+String _$entrySaveHash() => r'a325e25ae305f4e9bbbae5a372868d723475c97c';
 
 /// Saving, as its own notifier.
 ///

@@ -74,10 +74,17 @@ export async function attach({ user, transactionId, file, documentType = 'receip
         retainUntil: entry.retain_until,
       });
 
+      // The receipt the entry was flagged for has arrived, so the flag
+      // resolves itself. No person did it, so resolved_by stays empty and the
+      // note says what happened. Decision 056.
+      const flagsResolved = documentType === 'receipt'
+        ? await resolveNoReceiptFlags(connection, transactionId)
+        : 0;
+
       await writeAudit(connection, {
         userId: user.id, ip, table: 'attachments', recordId: attachmentId,
         action: AuditAction.INSERT,
-        after: { transactionId, documentType, sizeBytes: file.size, sha256 },
+        after: { transactionId, documentType, sizeBytes: file.size, sha256, flagsResolved },
       });
 
       return attachmentId;
@@ -105,24 +112,39 @@ export async function openFile(id) {
   };
 }
 
+async function resolveNoReceiptFlags(connection, transactionId) {
+  const [result] = await connection.query(
+    `UPDATE entry_flags
+        SET resolved = 1, resolved_at = UTC_TIMESTAMP(), resolution_note = 'Receipt attached'
+      WHERE transaction_id = ? AND code = 'NO_RECEIPT' AND resolved = 0`,
+    [transactionId],
+  );
+  return result.affectedRows;
+}
+
 /**
- * Whether an entry may post without a receipt.
+ * Whether an entry is the kind that should carry a receipt at all.
  *
- * A payment above the threshold needs evidence, because an expense with no
- * receipt is one an auditor will disallow and one FBR can treat as
- * unexplained. The threshold is a setting, not a constant.
+ * One rule, used twice: by the "No receipt" flag when the entry is created,
+ * and by the block on posting a large payment without one. Before this, the
+ * flag ignored the rule and was raised on every entry, money in and transfers
+ * included. Defect D1, decision 056.
+ *
+ * Decision 055 says which entries are exempt: money in, a transfer between
+ * the company's own accounts, the opening entry, a manual journal, and paying
+ * someone back. None of those is a purchase.
  */
-export async function assertReceiptRules(connection, entry) {
-  const { transactionId, amount, direction, entryType = 'normal', transferGroupId = null, categoryId = null } = entry;
+export async function receiptExpected(connection, entry) {
+  const { direction, entryType = 'normal', transferGroupId = null, categoryId = null } = entry;
 
   // Money coming in has no receipt to attach; the bank advice is the evidence
   // and it is a different document.
-  if (direction !== 'out') return;
+  if (direction !== 'out') return false;
 
   // A transfer between the company's own accounts is not a purchase. Neither
   // is the opening entry or a manual journal.
-  if (transferGroupId) return;
-  if (entryType !== 'normal') return;
+  if (transferGroupId) return false;
+  if (entryType !== 'normal') return false;
 
   // Paying someone back, or moving money through the transit account, settles
   // something already recorded. The receipts were attached to the costs
@@ -132,8 +154,23 @@ export async function assertReceiptRules(connection, entry) {
       `SELECT a.code FROM categories c JOIN chart_of_accounts a ON a.id = c.coa_id WHERE c.id = ?`,
       [categoryId],
     );
-    if (['2114', '1118'].includes(category[0]?.code)) return;
+    if (['2114', '1118'].includes(category[0]?.code)) return false;
   }
+
+  return true;
+}
+
+/**
+ * Whether an entry may post without a receipt.
+ *
+ * A payment above the threshold needs evidence, because an expense with no
+ * receipt is one an auditor will disallow and one FBR can treat as
+ * unexplained. The threshold is a setting, not a constant.
+ */
+export async function assertReceiptRules(connection, entry) {
+  const { transactionId, amount } = entry;
+
+  if (!(await receiptExpected(connection, entry))) return;
 
   const [rows] = await connection.query(
     `SELECT value FROM settings WHERE setting_key = 'receipt_required_above'`,

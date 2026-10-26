@@ -10,6 +10,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:winibex_accounting/core/api/api_exception.dart';
 import 'package:winibex_accounting/core/money/money.dart';
 import 'package:winibex_accounting/core/theme/app_theme.dart';
 import 'package:winibex_accounting/features/transactions/data/transactions_repository.dart';
@@ -47,11 +48,14 @@ Approval _approval({
 }
 
 class _FakeRepository extends TransactionsRepository {
-  _FakeRepository({List<Approval>? waiting})
+  _FakeRepository({List<Approval>? waiting, this.approveFails})
       : waiting = waiting ?? [_approval()],
         super(dio: Dio());
 
   final List<Approval> waiting;
+
+  /// What the server says when it refuses, such as an admin over their limit.
+  final ApiException? approveFails;
 
   int? approved;
   int? rejected;
@@ -61,7 +65,11 @@ class _FakeRepository extends TransactionsRepository {
   Future<List<Approval>> approvals() async => waiting;
 
   @override
-  Future<void> approve(int id, String idempotencyKey) async => approved = id;
+  Future<void> approve(int id, String idempotencyKey) async {
+    final failure = approveFails;
+    if (failure != null) throw failure;
+    approved = id;
+  }
 
   @override
   Future<void> reject(int id, String reason) async {
@@ -169,5 +177,22 @@ void main() {
   testWidgets('an empty inbox says so rather than showing an empty list', (tester) async {
     await _pump(tester, _FakeRepository(waiting: []));
     expect(find.text(_l10n(tester).emptyApprovalsTitle), findsOneWidget);
+  });
+
+  // Defect D3: the refusal used to leave the card where it was, with no word.
+  testWidgets('a refused approval says why', (tester) async {
+    const reason = 'That entry is above your approval limit.';
+    final repository = _FakeRepository(
+      waiting: [_approval(id: 7)],
+      approveFails: const ApiException(code: 'APPROVAL_LIMIT_EXCEEDED', message: reason, status: 403),
+    );
+    await _pump(tester, repository);
+
+    await tester.tap(find.text(_l10n(tester).actionApprove));
+    await tester.pumpAndSettle();
+
+    expect(find.text(reason), findsOneWidget);
+    expect(repository.approved, isNull);
+    expect(find.text('Office rent July'), findsOneWidget, reason: 'it is still waiting');
   });
 }

@@ -117,9 +117,10 @@ Subscriptions and fixed costs that create pending entries on their due date
 for confirmation.
 
 ### Reports
-Dashboard with cash per account, income against spending, runway in months,
-client profit and receivables. Full statements: Profit and Loss, Balance Sheet,
-Cash Flow, Trial Balance, General Ledger, receivables aging, tax summary.
+The basic dashboard (cash per account, money in/out, pending and flag counts)
+is built. The full reporting suite (Profit and Loss, Balance Sheet, Cash Flow,
+Trial Balance, General Ledger, receivables aging, tax summary, runway, client
+profit, bank reconciliation, fixed assets, FX revaluation) is Phase 6.
 Export to PDF, CSV and Excel.
 
 ### AI access
@@ -143,7 +144,7 @@ books. Read only at first.
 | Layer | Technology | Responsibility |
 | --- | --- | --- |
 | App | Flutter, Dart, Riverpod 3 with code generation | Everything users see. Never calculates a balance |
-| API | Node 24, Express | Every business rule, the posting engine, PDFs, auth, cron |
+| API | Node 24, Express 5 | Every business rule, the posting engine, PDFs, auth, cron |
 | Database | MariaDB 11.8 | Storage, constraints, transactions, immutability trigger |
 | MCP | Node | Reuses the API's service layer directly |
 | Hosting | Hostinger Business | Node app, managed MariaDB, static web hosting |
@@ -165,31 +166,34 @@ petrol palette. See `docs/UI-GUIDE.md`.
 
 ## Phases
 
-| Phase | Scope |
-| --- | --- |
-| 0 | Foundation: schema, auth, roles, audit, theme, strings |
-| 1 | Money in and out, taxes, approvals, validation, reimbursements |
-| 2 | Clients, projects, earning accounts |
-| 3 | Quotations, invoices, receipts, documents |
-| 4 | Payroll |
-| 5 | Recurring costs |
-| 6 | Dashboard and reports |
-| 7 | Android app |
-| 8 | History before 1 July 2026, entered and merged |
-| 9 | MCP server |
+| Phase | Scope | Status |
+| --- | --- | --- |
+| 0 | Foundation: schema, auth, roles, audit, theme, strings | Complete |
+| 1 | Money in and out, taxes, approvals, validation, reimbursements | Complete, deployed |
+| 2 | Clients, projects, earning accounts | Next |
+| 3 | Quotations, invoices, receipts, documents | |
+| 4 | Payroll | |
+| 5 | Recurring costs | |
+| 6 | Dashboard and reports (full suite; basic dashboard already built in Phase 1) | |
+| 7 | Android app | |
+| 8 | History before 1 July 2026, entered and merged | |
+| 9 | MCP server | |
 
 ## Status
 
-Phase 0 under way. Step 0.1 complete: repo structure, local MariaDB in Docker,
-password module, lint and tests. Still waiting on accountant review of taxes
-and chart of accounts, and the open decisions listed in `docs/DECISIONS.md`.
+Phase 1 complete and deployed. The API runs at api-accounting.winibex.com and
+the web app at accounting.winibex.com. 347 API tests and 62 Flutter widget
+tests pass. CI/CD is in place: the API auto-deploys on push via Hostinger Git
+integration, and the web app deploys via GitHub Actions building Flutter web
+and uploading over FTP. Still waiting on accountant review of taxes and chart
+of accounts. See `docs/PROGRESS.md` for pending items before Phase 2.
 
 ## Known risks
 
 | Risk | Mitigation |
 | --- | --- |
 | Tax rates for tax year 2027 conflicted across sources | Rates are data, accountant sets them, bank figures win |
-| Flutter web cannot use the browser's Ctrl+F | Server search plus an in-app find bar |
+| Flutter web cannot use the browser's Ctrl+F | Server search plus an in-app find bar (deferred) |
 | Hostinger shared constraints: no SSH npm, no migration CLI, no headless Chrome | Documented in `docs/DEPLOY.md` and designed around |
 | MariaDB differs from MySQL in JSON handling and collation | Differences listed in decision 041 and asserted by tests against the real engine |
 | JavaScript rounds integers past 2^53 | `supportBigNumbers` on every connection, guarded by a test. Decision 044 |

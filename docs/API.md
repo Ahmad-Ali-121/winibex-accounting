@@ -2,7 +2,9 @@
 
 Node, Express, MariaDB. REST over JSON. Base path `/api/v1`.
 
-Status: Conventions fixed. Endpoint list is the plan, filled in per phase.
+Status: Phase 0 and Phase 1 endpoints built and tested. 373 API tests: 370
+pass and 3 skip, the argon2 tests, until that package is installed. Updated
+2026-10-26 for the defect fixes (decisions 056 and 057).
 
 ## Conventions
 
@@ -17,6 +19,11 @@ Always an object, never a bare number:
 
 ### Dates
 `YYYY-MM-DD` for accounting dates. ISO 8601 UTC for timestamps.
+
+The business date is Pakistan's. "Today" for the future-date block, "more
+than 90 days ago" for the backdated warning, and "this month" on the
+dashboard are all judged in Asia/Karachi, in `core/dates.js`. Timestamps stay
+UTC. Decision 057.
 
 ### Idempotency
 Every request that creates or posts money carries an `Idempotency-Key` header,
@@ -37,7 +44,10 @@ expense twice.
 }
 ```
 
-`code` is stable and machine-readable. `message` is safe to show a user.
+`code` is stable and machine-readable. `message` is safe to show a user, and
+the app shows it as sent for any 4xx refusal, because it names the actual
+problem ("It holds PKR 9,700 today."). A 5xx or no answer gets the app's own
+wording. FRONTEND.md.
 
 Validation warnings are not errors. A create request with warnings returns
 `409` with the warnings listed. The client shows them, and resubmits with
@@ -73,13 +83,22 @@ api/
     accounts/
     transactions/     includes the posting engine
     taxes/
-    clients/
-    earning-accounts/
-    invoices/
-    documents/        PDF generation for every document type
-    payroll/
-    recurring/
-    reports/
+    vendors/
+    cheques/
+    reimbursements/
+    attachments/
+    categories/
+    users/
+    dashboard/
+    flags/
+    history/
+    clients/          Phase 2
+    earning-accounts/  Phase 2
+    invoices/          Phase 3
+    documents/         Phase 3, PDF generation for every document type
+    payroll/           Phase 4
+    recurring/         Phase 5
+    reports/           Phase 6
     settings/
   migrations/
   jobs/          cron entry points
@@ -101,6 +120,7 @@ Built. Every path below exists and is covered by tests.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
+| POST | /auth/change-password | old and new password. Clears must_change_password |
 | GET | /accounts | with balances computed from posted and reversed journal lines |
 | GET | /accounts/petty-cash | imprest float, shortfall and suggested top-up |
 | GET | /accounts/:id | |
@@ -111,7 +131,8 @@ Built. Every path below exists and is covered by tests.
 | POST | /transactions/:id/reject | reason required |
 | POST | /transactions/:id/reverse | reason required, once only |
 | GET | /transactions/:id | with lines, taxes and charges |
-| GET | /transactions/:id/journal | the debit and credit lines, for the journal panel |
+| GET | /transactions/:id/journal | the debit and credit lines, for the journal panel. Each line carries `coaId`, `code` and `name` |
+| GET | /transactions/:id/history | edit history from the audit log: what changed, by whom, when |
 | POST | /transfers | both legs, created and posted together or not at all |
 | GET | /transfers/:groupId | both legs of one transfer |
 | GET | /taxes | taxes in force on a date |
@@ -132,17 +153,16 @@ Built. Every path below exists and is covered by tests.
 | GET | /attachments/:id/file | stream a stored file. Login required; never a static folder |
 | POST | /transactions/preview | the journal lines an entry would post, saved nowhere |
 | GET | /approvals | the approval inbox, oldest first, each marked isOwnEntry |
-| GET | /flags | the review list: confirmed warnings and raised flags |
+| GET | /flags | the review list: confirmed warnings and raised flags. Open ones by default; `?resolved=true` for resolved ones, `?severity=warning` or `flag` to narrow. Each flag carries `resolvedAt`, `resolvedByName`, `resolvedAutomatically` and `resolutionNote` |
+| POST | /flags/:id/resolve | mark a flag reviewed. Owner or admin only. Body `{ "note": "..." }`, 3 to 255 characters. 409 if already resolved. Decision 056 |
 | GET | /categories | grouped by main head, control accounts excluded |
 | GET | /users | thin list for the people picker: id, name, role |
-| GET | /dashboard | cash held, money in and out this month, pending and flag counts |
+| GET | /dashboard | cash held, money in and out this month, pending count, open flag count. In and out count only money that entered or left a company account: a transfer counts only its fee, a reversal cancels its original on the same side, a cost paid personally is left out. Decision 057 |
 | GET | /history/merge-check | difference per account between history and the opening entry |
 | POST | /history/merge | owner only. Refused while any difference remains |
 
 All of Phase 1's endpoints are built. `GET /currencies` was not needed: the app
-reads the currency list it needs from `/accounts` and the entry form. Edit
-history on a transaction is deferred to a later phase; the audit log holds it
-but no endpoint exposes it yet.
+reads the currency list it needs from `/accounts` and the entry form.
 
 ### Error codes
 
@@ -159,11 +179,12 @@ Stable, and each maps one to one to an `err` key in `app_en.arb`.
 | ALREADY_REVERSED | 409 | an entry is reversed once |
 | APPROVAL_LIMIT_EXCEEDED | 403 | above this admin's limit |
 | REIMBURSEMENT_EXCEEDS_OWED | 400 | more than the company owes that person |
-| MISSING_VENDOR_TAX_ID | 400 | no NTN or CNIC, so a deduction cannot be reported |
+| MISSING_VENDOR_TAX_ID | 400 | no NTN or CNIC, so a deduction cannot be reported. Checked at create and edit when the entry names a vendor |
 | TRANSFER_SAME_ACCOUNT | 400 | a transfer needs two different accounts |
 | OPENING_ALREADY_EXISTS | 409 | there is only ever one |
 | HISTORY_DOES_NOT_RECONCILE | 409 | merge refused, differences in `details` |
-| RECEIPT_REQUIRED | 400 | a payment over the threshold has no receipt |
+| RECEIPT_REQUIRED | 400 | money out at or above `receipt_required_above` has no receipt at posting |
+| ALREADY_EXISTS | 409 | a unique value is already used, such as a cheque number on the same account |
 | UNSUPPORTED_FILE | 400 | a receipt that is not an image or a PDF |
 | FILE_TOO_LARGE | 400 | over the upload size limit |
 | CASH_BELOW_ZERO, FUTURE_DATE, INACTIVE_ACCOUNT, INACTIVE_CATEGORY, BEFORE_OPENING_DATE, HISTORICAL_AFTER_GO_LIVE, LIVE_BEFORE_GO_LIVE, OPENING_WRONG_DATE | 400 | blocking validation |

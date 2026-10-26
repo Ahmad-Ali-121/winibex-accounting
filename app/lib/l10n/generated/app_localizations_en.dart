@@ -1050,4 +1050,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyStatusChanged => 'Status changed';
+
+  @override
+  String get actionMarkReviewed => 'Mark reviewed';
+
+  @override
+  String get markReviewedTitle => 'Mark as reviewed';
+
+  @override
+  String get fieldReviewNote => 'Why it needs nothing more';
+
+  @override
+  String get hintReviewNote =>
+      'Kept with the flag, so anyone can see why it was cleared.';
+
+  @override
+  String get flagMarkedReviewed => 'Marked as reviewed.';
 }

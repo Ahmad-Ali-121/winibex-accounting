@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/api/api_exception.dart';
 import '../../../core/api/api_retry.dart';
 import '../../../core/api/idempotency_key.dart';
 import '../../accounts/application/accounts_providers.dart';
@@ -51,21 +52,37 @@ Future<List<Approval>> approvals(Ref ref) {
 ///
 /// Never retried automatically: approving is posting, and a write that may
 /// have landed must not be repeated on a guess.
-@Riverpod(retry: noRetry)
+///
+/// Each returns null when it worked, or the refusal when it did not, so the
+/// screen can say why. An admin over their approval limit, or a payment with
+/// no receipt, used to fail without a word on screen. Defect D3.
+///
+/// Kept alive: it is read, never watched, so an auto-disposing provider could
+/// be disposed during the request, find itself unmounted, and skip reloading
+/// the inbox, which would leave an approved entry on screen.
+@Riverpod(keepAlive: true, retry: noRetry)
 class ApprovalActions extends _$ApprovalActions {
   @override
   void build() {}
 
-  Future<void> approve(int id) async {
-    await ref.read(transactionsRepositoryProvider).approve(id, newIdempotencyKey());
-    if (!ref.mounted) return;
-    _refresh();
+  Future<ApiException?> approve(int id) async {
+    try {
+      await ref.read(transactionsRepositoryProvider).approve(id, newIdempotencyKey());
+    } catch (error) {
+      return ApiException.from(error);
+    }
+    if (ref.mounted) _refresh();
+    return null;
   }
 
-  Future<void> reject(int id, String reason) async {
-    await ref.read(transactionsRepositoryProvider).reject(id, reason);
-    if (!ref.mounted) return;
-    _refresh();
+  Future<ApiException?> reject(int id, String reason) async {
+    try {
+      await ref.read(transactionsRepositoryProvider).reject(id, reason);
+    } catch (error) {
+      return ApiException.from(error);
+    }
+    if (ref.mounted) _refresh();
+    return null;
   }
 
   /// Balances and the ledger both changed. Ask again rather than adjusting

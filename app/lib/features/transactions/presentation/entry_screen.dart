@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/error_message.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/money_text.dart';
@@ -58,6 +59,16 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             SnackBar(content: Text(posted ? l10n.entrySavedPosted : l10n.entrySavedPending)),
           );
 
+          // Start the next entry from nothing, with a new idempotency key. The
+          // form used to stay filled in with the old key, so changing one
+          // field and saving again was refused as a reused key. D10.
+          ref.invalidate(entryDraftControllerProvider);
+          if (mounted) setState(() => _step = 0);
+
+        // The review step shows these itself: a disabled button while saving,
+        // and the reason when the server refused.
+        case SaveInProgress():
+        case SaveFailed():
         case SaveIdle():
           break;
       }
@@ -84,13 +95,20 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               step: _step,
               lastStep: _lastStep,
               canContinue: _canLeave(_step, draft),
-              onBack: _step == 0 ? null : () => setState(() => _step -= 1),
+              onBack: _step == 0 ? null : _back,
               onNext: () => setState(() => _step += 1),
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// Leaving the review step clears a refusal that is on screen, because the
+  /// person is going back to change something, usually to attach a receipt.
+  void _back() {
+    if (_step == _lastStep) ref.read(entrySaveProvider.notifier).dismiss();
+    setState(() => _step -= 1);
   }
 
   /// What each step needs before the next one makes sense. Deliberately
@@ -419,6 +437,7 @@ class _ReviewStep extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final outcome = ref.watch(entrySaveProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,11 +445,58 @@ class _ReviewStep extends ConsumerWidget {
         _Question(l10n.stepReviewQuestion),
         const JournalPreviewPanel(),
         const SizedBox(height: AppSpacing.xl),
+        if (outcome is SaveFailed) ...[
+          _RefusalBanner(
+            message: errorMessageFor(
+              outcome.error,
+              network: l10n.errNetwork,
+              server: l10n.errServer,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
         FilledButton(
-          onPressed: () => ref.read(entrySaveProvider.notifier).save(canPost: canPost),
+          onPressed: outcome is SaveInProgress
+              ? null
+              : () => ref.read(entrySaveProvider.notifier).save(canPost: canPost),
           child: Text(canPost ? l10n.actionSaveAndPost : l10n.actionSubmitForApproval),
         ),
       ],
+    );
+  }
+}
+
+/// Why the server refused, in its words, where the person is looking: right
+/// above the button they just pressed. D3.
+class _RefusalBanner extends StatelessWidget {
+  const _RefusalBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        border: Border.all(color: colors.negative),
+        borderRadius: BorderRadius.circular(AppRadii.container),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, size: 18, color: colors.negative),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.negative),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

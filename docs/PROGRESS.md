@@ -2,59 +2,86 @@
 
 Read this first. Update it before ending any session.
 
-**Last updated:** 2026-10-02
-**Current phase:** Phase 1 complete, built and deployed. Phase 2 next.
-side of Phase 1 is complete; what remains is Flutter.
-**Where we stopped:** Phase 1 is finished and live. The API runs on Hostinger
-at api-accounting.winibex.com against the production MariaDB; migrations 000 to
-004 are applied there. 346 API tests and 62 Flutter tests pass. All fifteen
-steps are done, plus receipts, the dashboard and the flags review list. The
-accountant review document has been prepared and is with the accountant. What
-is left is not Phase 1 features: the web app onto accounting.winibex.com and
-its smoke test, seeding real tax rates once the accountant confirms them, the
-opening entry at 2026-07-01, and a few deferred niceties listed below.
+**Last updated:** 2026-10-26
+**Current phase:** Phase 1 complete, built and deployed. Defect fixes done
+locally, not yet on production. Phase 2 next.
+**Where we stopped:** The defect fixes from the Phase 1 test guide are built
+and pass locally: 373 API tests (370 pass, 3 argon2 skips), 78 Flutter tests,
+analyze clean. Docs and `docs/PHASE1-TEST.md` are updated to match. Next is
+pending item 9: migration 005 on production, push, then the full test.
 
-## Deployed, 2026-10-03
+Production still runs the code from before the fixes. The API runs on
+Hostinger at api-accounting.winibex.com; the web app is at
+accounting.winibex.com. Both deploy automatically: the API via Hostinger Git
+integration on push, the web app via GitHub Actions building Flutter web and
+uploading over FTP. Migrations 000 to 004 are applied on production; 005 is
+not yet. The accountant review document is with the accountant.
 
-- API on Hostinger, Node 24, MariaDB 11.8.9, bcrypt confirmed at ~295ms so
-  bcryptjs stays (decision 054, open item L closed)
-- Collation changed everywhere from utf8mb4_uca1400_ai_ci to utf8mb4_unicode_ci,
-  because Hostinger's 11.8.9 lacks the uca1400 family (decision 054)
-- Migrations applied through phpMyAdmin; Hostinger's SSH shell has no Node, so
-  the runner could not execute there
+## Deployed
+
+- API at api-accounting.winibex.com, Node 24, MariaDB 11.8.9
+- Web app at accounting.winibex.com, Flutter web with wasm, path URLs
+- bcryptjs stays at ~295ms (decision 054, open item L closed)
+- Collation: utf8mb4_unicode_ci everywhere (decision 054)
+- Migrations applied through phpMyAdmin (Hostinger SSH has no Node)
 - Owner password hash set directly on production, never committed
+- CI/CD: API auto-deploys on push via Hostinger Git integration; web app
+  deploys via GitHub Actions building `flutter build web --wasm` and uploading
+  to Hostinger over FTP
+- .htaccess handles force HTTPS, SPA fallback for path URLs, COOP/COEP headers
+  for wasm, and cache headers for hashed assets
 
+## Pending before Phase 2
 
-## Next three things
+These are not Phase 1 features. They are setup tasks and external dependencies.
 
-1. Finish the web deploy: force HTTPS in .htaccess, set CORS_ORIGINS to the
-   https origin, run the DEPLOY.md smoke test end to end against the live API
-2. Accountant's answers, then seed the tax rates and rules (migration 005 or a
-   seed run) and record the opening balances at 2026-07-01
-3. Start Phase 2, clients and projects
+1. **Accountant's answers.** Tax rates (Section 154A, 236Y, s.153), AFRS
+   framework confirmation, and open questions in CHART-OF-ACCOUNTS.md and
+   TAXES.md. Blocks: seeding tax rates (migration 005 or a seed run) and
+   entering real tax entries. Does NOT block using the system for non-tax
+   entries
+2. **Opening balances at 30 June 2026.** Ahmad to supply real figures from bank
+   statements, plus open invoices and the director loan balance at that date.
+   Blocks: the opening entry
+3. **Full Phase 1 test.** `docs/PHASE1-TEST.md`, with dummy data, the exact
+   result for every step, and support files in `api/scripts/test/` (seed,
+   checks and reset SQL, and a REST Client `.http` file for the features that
+   have no screen yet). Run locally, then on production, then reset
+   production with `phase1-reset.sql` and re-apply migrations 000 to 005.
+   Replaces the A to O script, which assumed buttons the app does not have.
+   Rewritten 2026-10-26 with the figures the fixed code produces
+4. **Owner password on production.** Set `must_change_password = 1` on the
+   owner row via phpMyAdmin so the first login forces a password change
+5. **Onest font files.** Ahmad to download the four weights from Google Fonts
+   and place them under `app/assets/fonts/`
+6. **check-docs.js guard script.** Rule 7 in the documentation rules. Not yet
+   written
+7. **PSEB certificate expiry date.** For the expiry warning flag. Ahmad to
+   supply
+8. **Defects found while writing the test.** D1 to D14 are fixed or
+   settled, locally (decisions 056 to 058). `docs/PHASE1-TEST.md` says where
+   each fix shows. Still open: D15, the Phase 1 features with no screen in the
+   app yet (opening entry, transfers, reversal, reimbursements, people
+   balances, vendors, cheques, tax and charge lines on the form, petty cash
+   status, history merge, adding users, editing a draft, resubmitting a
+   rejected entry, currencies other than USD on the form). Next step after the
+   test
+9. **Roll the fixes out to production, in this order.** The API deploys
+   itself on push, and the new code reads columns that only migration 005
+   creates, so the order matters:
+   1. phpMyAdmin, accounting database, SQL tab: paste
+      `api/migrations/005_flag_resolution.sql`, Go.
+      `SELECT * FROM schema_migrations;` shows six rows
+   2. Commit and push the API and app changes from batches 1 to 3
+   3. Wait for both deploys, then sign in at accounting.winibex.com and check
+      the dashboard opens
+   4. Run the full test (item 3) on production, then reset it
 
-Deferred, not blocking use:
+## Phase 2 scope
 
-- Edit history shown on a transaction (the audit log exists, it is not surfaced)
-- FRONTEND.md still describes core/http, core/money, core/router/routes.dart;
-  the code uses core/api, core/money, core/router/app_router.dart and puts
-  providers in features/<x>/application. Fix the document to match the code
-- The check-docs.js guard script (rule 7 in the documentation rules)
-- Hash prettier URLs on web (cosmetic)
-
-
-Done this session, for reference:
-
-1. Step 1.2, migration 004: transactions, journal_lines, transaction_taxes,
-   transaction_charges, entry_flags, attachments, vendors, reimbursements,
-   reimbursement_items, cheques, with the posted-row immutability trigger,
-   CHECK constraints and indexes. Keys are `BIGINT UNSIGNED` to match
-   migration 001. Proved by raw SQL tests before anything is built on it
-2. Step 1.3 and 1.4, `core/money.js` and the posting engine. Every worked
-   posting in CHART-OF-ACCOUNTS.md becomes a test asserting exact journal lines
-3. First real Hostinger deploy. Throwaway `probe-deploy.js` to a subdomain to
-   confirm Node 24 runs the code, then decide argon2 versus bcryptjs with no
-   real passwords at stake. Open item L
+Clients and projects: client CRUD, projects (fixed/retainer/hourly), earning
+accounts with partner splits, per-client profit. Should wait until Phase 1 is
+used with real entries first.
 
 ---
 
@@ -100,7 +127,7 @@ Done this session, for reference:
 
 ## Phase 1 — Money in and out
 
-API, done:
+API — all done:
 
 - [x] Accounts list with live balances
 - [x] Tax suggestion from tax rules, editable lines, rate snapshot
@@ -130,25 +157,65 @@ API, done:
 - [x] Transfers between accounts, two linked legs through 1118
 - [x] Reverse instead of delete, no edit after posting
 - [x] Property test: 150 random operations, books checked after every one
+- [x] Ledger list: search, filter by account, category, client, date range
+- [x] Server-side search across all rows
+- [x] Category picker grouped by main head
+- [x] Approval inbox endpoint
+- [x] Review list for flagged entries
+- [x] Receipt upload and the receipt rules enforced (multer, 10 MB, images and PDF)
+- [x] Edit history visible on each transaction (from audit_log)
+- [x] Dashboard: cash held, money in/out this month, pending and flag counts
+- [x] Change password endpoint with forced-change guard
+- [x] Journal preview (POST /transactions/preview)
+- [x] Thin users list for the people picker
 
-API, still to do:
+Flutter — done:
 
-- [ ] Ledger list: search, filter by account, category, client, date range
-- [ ] Server-side search across all rows
-- [ ] Category picker grouped by main head
-- [ ] Approval inbox endpoint
-- [ ] Review list for flagged entries
-- [ ] Receipt upload and the receipt rules enforced
-- [ ] Edit history visible on each transaction
-
-Flutter:
-
-- [ ] Accounts list with live balances
-- [ ] Guided entry form: direction, currency, amount, paid by, rate or PKR,
+- [x] Accounts list with live balances
+- [x] Guided entry form: direction, currency, amount, paid by, rate or PKR,
       taxes and charges, category, receipt, review with journal preview
-- [ ] View journal entry panel on any posted transaction
-- [ ] Ledger list and approval inbox
-- [ ] `find_in_page` for on-screen find
+- [x] View journal entry panel on any posted transaction
+- [x] Ledger list and approval inbox
+- [x] Receipt upload field with camera/file picker
+- [x] Dashboard with live figures
+- [x] Flags review list
+- [x] Change password screen with forced-change guard
+- [x] Edit history panel on transactions
+- [x] Path URL strategy (no hash routing) with .htaccess SPA fallback
+- [ ] `find_in_page` for on-screen find (deferred, not blocking)
+
+Deploy — done:
+
+- [x] API on Hostinger via Git integration, auto-deploys on push
+- [x] Web app on Hostinger via GitHub Actions + FTP
+- [x] .htaccess: force HTTPS, SPA fallback, COOP/COEP, cache headers
+- [x] CORS_ORIGINS set to the https origin
+- [x] Migrations 000-004 applied via phpMyAdmin
+- [ ] Migration 005 applied via phpMyAdmin (pending item 9)
+- [x] Owner password hash set on production
+
+347 API tests. 62 Flutter widget tests. Flutter analyze clean.
+
+Defect fixes, 2026-10-26, local only until pending item 9:
+
+- [x] D1 "No receipt" only on money out with no receipt
+- [x] D2 flags clear themselves, and can be marked reviewed. Migration 005
+- [x] D3 refused saves and approvals shown on screen
+- [x] D4 only those allowed to post their own entries see "Save and post"
+- [x] D5 rate-deviation warning
+- [x] D6 transfer with no fee
+- [x] D7 withholding from a vendor with no NTN or CNIC refused
+- [x] D8 duplicate cheque number answers 409
+- [x] D9 Pakistan business date
+- [x] D10 the entry form starts again after a save
+- [x] D11 dashboard month counts real money movement
+- [x] D12 journal panel shows codes and names
+- [x] D13 decision 055 kept, UI-GUIDE corrected
+- [x] D14 unusual-amount warning with a fractional average
+- [ ] D15 screens for the API-only features
+
+373 API tests (370 pass, 3 argon2 skips). 78 Flutter tests. Flutter analyze
+clean.
 
 ## Phase 2 — Clients and projects
 
@@ -196,8 +263,9 @@ Flutter:
 
 ## Phase 6 — Dashboard and reports
 
-- [ ] Cash per account
-- [ ] Income against spending, current month
+The basic dashboard (cash per account, money in/out, pending and flag counts)
+was built in Phase 1. This phase adds the full reporting suite.
+
 - [ ] Runway: months of fixed cost covered
 - [ ] Client profit
 - [ ] Receivables summary
@@ -256,6 +324,51 @@ Flutter:
 
 ## Session log
 
+### 2026-10-26 (defect fixes, batches 1 to 4)
+Fixed every code defect from the test guide, in four batches, each checked
+by Ahmad's own test run before the next. Batch 1, the server: D5 to D9, D11,
+D12, D14, with `core/dates.js` new and 15 tests in
+`tests/defect-fixes.test.js`. Batch 2: D1 and D2, migration 005, `POST
+/flags/:id/resolve`, receipts resolving their own flag, 8 more tests; 373 API
+tests, 370 pass, 3 skip. Batch 3, the app: D3, D4, D10 and the Mark reviewed
+button, `error_message.dart` new, 16 more Flutter tests; analyze clean, all
+pass. Batch 4: API, SCHEMA, UI-GUIDE, FRONTEND, CODEMAP and TESTING updated,
+and `docs/PHASE1-TEST.md` and its four files rewritten with figures from a
+model of the fixed rules. The model checks itself: cash at the start of the
+month plus In minus Out equals cash held, at every checkpoint. Decision 058
+records what was settled while building, and two new open questions, N and O.
+
+Lessons: the tests that existed did not exercise a refused save, a fee-less
+transfer or the rate warning, which is how D3, D5 and D6 shipped. Each now has
+a test. A local edit to an already applied migration (003) made `migrate:up`
+refuse with "CHANGED SINCE APPLIED"; that is the checksum guard from decision
+052 working, not a fault.
+
+### 2026-10-20 (fix order, decision 056)
+Agreed order: confirm the defects with a short local run of the test (D1, D3,
+D5, D6, D7, D12), then fix D3 first, then D5, D6, D7 and D12, then D1, D2 and
+D9, then run the full test locally and on production, then reset production.
+Decision 056 settles how flags are cleared (D2): they clear themselves when
+the cause is fixed, and the owner or an admin can mark one reviewed with a
+note. Needs migration 005.
+
+### 2026-10-19 (Phase 1 test guide)
+Wrote `docs/PHASE1-TEST.md` and the four files in `api/scripts/test/`,
+checked against the code as built rather than the plan. Every expected
+balance, count and journal number was computed from a model of the posting
+rules, and the two models (by entry and by journal line) agree. Writing it
+turned up fifteen defects, D1 to D15, now pending item 8. The worst: the app
+hides every server refusal (D3), and the rate-deviation percentage is off by
+a factor of 100, so the warning never fires (D5). Neither was caught by the
+test suites: the widget tests do not exercise a refused save, and no API test
+appears to check the rate warning.
+
+### 2026-10-19 (documentation audit for Phase 2 handoff)
+Reviewed all 13 project documents against what was actually built. Updated
+PROGRESS.md, CODEMAP.md, OVERVIEW.md, API.md, DEPLOY.md, SCHEMA.md,
+TESTING.md and AGENTS.md to reflect Phase 1 completion. Added a clear
+"Pending before Phase 2" section for the next session.
+
 ### 2026-10-03 (Phase 1 finished and deployed)
 Steps 1.8 to 1.15, receipts, dashboard, flags, and the first real deploy.
 Recorded in decisions 052 to 055.
@@ -267,22 +380,21 @@ list, and receipt upload. Nine feature modules in all.
 
 App: the accounts list, the guided entry form with the journal preview and the
 warnings dialog, the ledger with the journal panel, the approval inbox, the
-dashboard, and the flags review list. Money never passes through a double on
-either side of the wire.
+dashboard, the flags review list, the change-password screen, and the edit
+history panel. Receipt upload with file_picker. Path URLs with .htaccess SPA
+fallback. Money never passes through a double on either side of the wire.
 
 Deploy: a throwaway probe to the real server first, which caught that the
 collation every migration used does not exist on Hostinger's MariaDB, before a
 single table was created. Fixed to utf8mb4_unicode_ci. bcrypt timing on the
 real server closed the argon2 question. Migrations applied by hand through
-phpMyAdmin because the SSH shell has no Node.
+phpMyAdmin because the SSH shell has no Node. Web app deployed with GitHub
+Actions building Flutter web and uploading over FTP. .htaccess configured for
+force HTTPS, SPA fallback, COOP/COEP and cache headers.
 
 Three package choices, each recorded: multer for uploads, file_picker for the
 app (with a warning that it breaks its own API every major version), and the
 collation change.
-
-Still open: the accountant review, the web app's final CORS and HTTPS wiring,
-real tax rates and the opening entry, and the deferred niceties above.
-
 
 ### 2026-10-02 (steps 1.5 to 1.12, the rest of the Phase 1 API)
 Nine modules, about forty endpoints, 190 tests became 313. Everything recorded
@@ -308,11 +420,6 @@ in decision 053. What the build taught us, in the order it hurt:
 Migration 002 was edited three times and the database rebuilt each time, which
 is only acceptable because nothing is deployed. Decision 052 says that stops at
 the first Hostinger deploy.
-
-Still open: the accountant's review, the first deploy and the argon2 call
-(item L), the Onest font download, the `check-docs.js` guard script, and open
-item D, whether staff should see company balances at all.
-
 
 ### 2026-10-02 (steps 1.2 to 1.4a, the schema and the posting engine)
 Migration 004 applied: thirteen tables, four triggers, every constraint proved
@@ -373,11 +480,6 @@ What was wrong:
    two rules
 9. FRONTEND.md listed `riverpod_lint` as a package in use. Decision 049 left it
    out on purpose. Marked as not installed
-
-Still open: the guard script `api/scripts/check-docs.js`, the first Hostinger
-deploy and the argon2 call (item L), the Onest font download, and the accountant
-review of TAXES.md and CHART-OF-ACCOUNTS.md.
-
 
 ### 2026-10-01 (Phase 0 complete)
 Steps 0.2 through 0.15 in one run. The whole foundation: migration runner,

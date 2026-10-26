@@ -48,14 +48,22 @@ class _FakeAccountsRepository extends AccountsRepository {
 }
 
 class _FakeTransactionsRepository extends TransactionsRepository {
-  _FakeTransactionsRepository({this.createFails}) : super(dio: Dio());
+  _FakeTransactionsRepository({this.createFails, this.approveFails}) : super(dio: Dio());
 
   /// Thrown on the first create only, so the second call can succeed and the
   /// test can check what the retry actually sent.
   ApiException? createFails;
 
+  /// Thrown on the first approve only: the entry was created, then refused at
+  /// posting, as a large payment with no receipt is.
+  ApiException? approveFails;
+
   EntryDraft? lastCreated;
   int createCalls = 0;
+  int approveCalls = 0;
+
+  /// The idempotency key of every create, in order.
+  final List<String> createdKeys = [];
 
   @override
   Future<List<CategoryGroup>> categories({String? direction}) async {
@@ -113,6 +121,7 @@ class _FakeTransactionsRepository extends TransactionsRepository {
   Future<int> create(EntryDraft draft) async {
     createCalls += 1;
     lastCreated = draft;
+    createdKeys.add(draft.idempotencyKey);
 
     final failure = createFails;
     if (failure != null) {
@@ -123,7 +132,14 @@ class _FakeTransactionsRepository extends TransactionsRepository {
   }
 
   @override
-  Future<void> approve(int id, String idempotencyKey) async {}
+  Future<void> approve(int id, String idempotencyKey) async {
+    approveCalls += 1;
+    final failure = approveFails;
+    if (failure != null) {
+      approveFails = null;
+      throw failure;
+    }
+  }
 
   @override
   Future<void> submit(int id) async {}
@@ -387,5 +403,95 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.createCalls, 1, reason: 'it was sent once and refused, and not sent again');
+  });
+
+  // -------------------------------------------------------------------------
+  // Defect D3: a refusal is shown, not swallowed
+  // -------------------------------------------------------------------------
+
+  testWidgets('a refused save shows the server reason above the button', (tester) async {
+    const reason = 'That leaves petty cash below zero. It holds PKR 9,700 today.';
+    final repository = _FakeTransactionsRepository(
+      createFails: const ApiException(code: 'CASH_BELOW_ZERO', message: reason, status: 400),
+    );
+
+    await _pump(tester, transactions: repository);
+    await _fillIn(tester);
+
+    await tester.tap(find.text('Save and post'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(reason), findsOneWidget);
+    expect(find.text('Check this before saving'), findsOneWidget, reason: 'still on the review step');
+    expect(repository.createCalls, 1);
+  });
+
+  testWidgets('a posting refused after creation says why, and the retry reuses the key', (tester) async {
+    const reason = 'A payment of this size needs a receipt attached before it can be posted.';
+    final repository = _FakeTransactionsRepository(
+      approveFails: const ApiException(code: 'RECEIPT_REQUIRED', message: reason, status: 400),
+    );
+
+    await _pump(tester, transactions: repository);
+    await _fillIn(tester);
+
+    await tester.tap(find.text('Save and post'));
+    await tester.pumpAndSettle();
+    expect(find.text(reason), findsOneWidget);
+
+    await tester.tap(find.text('Save and post'));
+    await tester.pumpAndSettle();
+
+    expect(repository.approveCalls, 2);
+    expect(
+      repository.createdKeys[1],
+      repository.createdKeys[0],
+      reason: 'the same key replays the draft rather than making a second one',
+    );
+    expect(find.text('Saved and posted.'), findsOneWidget);
+  });
+
+  testWidgets('no connection says the entry is kept, in the app own words', (tester) async {
+    final repository = _FakeTransactionsRepository(
+      createFails: const ApiException(code: 'NETWORK', message: 'Could not reach the server.'),
+    );
+
+    await _pump(tester, transactions: repository);
+    await _fillIn(tester);
+
+    await tester.tap(find.text('Save and post'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Could not reach the server. Your entry is kept. Try again when connected.'),
+      findsOneWidget,
+    );
+  });
+
+  // -------------------------------------------------------------------------
+  // Defect D10: after a save the form starts again
+  // -------------------------------------------------------------------------
+
+  testWidgets('after a save the form starts again, empty, with a new key', (tester) async {
+    final repository = _FakeTransactionsRepository();
+
+    await _pump(tester, transactions: repository);
+    await _fillIn(tester);
+    await tester.tap(find.text('Save and post'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Step 1 of 6'), findsOneWidget);
+    expect(find.text('Did money come in, or go out?'), findsOneWidget);
+
+    await _fillIn(tester);
+    await tester.tap(find.text('Save and post'));
+    await tester.pumpAndSettle();
+
+    expect(repository.createdKeys.length, 2);
+    expect(
+      repository.createdKeys[1],
+      isNot(repository.createdKeys[0]),
+      reason: 'a new entry needs a new key, or the server refuses it as a reused one',
+    );
   });
 }

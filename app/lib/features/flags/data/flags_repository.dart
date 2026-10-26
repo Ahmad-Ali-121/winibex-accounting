@@ -24,6 +24,16 @@ class FlagsRepository {
       throw ApiException.from(error);
     }
   }
+
+  /// Marks a flag reviewed, with the reason. The owner or an admin only; the
+  /// server refuses anyone else. Decision 056.
+  Future<void> resolve(int id, String note) async {
+    try {
+      await dio.post<Map<String, dynamic>>('/flags/$id/resolve', data: {'note': note});
+    } catch (error) {
+      throw ApiException.from(error);
+    }
+  }
 }
 
 /// Something raised against an entry and not yet dealt with: a warning someone

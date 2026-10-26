@@ -126,7 +126,7 @@ GoRouter appRouter(Ref ref) {
           ),
           GoRoute(
             path: Routes.flags,
-            builder: (context, state) => const FlagsScreen(),
+            builder: (context, state) => const _Flags(),
           ),
           GoRoute(
             path: Routes.clients,
@@ -163,17 +163,31 @@ GoRouter appRouter(Ref ref) {
   );
 }
 
-/// Whether this person may post rather than submit for approval decides what
-/// the final button says. The server decides for real: a staff login pressing
-/// a button labelled "Save and post" would still get a 403, which is why the
-/// label is the only thing this changes.
+/// Whether this person's own entry posts straight away decides what the final
+/// button says and does: post it, or submit it for someone else. The server
+/// decides for real; this keeps the app from offering what it would refuse.
+///
+/// It was "owner or admin", which offered "Save and post" to admins who may
+/// not post their own entries. D4.
 class _NewEntry extends ConsumerWidget {
   const _NewEntry();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final role = ref.watch(authControllerProvider).value?.role;
-    return EntryScreen(canPost: role == 'owner' || role == 'admin');
+    final user = ref.watch(authControllerProvider).value;
+    return EntryScreen(canPost: user?.canPostOwnEntries ?? false);
+  }
+}
+
+/// Only the owner and admins may mark a flag reviewed, so only they see the
+/// button. The server checks again. Decision 056.
+class _Flags extends ConsumerWidget {
+  const _Flags();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).value;
+    return FlagsScreen(canReview: user?.canApprove ?? false);
   }
 }
 

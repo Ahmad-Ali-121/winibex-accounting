@@ -13,6 +13,10 @@ transactions, triggers, constraints.
 cd api && npm run test
 ```
 
+373 API tests after the defect fixes of 2026-10-26: 370 pass, 3 skip (the
+argon2 tests, until that package is installed). 78 Flutter widget tests.
+Flutter analyze clean.
+
 ### Must always pass
 
 **Posting invariants**, tested on every posting path:
@@ -25,10 +29,10 @@ cd api && npm run test
 - Balances computed from journal lines equal balances computed from
   transactions
 
-**Property test.** Generate a few hundred random valid operations: entries,
-transfers, reversals, invoice payments, reimbursements. After each, assert the
-trial balance is zero and every account balance matches its journal lines.
-This finds the bugs nobody thought to write a case for.
+**Property test.** 150 random valid operations: entries, transfers, reversals,
+reimbursements. After each, assert the trial balance is zero and every account
+balance matches its journal lines. This finds the bugs nobody thought to write
+a case for.
 
 **Validation.** One test per blocking rule, proving it blocks. One per warning,
 proving it returns `409` and proceeds once acknowledged.
@@ -63,6 +67,27 @@ user sets `possible_self_approval`.
 **FX revaluation.** Revaluation and its reversal net to zero, and the gain or
 loss on settlement equals the difference from the original rate.
 
+**Dashboard.** Cash balances, money in/out totals, pending and flag counts
+match what the individual endpoints report. Cash held at the start of the
+month plus money in minus money out equals cash held now, through transfers,
+reversals and a cost paid personally. Decision 057.
+
+**Receipts.** Upload, size limit, file type validation. Receipt requirement
+enforced at posting time for money out at or above the threshold. Money in,
+transfers, reimbursements, the opening entry and manual journals are exempt.
+Decisions 055 and 057.
+
+**Flags.** "No receipt" only on money out with no receipt. Attaching a receipt
+resolves it. The owner or an admin can mark a flag reviewed with a note; staff
+cannot; a resolved flag cannot be resolved twice. Decision 056.
+
+**Defect regressions.** `tests/defect-fixes.test.js` holds one or more tests
+for every defect found while writing `docs/PHASE1-TEST.md` (D1, D2, D5 to D9,
+D11, D12, D14), so none can come back unnoticed.
+
+**Edit history.** The audit log records every change, and the history endpoint
+returns them in order with before and after values.
+
 ### Worked examples as tests
 
 Every posting in `docs/CHART-OF-ACCOUNTS.md` is a test case asserting the exact
@@ -75,9 +100,14 @@ cd app && flutter test
 cd app && flutter analyze
 ```
 
-- Widget tests for the entry form: every step, every conditional field
-- Golden tests for key screens in both light and dark themes
-- Money formatting tests, including negatives and foreign amounts
+- Widget tests for the entry form: every step, every conditional field, journal
+  preview, warnings dialog, a refused save shown on screen, a retry that reuses
+  the idempotency key, the form starting again after a save
+- Widget tests for the approval inbox, including a refused approval
+- Widget tests for the review list and Mark reviewed
+- Unit tests for who may post their own entries (`auth_user_test.dart`)
+- Widget tests for the accounts list with balances
+- Money formatting tests, including negatives, foreign amounts and zero
 - Provider tests with overridden API providers
 
 ## Before every deploy
@@ -87,3 +117,9 @@ cd app && flutter analyze
 - [ ] Migrations applied cleanly to a copy of production data
 - [ ] Trial balance on the copy is zero
 - [ ] Manual smoke test from the release checklist in `docs/DEPLOY.md`
+
+## The full Phase 1 test
+
+`docs/PHASE1-TEST.md` is the end-to-end run with dummy data and the expected
+result of every step. Run it locally, then on production, then reset
+production before real entries go in.

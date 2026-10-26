@@ -230,7 +230,9 @@ test('flags carry the entry they are about, not just a code', async () => {
   const response = await api.get('/flags', { token: tokens.owner });
 
   assert.equal(response.status, 200);
-  assert.ok(response.body.flags.length > 0, 'every entry so far has had no receipt');
+  // The money-out entries above carry no receipt, and the July dates are
+  // backdated, so there is always something open to review.
+  assert.ok(response.body.flags.length > 0, 'the review list is empty');
 
   const flag = response.body.flags[0];
   assert.ok(flag.code);

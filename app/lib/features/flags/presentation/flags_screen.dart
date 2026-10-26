@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/error_message.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_panel.dart';
@@ -15,7 +16,11 @@ import '../data/flags_repository.dart';
 /// such as a payment with no receipt. Nothing here is an error: the entries
 /// are posted. This is the list an owner skims to keep the books honest.
 class FlagsScreen extends ConsumerWidget {
-  const FlagsScreen({super.key});
+  const FlagsScreen({super.key, this.canReview = false});
+
+  /// The owner or an admin, who may mark a flag reviewed. The server decides
+  /// for real; this only decides whether the button is offered.
+  final bool canReview;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,7 +33,7 @@ class FlagsScreen extends ConsumerWidget {
       AsyncData(:final value) => ListView.builder(
           padding: const EdgeInsets.all(AppSpacing.lg),
           itemCount: value.length,
-          itemBuilder: (context, index) => _FlagCard(flag: value[index]),
+          itemBuilder: (context, index) => _FlagCard(flag: value[index], canReview: canReview),
         ),
       AsyncError(:final error) => ErrorPanel.from(
           error,
@@ -42,12 +47,13 @@ class FlagsScreen extends ConsumerWidget {
   }
 }
 
-class _FlagCard extends StatelessWidget {
-  const _FlagCard({required this.flag});
+class _FlagCard extends ConsumerWidget {
+  const _FlagCard({required this.flag, required this.canReview});
   final EntryFlag flag;
+  final bool canReview;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
     final tone = flag.isWarning ? colors.pending : colors.info;
@@ -93,9 +99,68 @@ class _FlagCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
+              const Spacer(),
+              // A flag is cleared on purpose, with a reason that stays with
+              // it. One whose cause went away, such as a receipt arriving,
+              // clears itself and never reaches this list. Decision 056.
+              if (canReview)
+                TextButton(
+                  onPressed: () => _markReviewed(context, ref),
+                  child: Text(l10n.actionMarkReviewed),
+                ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _markReviewed(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final controller = TextEditingController();
+
+    final note = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.markReviewedTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 255,
+          decoration: InputDecoration(
+            labelText: l10n.fieldReviewNote,
+            helperText: l10n.hintReviewNote,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
+            child: Text(l10n.actionMarkReviewed),
+          ),
+        ],
+      ),
+    );
+
+    // "Reviewed" with no reason is a flag dismissed by reflex. The server
+    // wants three characters at least, and so does this.
+    if (note == null || note.length < 3 || !context.mounted) return;
+
+    // Taken now: once the flag is resolved the list reloads and this card is
+    // gone, so its context cannot be used afterwards.
+    final messenger = ScaffoldMessenger.of(context);
+    final refusal = await ref.read(flagActionsProvider.notifier).resolve(flag.id, note);
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          refusal == null
+              ? l10n.flagMarkedReviewed
+              : errorMessageFor(refusal, network: l10n.errNetwork, server: l10n.errServer),
+        ),
       ),
     );
   }

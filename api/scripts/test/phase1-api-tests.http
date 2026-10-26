@@ -1,0 +1,1217 @@
+# Phase 1 API tests. Used by docs/PHASE1-TEST.md, Parts 4, 6, 7 and 8.
+# Expected results match the code after the defect fixes of 2026-10-26
+# (D1 to D10, D12, D14).
+#
+# Open this file in VS Code with the "REST Client" extension (publisher
+# Huachao Mao). A "Send Request" link appears above every request. Click it
+# and the response opens on the right. Run them in order, top to bottom,
+# only when the guide tells you to.
+#
+# Put three files in the same folder as this one:
+#   receipt.pdf   any small PDF
+#   receipt.jpg   any small photo
+#   notes.txt     any text file (used to prove text files are refused)
+#
+# Money in every body is paisa. 560000 is PKR 5,600.00.
+#
+# If any request answers 401 "Your session has expired. Sign in again.",
+# send the matching sign-in request in section 0 again and carry on.
+
+# ---------------------------------------------------------------------------
+# SETTINGS. Fill these in before the first request.
+# ---------------------------------------------------------------------------
+
+@api = http://localhost:3000/api/v1
+# For production, put a # in front of the line above and remove it here:
+# @api = https://api-accounting.winibex.com/api/v1
+
+# The date you are testing on, as YYYY-MM-DD. Must match the app's date.
+@today = 2026-10-26
+
+@ownerEmail = winibexoffice@gmail.com
+@ownerPassword = PUT-THE-CURRENT-OWNER-PASSWORD-HERE
+@testPassword = Winibex-Test-2026
+
+# From phase1-checks.sql, Section A. Replace every 0.
+@bankId = 0
+@cashId = 0
+@pettyId = 0
+@staffId = 0
+@cat5100 = 0
+@cat6200 = 0
+@cat6400 = 0
+@cat6600 = 0
+@coa8100 = 0
+@coa8200 = 0
+@tax236y = 0
+@tax153 = 0
+
+# Tokens, filled automatically by the sign-in requests below.
+@owner = {{ownerLogin.response.body.$.accessToken}}
+@staff = {{staffLogin.response.body.$.accessToken}}
+@admin = {{adminLogin.response.body.$.accessToken}}
+@limited = {{limitedLogin.response.body.$.accessToken}}
+
+# The entry from 6.4b.
+@card1aId = {{card1aAck.response.body.$.transaction.id}}
+
+
+###############################################################################
+# 0. SIGN IN
+###############################################################################
+
+### 0.1 Owner. Expect 200 with accessToken and user.role "owner".
+# @name ownerLogin
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{ownerEmail}}", "password": "{{ownerPassword}}" }
+
+### 0.2 Test Staff. Expect 200, user.role "staff".
+# @name staffLogin
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "staff@winibex.test", "password": "{{testPassword}}" }
+
+### 0.3 Test Admin. Expect 200, user.role "admin".
+# @name adminLogin
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@winibex.test", "password": "{{testPassword}}" }
+
+### 0.4 Test Limited Admin. Expect 200, user.role "admin".
+# @name limitedLogin
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "limited@winibex.test", "password": "{{testPassword}}" }
+
+
+###############################################################################
+# PART 4. THE OPENING ENTRY
+###############################################################################
+
+### 4.1 Staff tries to post the opening entry.
+# Expect 403, FORBIDDEN, "Only the owner can post the opening entry."
+POST {{api}}/opening-entry
+Authorization: Bearer {{staff}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{ "balances": [ { "code": "1113", "amount": 50000000 } ] }
+
+### 4.2 Owner posts the opening entry.
+# Bank 500,000, office cash 50,000, petty cash 10,000, director loan 200,000.
+# Expect 201: openingEntry.journalNumber is the first number (e.g. JV-0001),
+# date "2026-07-01", total.minor 56000000, lines 5.
+# The fifth line is 3400 Opening balance equity, credit 360,000, which the
+# system works out itself.
+# If you get "There is no ledger account 2210", remove that line and note it.
+POST {{api}}/opening-entry
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "description": "Opening balances at 30 June 2026 (TEST)",
+  "balances": [
+    { "code": "1113", "amount": 50000000 },
+    { "code": "1111", "amount": 5000000 },
+    { "code": "1112", "amount": 1000000 },
+    { "code": "2210", "amount": 20000000 }
+  ]
+}
+
+### 4.3 A second opening entry.
+# Expect 409, OPENING_ALREADY_EXISTS,
+# "There is already an opening entry, JV-0001."
+POST {{api}}/opening-entry
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{ "balances": [ { "code": "1113", "amount": 100 } ] }
+
+### 4.4 Merge check right after the opening entry.
+# Expect 200: historyMerged false, historicalEntries 0, canMerge false,
+# four rows in differences (1111, 1112, 1113, 2210), each difference equal
+# to that account's opening figure.
+GET {{api}}/history/merge-check
+Authorization: Bearer {{owner}}
+
+
+###############################################################################
+# PART 6. FEATURES THAT ONLY HAVE AN API SO FAR
+###############################################################################
+
+### 6.2a Who am I. Expect 200, user.role "owner".
+GET {{api}}/me
+Authorization: Bearer {{owner}}
+
+### 6.2b Dashboard checkpoint after Part 5.
+# Expect: cashHeld.minor 83495000, monthIn.minor 32025000,
+# monthOut.minor 4280000, pendingCount 0, openFlagCount 10,
+# historyMerged false.
+GET {{api}}/dashboard
+Authorization: Bearer {{owner}}
+
+### 6.2c Accounts checkpoint after Part 5.
+# Expect: Winibex bank 78715000, Office cash 3810000, Petty cash 970000,
+# every other account 0, total.minor 83495000.
+GET {{api}}/accounts
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.3 and 6.4: worked example 1a, a $20 card payment ----------------------
+
+### 6.3 Journal preview. Nothing is saved.
+# Expect 200: totals gross 560000, taxTotal 2800, chargesTotal 32500,
+# withheldTotal 0, amount 595300. Five lines (order may differ):
+#   6400 debit 560000, 8200 debit 28000, 8100 debit 4500,
+#   1141 debit 2800, 1113 credit 595300.
+POST {{api}}/transactions/preview
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "card",
+  "description": "Claude Team seat, company card, worked example 1a",
+  "categoryId": {{cat6400}},
+  "accountId": {{bankId}},
+  "gross": { "minor": 560000, "currency": "PKR" },
+  "foreign": { "minor": 2000, "currency": "USD" },
+  "fxRate": "280",
+  "fxRateSource": "bank_advice",
+  "taxes": [
+    { "taxId": {{tax236y}}, "baseAmount": { "minor": 560000, "currency": "PKR" },
+      "rateApplied": "0.5000", "atlStatusUsed": "atl", "atlParty": "company",
+      "amount": { "minor": 2800, "currency": "PKR" }, "deductedBy": "bank" }
+  ],
+  "charges": [
+    { "type": "forex_fee", "amount": { "minor": 28000, "currency": "PKR" }, "coaId": {{coa8200}}, "note": "Forex fee" },
+    { "type": "bank_charge", "amount": { "minor": 4500, "currency": "PKR" }, "coaId": {{coa8100}}, "note": "FED on the fee" }
+  ]
+}
+
+### 6.4a Create it as a draft.
+# Expect 409 VALIDATION_WARNINGS with RATE_DEVIATION, "That rate is 6.67%
+# away from 300, used on <today>." 300 is the rate from step 5.9.
+# Nothing is saved. (D5 fixed: this warning never fired before.)
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "card",
+  "description": "Claude Team seat, company card, worked example 1a",
+  "categoryId": {{cat6400}},
+  "accountId": {{bankId}},
+  "gross": { "minor": 560000, "currency": "PKR" },
+  "foreign": { "minor": 2000, "currency": "USD" },
+  "fxRate": "280",
+  "fxRateSource": "bank_advice",
+  "taxes": [
+    { "taxId": {{tax236y}}, "baseAmount": { "minor": 560000, "currency": "PKR" },
+      "rateApplied": "0.5000", "atlStatusUsed": "atl", "atlParty": "company",
+      "amount": { "minor": 2800, "currency": "PKR" }, "deductedBy": "bank" }
+  ],
+  "charges": [
+    { "type": "forex_fee", "amount": { "minor": 28000, "currency": "PKR" }, "coaId": {{coa8200}}, "note": "Forex fee" },
+    { "type": "bank_charge", "amount": { "minor": 4500, "currency": "PKR" }, "coaId": {{coa8100}}, "note": "FED on the fee" }
+  ]
+}
+
+### 6.4b Same entry, warning confirmed. Expect 201, transaction.amount 595300.
+# @name card1aAck
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "card",
+  "description": "Claude Team seat, company card, worked example 1a",
+  "categoryId": {{cat6400}},
+  "accountId": {{bankId}},
+  "gross": { "minor": 560000, "currency": "PKR" },
+  "foreign": { "minor": 2000, "currency": "USD" },
+  "fxRate": "280",
+  "fxRateSource": "bank_advice",
+  "taxes": [
+    { "taxId": {{tax236y}}, "baseAmount": { "minor": 560000, "currency": "PKR" },
+      "rateApplied": "0.5000", "atlStatusUsed": "atl", "atlParty": "company",
+      "amount": { "minor": 2800, "currency": "PKR" }, "deductedBy": "bank" }
+  ],
+  "charges": [
+    { "type": "forex_fee", "amount": { "minor": 28000, "currency": "PKR" }, "coaId": {{coa8200}}, "note": "Forex fee" },
+    { "type": "bank_charge", "amount": { "minor": 4500, "currency": "PKR" }, "coaId": {{coa8100}}, "note": "FED on the fee" }
+  ],
+  "acknowledged_warnings": ["RATE_DEVIATION"]
+}
+
+
+### 6.4c Try to post it with no receipt.
+# Expect 400, RECEIPT_REQUIRED,
+# "A payment of this size needs a receipt attached before it can be posted."
+POST {{api}}/transactions/{{card1aId}}/approve
+Authorization: Bearer {{owner}}
+Idempotency-Key: {{$guid}}
+
+### 6.4d Attach receipt.pdf.
+# Expect 201: attachment with mime "application/pdf", a sha256, and
+# retainUntil about ten years ahead. The entry's "No receipt" flag resolves
+# itself (decision 056).
+# @name card1aReceipt
+POST {{api}}/transactions/{{card1aId}}/attachments
+Authorization: Bearer {{owner}}
+Content-Type: multipart/form-data; boundary=WinibexBoundary
+
+--WinibexBoundary
+Content-Disposition: form-data; name="file"; filename="receipt.pdf"
+Content-Type: application/pdf
+
+< ./receipt.pdf
+--WinibexBoundary--
+
+### 6.4e Post it. Expect 200: status "posted", journalNumber the 15th (JV-0015).
+POST {{api}}/transactions/{{card1aId}}/approve
+Authorization: Bearer {{owner}}
+Idempotency-Key: {{$guid}}
+
+### 6.4f Read it back. Expect 200: five journal lines matching 6.3,
+# one transaction_taxes row (TEST-236Y, rate_applied 0.5000, tax_amount 2800),
+# two transaction_charges rows (28000 and 4500).
+GET {{api}}/transactions/{{card1aId}}
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.5 Vendors -------------------------------------------------------------
+
+### 6.5a A filer company. Expect 201: atlStatus "atl", atlCheckIsStale false,
+# canBeWithheldFrom true.
+# @name vendorFiler
+POST {{api}}/vendors
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{
+  "name": "Test Filer Software House",
+  "kind": "company",
+  "ntn": "1234567-8",
+  "atlStatus": "atl",
+  "atlCheckedOn": "{{today}}",
+  "country": "Pakistan"
+}
+
+### 6.5b An individual with a CNIC but unknown filer status.
+# Expect 201: atlStatus "unknown", canBeWithheldFrom true.
+# @name vendorUnknown
+POST {{api}}/vendors
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{
+  "name": "Test Unknown Contractor",
+  "kind": "individual",
+  "cnic": "35202-1234567-1",
+  "atlStatus": "unknown"
+}
+
+### 6.5c A freelancer with no NTN and no CNIC.
+# Expect 201: canBeWithheldFrom false.
+# @name vendorNoId
+POST {{api}}/vendors
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{
+  "name": "Test No-ID Freelancer",
+  "kind": "individual",
+  "atlStatus": "unknown"
+}
+
+### 6.5d Filer status with no check date.
+# Expect 400, "Record the date the filer status was checked, so a stale check
+# can be spotted later."
+POST {{api}}/vendors
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "name": "Test Bad Vendor", "kind": "company", "ntn": "7654321-0", "atlStatus": "atl" }
+
+### 6.5e Search. Expect 200 with the three Test vendors from 6.5a to 6.5c.
+GET {{api}}/vendors?q=Test
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.6 Tax suggestions (using the TEST taxes from the seed) ---------------
+
+### 6.6a Taxes in force today. Expect 200 with TEST-236Y, TEST-154A, TEST-153.
+GET {{api}}/taxes?date={{today}}
+Authorization: Bearer {{owner}}
+
+### 6.6b Paying the filer vendor PKR 100,000 for outsourcing.
+# Expect one suggestion: shortCode TEST-153, rateApplied "4.0000",
+# atlStatusUsed "atl", atlParty "vendor", amount.minor 400000,
+# deductedBy "us", warning null.
+GET {{api}}/taxes/suggest?direction=out&base=10000000&categoryId={{cat5100}}&vendorId={{vendorFiler.response.body.$.vendor.id}}&date={{today}}
+Authorization: Bearer {{owner}}
+
+### 6.6c Same payment to the vendor with unknown status.
+# Expect: rateApplied "8.0000", atlStatusUsed "non_atl", amount.minor 800000,
+# warning "Test Unknown Contractor has no confirmed filer status, so the
+# non-filer rate is used."
+GET {{api}}/taxes/suggest?direction=out&base=10000000&categoryId={{cat5100}}&vendorId={{vendorUnknown.response.body.$.vendor.id}}&date={{today}}
+Authorization: Bearer {{owner}}
+
+### 6.6d A USD receipt of PKR 140,250.
+# Expect: TEST-154A, rateApplied "1.0000", atlStatusUsed "atl" (Winibex is
+# on the ATL), atlParty "company", amount.minor 140250, deductedBy "bank".
+GET {{api}}/taxes/suggest?direction=in&base=14025000&currency=USD&date={{today}}
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.7 Worked example 9: paying a vendor with s.153 withheld --------------
+
+### 6.7a Create. Expect 201: gross 10000000, withheldTotal 400000,
+# amount 9600000 (only 96,000 leaves the bank).
+# @name wh1
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "online",
+  "description": "Test Filer Software House, app module outsourcing",
+  "categoryId": {{cat5100}},
+  "accountId": {{bankId}},
+  "vendorId": {{vendorFiler.response.body.$.vendor.id}},
+  "gross": { "minor": 10000000, "currency": "PKR" },
+  "taxes": [
+    { "taxId": {{tax153}}, "baseAmount": { "minor": 10000000, "currency": "PKR" },
+      "rateApplied": "4.0000", "atlStatusUsed": "atl", "atlParty": "vendor",
+      "amount": { "minor": 400000, "currency": "PKR" }, "deductedBy": "us" }
+  ]
+}
+
+### 6.7b Attach receipt.pdf. Expect 201.
+POST {{api}}/transactions/{{wh1.response.body.$.transaction.id}}/attachments
+Authorization: Bearer {{owner}}
+Content-Type: multipart/form-data; boundary=WinibexBoundary
+
+--WinibexBoundary
+Content-Disposition: form-data; name="file"; filename="receipt.pdf"
+Content-Type: application/pdf
+
+< ./receipt.pdf
+--WinibexBoundary--
+
+### 6.7c Post. Expect 200, posted, the 16th journal number (JV-0016).
+POST {{api}}/transactions/{{wh1.response.body.$.transaction.id}}/approve
+Authorization: Bearer {{owner}}
+Idempotency-Key: {{$guid}}
+
+### 6.7d Journal lines. Expect three, each with its code and name (D12):
+# 5100 Outsourcing debit 10000000, 2132 Withholding payable credit 400000,
+# 1113 Bank credit 9600000.
+GET {{api}}/transactions/{{wh1.response.body.$.transaction.id}}/journal
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.8 Withholding from a vendor with no NTN and no CNIC -----------------
+
+### 6.8a Expect 400 MISSING_VENDOR_TAX_ID, field "vendorId", "Test No-ID
+# Freelancer has no NTN or CNIC recorded, so tax withheld from them cannot be
+# reported." Nothing is saved. (D7 fixed: this used to create the draft.)
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "online",
+  "description": "Test No-ID Freelancer, logo design",
+  "categoryId": {{cat5100}},
+  "accountId": {{bankId}},
+  "vendorId": {{vendorNoId.response.body.$.vendor.id}},
+  "gross": { "minor": 1000000, "currency": "PKR" },
+  "taxes": [
+    { "taxId": {{tax153}}, "baseAmount": { "minor": 1000000, "currency": "PKR" },
+      "rateApplied": "8.0000", "atlStatusUsed": "non_atl", "atlParty": "vendor",
+      "amount": { "minor": 80000, "currency": "PKR" }, "deductedBy": "us" }
+  ]
+}
+
+
+### ---- 6.9 Transfer, bank to office cash, with a bank fee (worked example 8) --
+
+### 6.9a Expect 201: transfer.amount 6000000, fee 5000, from.name
+# "Winibex bank" with the 17th journal number, to.name "Office cash" with
+# the 18th.
+# @name xfer1
+POST {{api}}/transfers
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "fromAccountId": {{bankId}},
+  "toAccountId": {{cashId}},
+  "amount": { "minor": 6000000, "currency": "PKR" },
+  "fee": { "minor": 5000, "currency": "PKR" },
+  "description": "Cash withdrawal for office"
+}
+
+### 6.9b Both legs. Expect 200: two legs sharing the transferGroupId, out
+# leg amount 6005000 on the bank, in leg amount 6000000 on office cash.
+GET {{api}}/transfers/{{xfer1.response.body.$.transfer.transferGroupId}}
+Authorization: Bearer {{owner}}
+
+### 6.9c Out leg journal. Expect: 1118 debit 6000000, 8100 debit 5000,
+# 1113 credit 6005000.
+GET {{api}}/transactions/{{xfer1.response.body.$.transfer.from.transactionId}}/journal
+Authorization: Bearer {{owner}}
+
+### 6.9d In leg journal. Expect: 1111 debit 6000000, 1118 credit 6000000.
+GET {{api}}/transactions/{{xfer1.response.body.$.transfer.to.transactionId}}/journal
+Authorization: Bearer {{owner}}
+
+### 6.9e Same account on both sides.
+# Expect 400, TRANSFER_SAME_ACCOUNT, "A transfer needs two different accounts."
+POST {{api}}/transfers
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "fromAccountId": {{bankId}},
+  "toAccountId": {{bankId}},
+  "amount": { "minor": 100000, "currency": "PKR" }
+}
+
+
+### ---- 6.10 Transfer, office cash to petty cash, no fee -----------------------
+
+### 6.10a Expect 201 with the 19th and 20th journal numbers, and no warning.
+# (D6 fixed: the second leg used to match the first and answer 409.)
+POST {{api}}/transfers
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "fromAccountId": {{cashId}},
+  "toAccountId": {{pettyId}},
+  "amount": { "minor": 500000, "currency": "PKR" },
+  "description": "Petty cash top up"
+}
+
+
+### ---- 6.11 A large cash payment ----------------------------------------------
+
+### 6.11a Expect 409 VALIDATION_WARNINGS with LARGE_CASH,
+# "Cash payments at or above PKR 50,000 are unusual." Nothing saved.
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "cash",
+  "description": "Office rent October paid in cash",
+  "categoryId": {{cat6200}},
+  "accountId": {{cashId}},
+  "gross": { "minor": 5500000, "currency": "PKR" }
+}
+
+### 6.11b The same, warning confirmed. Expect 201, amount 5500000.
+# @name rentCash
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "cash",
+  "description": "Office rent October paid in cash",
+  "categoryId": {{cat6200}},
+  "accountId": {{cashId}},
+  "gross": { "minor": 5500000, "currency": "PKR" },
+  "acknowledged_warnings": ["LARGE_CASH"]
+}
+
+### 6.11c Attach receipt.jpg. Expect 201, mime "image/jpeg".
+POST {{api}}/transactions/{{rentCash.response.body.$.transaction.id}}/attachments
+Authorization: Bearer {{owner}}
+Content-Type: multipart/form-data; boundary=WinibexBoundary
+
+--WinibexBoundary
+Content-Disposition: form-data; name="file"; filename="receipt.jpg"
+Content-Type: image/jpeg
+
+< ./receipt.jpg
+--WinibexBoundary--
+
+### 6.11d Post. Expect 200, the 21st journal number.
+POST {{api}}/transactions/{{rentCash.response.body.$.transaction.id}}/approve
+Authorization: Bearer {{owner}}
+Idempotency-Key: {{$guid}}
+
+
+### ---- 6.12 Cheques ------------------------------------------------------------
+
+### 6.12a Issue a cheque. Expect 201: status "issued", amount.minor 4500000.
+# @name cheque1
+POST {{api}}/cheques
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{
+  "accountId": {{bankId}},
+  "chequeNumber": "TEST-000101",
+  "payee": "Test Landlord",
+  "amount": { "minor": 4500000, "currency": "PKR" },
+  "issueDate": "{{today}}"
+}
+
+### 6.12b The same cheque number again on the same account.
+# Expect 409 ALREADY_EXISTS, "That is already recorded. Something that must
+# be unique, such as a cheque number on the same account, is already in use."
+# (D8 fixed: this used to answer 500.) No second cheque exists (6.12m).
+POST {{api}}/cheques
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{
+  "accountId": {{bankId}},
+  "chequeNumber": "TEST-000101",
+  "payee": "Someone else",
+  "amount": { "minor": 100000, "currency": "PKR" },
+  "issueDate": "{{today}}"
+}
+
+### 6.12c Straight from issued to cleared.
+# Expect 409, "A issued cheque cannot become cleared."
+PATCH {{api}}/cheques/{{cheque1.response.body.$.cheque.id}}/status
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "status": "cleared", "clearedOn": "{{today}}" }
+
+### 6.12d Presented. Expect 200, status "presented".
+PATCH {{api}}/cheques/{{cheque1.response.body.$.cheque.id}}/status
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "status": "presented" }
+
+### 6.12e Cleared without a date. Expect 400, "Record the date it cleared, so
+# the bank statement can be reconciled against it."
+PATCH {{api}}/cheques/{{cheque1.response.body.$.cheque.id}}/status
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "status": "cleared" }
+
+### 6.12f Cleared with a date. Expect 200, status "cleared", clearedOn today.
+PATCH {{api}}/cheques/{{cheque1.response.body.$.cheque.id}}/status
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "status": "cleared", "clearedOn": "{{today}}" }
+
+### 6.12g Cancel a cleared cheque. Expect 409, "A cleared cheque cannot become
+# cancelled."
+PATCH {{api}}/cheques/{{cheque1.response.body.$.cheque.id}}/status
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "status": "cancelled" }
+
+### 6.12h The rent payment the cheque paid. Expect 201, amount 4500000.
+# @name rentCheque
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "cheque",
+  "description": "Office rent November by cheque TEST-000101",
+  "categoryId": {{cat6200}},
+  "accountId": {{bankId}},
+  "chequeId": {{cheque1.response.body.$.cheque.id}},
+  "reference": "TEST-000101",
+  "gross": { "minor": 4500000, "currency": "PKR" }
+}
+
+### 6.12i Attach receipt.pdf, then post (6.12j). Expect 201.
+POST {{api}}/transactions/{{rentCheque.response.body.$.transaction.id}}/attachments
+Authorization: Bearer {{owner}}
+Content-Type: multipart/form-data; boundary=WinibexBoundary
+
+--WinibexBoundary
+Content-Disposition: form-data; name="file"; filename="receipt.pdf"
+Content-Type: application/pdf
+
+< ./receipt.pdf
+--WinibexBoundary--
+
+### 6.12j Post. Expect 200, the 22nd journal number.
+POST {{api}}/transactions/{{rentCheque.response.body.$.transaction.id}}/approve
+Authorization: Bearer {{owner}}
+Idempotency-Key: {{$guid}}
+
+### 6.12k Link the cheque to that entry. Expect 200: cheque.transactionId set
+# and cheque.journalNumber the 22nd number.
+PATCH {{api}}/cheques/{{cheque1.response.body.$.cheque.id}}/transaction
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "transactionId": {{rentCheque.response.body.$.transaction.id}} }
+
+### 6.12l A second cheque, left outstanding. Expect 201, status "issued".
+# @name cheque2
+POST {{api}}/cheques
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{
+  "accountId": {{bankId}},
+  "chequeNumber": "TEST-000102",
+  "payee": "Test Supplier",
+  "amount": { "minor": 1234500, "currency": "PKR" },
+  "issueDate": "{{today}}"
+}
+
+### 6.12m The register. Expect exactly two cheques (TEST-000101 cleared,
+# TEST-000102 issued) and outstanding 1234500 (only the uncleared one).
+GET {{api}}/cheques?accountId={{bankId}}
+Authorization: Bearer {{owner}}
+
+### 6.12n Cancel the second one. Expect 200, status "cancelled". The
+# register's outstanding figure is now 0.
+PATCH {{api}}/cheques/{{cheque2.response.body.$.cheque.id}}/status
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "status": "cancelled" }
+
+
+### ---- 6.13 Reversal -----------------------------------------------------------
+
+### 6.13a Find the website advance from step 5.7. Expect total 1.
+# @name findWebsite
+GET {{api}}/transactions?search=Website%20project%20advance
+Authorization: Bearer {{owner}}
+
+### 6.13b A reason that is too short.
+# Expect 400, "Say why, in a few words at least."
+POST {{api}}/transactions/{{findWebsite.response.body.$.transactions[0].id}}/reverse
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{ "reason": "x" }
+
+### 6.13c Reverse it. Expect 200: reversalId, the 23rd journal number, and
+# lines that are the original's flipped: 4210 debit 15000000,
+# 1113 credit 15000000.
+POST {{api}}/transactions/{{findWebsite.response.body.$.transactions[0].id}}/reverse
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{ "reason": "Test reversal, wrong client" }
+
+### 6.13d Reverse it again.
+# Expect 409, ALREADY_REVERSED, "That entry has already been reversed."
+POST {{api}}/transactions/{{findWebsite.response.body.$.transactions[0].id}}/reverse
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{ "reason": "Second attempt" }
+
+
+### ---- 6.14 Paying Test Staff back --------------------------------------------
+
+### 6.14a Who is owed. Expect Test Staff: paidPersonally 595300,
+# reimbursed 0, owed 595300. total 595300.
+GET {{api}}/people/balances
+Authorization: Bearer {{owner}}
+
+### 6.14b What makes up the figure. Expect one item, "ChatGPT Plus on Test
+# Staff personal card", remaining 595300.
+# @name staffOwed
+GET {{api}}/people/{{staffId}}/outstanding
+Authorization: Bearer {{owner}}
+
+### 6.14c Pay back more than is owed.
+# Expect 400, REIMBURSEMENT_EXCEEDS_OWED,
+# "That is more than is owed. The outstanding amount is PKR 5,953.00."
+POST {{api}}/reimbursements
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "personUserId": {{staffId}},
+  "accountId": {{bankId}},
+  "date": "{{today}}",
+  "note": "Too much",
+  "items": [ { "transactionId": {{staffOwed.response.body.$.items[0].transactionId}},
+               "amount": { "minor": 600000, "currency": "PKR" } } ]
+}
+
+### 6.14d Pay back 3,000 from the bank. Expect 201: the 24th journal number,
+# amount 300000, owedBefore 595300, owedAfter 295300.
+POST {{api}}/reimbursements
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "personUserId": {{staffId}},
+  "accountId": {{bankId}},
+  "date": "{{today}}",
+  "method": "online",
+  "note": "Reimbursement to Test Staff, part 1",
+  "items": [ { "transactionId": {{staffOwed.response.body.$.items[0].transactionId}},
+               "amount": { "minor": 300000, "currency": "PKR" } } ]
+}
+
+### 6.14e Pay the remaining 2,953 in cash. Expect 201: the 25th number,
+# owedBefore 295300, owedAfter 0.
+POST {{api}}/reimbursements
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "personUserId": {{staffId}},
+  "accountId": {{cashId}},
+  "date": "{{today}}",
+  "method": "cash",
+  "note": "Reimbursement to Test Staff, part 2",
+  "items": [ { "transactionId": {{staffOwed.response.body.$.items[0].transactionId}},
+               "amount": { "minor": 295300, "currency": "PKR" } } ]
+}
+
+### 6.14f Expect Test Staff owed 0, reimbursed 595300.
+GET {{api}}/people/balances
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.15 Petty cash float ---------------------------------------------------
+
+### 6.15 Expect: imprest.minor 2000000, Petty cash balance 1470000,
+# belowFloat true, suggestedTopUp.minor 530000.
+GET {{api}}/accounts/petty-cash
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.16 History before 1 July 2026 -----------------------------------------
+
+### 6.16a A historical entry dated after go-live.
+# Expect 400, "A historical entry must be dated before 2026-07-01."
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "entryType": "historical",
+  "direction": "out",
+  "method": "online",
+  "description": "Historical entry with a live date",
+  "categoryId": {{cat6400}},
+  "accountId": {{bankId}},
+  "gross": { "minor": 300000, "currency": "PKR" }
+}
+
+### 6.16b A proper historical entry, May 2026. Expect 201.
+# @name hist
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "2026-05-10",
+  "entryType": "historical",
+  "direction": "out",
+  "method": "online",
+  "description": "Historical test entry May 2026",
+  "categoryId": {{cat6400}},
+  "accountId": {{bankId}},
+  "gross": { "minor": 300000, "currency": "PKR" }
+}
+
+### 6.16c Post it. Expect 200, the 26th number. No receipt needed for history.
+POST {{api}}/transactions/{{hist.response.body.$.transaction.id}}/approve
+Authorization: Bearer {{owner}}
+Idempotency-Key: {{$guid}}
+
+### 6.16d Balances did not move. Expect Winibex bank still 42714700.
+GET {{api}}/accounts/{{bankId}}
+Authorization: Bearer {{owner}}
+
+### 6.16e Merge check. Expect historicalEntries 1, canMerge false, four
+# differences. The 1113 row now shows fromHistory -300000.
+GET {{api}}/history/merge-check
+Authorization: Bearer {{owner}}
+
+### 6.16f Try to merge. Expect 409, HISTORY_DOES_NOT_RECONCILE,
+# "4 accounts still differ from the opening entry." Do NOT force anything.
+POST {{api}}/history/merge
+Authorization: Bearer {{owner}}
+Idempotency-Key: {{$guid}}
+
+
+### ---- 6.17 Idempotency: a repeated request posts once ------------------------
+
+### 6.17a No key. Expect 400, "This request needs an Idempotency-Key header."
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "date": "{{today}}" }
+
+### 6.17b A key that is not a UUID. Expect 400, "Idempotency-Key must be a UUID."
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: abc
+
+{ "date": "{{today}}" }
+
+### 6.17c Create with a fixed key. Expect 201. Note transaction.id.
+# @name idem
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "cash",
+  "description": "Idempotency test, should exist once",
+  "categoryId": {{cat6600}},
+  "accountId": {{pettyId}},
+  "gross": { "minor": 80000, "currency": "PKR" }
+}
+
+### 6.17d Send exactly the same again. Expect 201 with the SAME transaction.id.
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "cash",
+  "description": "Idempotency test, should exist once",
+  "categoryId": {{cat6600}},
+  "accountId": {{pettyId}},
+  "gross": { "minor": 80000, "currency": "PKR" }
+}
+
+### 6.17e Same key, different amount. Expect 409,
+# "That Idempotency-Key was already used for a different request."
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "cash",
+  "description": "Idempotency test, should exist once",
+  "categoryId": {{cat6600}},
+  "accountId": {{pettyId}},
+  "gross": { "minor": 90000, "currency": "PKR" }
+}
+
+### 6.17f Post it. Expect 200, the 27th journal number.
+POST {{api}}/transactions/{{idem.response.body.$.transaction.id}}/approve
+Authorization: Bearer {{owner}}
+Idempotency-Key: {{$guid}}
+
+### 6.17g Only one exists. Expect total 1.
+GET {{api}}/transactions?search=Idempotency%20test
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.18 Ledger search and filters ------------------------------------------
+
+### 6.18a Expect total 2: "Claude Pro subscription October" and
+# "Claude Team seat, company card, worked example 1a".
+GET {{api}}/transactions?search=Claude
+Authorization: Bearer {{owner}}
+
+### 6.18b Expect total 1: the website advance, isReversed true.
+GET {{api}}/transactions?status=reversed
+Authorization: Bearer {{owner}}
+
+### 6.18c Expect total 2: the opening entry (2026-07-01) and the Careem rides
+# (2026-07-10). The May historical entry is outside the range.
+GET {{api}}/transactions?from=2026-07-01&to=2026-07-31
+Authorization: Bearer {{owner}}
+
+### 6.18d Expect total 3 on petty cash: "tea", the top-up in leg, the
+# idempotency test.
+GET {{api}}/transactions?accountId={{pettyId}}
+Authorization: Bearer {{owner}}
+
+### 6.18e Money in on the bank. Expect total 3: website advance (reversed but
+# still listed), invoice 1001, invoice 1002.
+GET {{api}}/transactions?accountId={{bankId}}&direction=in
+Authorization: Bearer {{owner}}
+
+### 6.18f Paging. Expect page 2, pageSize 5, five rows, total 27, hasMore true.
+GET {{api}}/transactions?pageSize=5&page=2
+Authorization: Bearer {{owner}}
+
+### 6.18g Dashboard checkpoint after Part 6. Expect cashHeld.minor 47619400,
+# monthIn.minor 17025000, monthOut.minor 25155600, pendingCount 0,
+# openFlagCount 13.
+# In: 150,000 + 140,250 + 30,000 from Part 5, less the 150,000 reversal.
+# Out: what left the company's accounts. Transfers count only their 50 fee.
+# Check: 557,500 at the start of the month + 170,250 - 251,556 = 476,194.
+GET {{api}}/dashboard
+Authorization: Bearer {{owner}}
+
+
+### ---- 6.19 What staff cannot do -----------------------------------------------
+
+### 6.19a Transfer. Expect 403, "Only the owner or an admin can move money
+# between accounts."
+POST {{api}}/transfers
+Authorization: Bearer {{staff}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "fromAccountId": {{bankId}},
+  "toAccountId": {{cashId}},
+  "amount": { "minor": 100000, "currency": "PKR" }
+}
+
+### 6.19b Reverse. Expect 403, "Only the owner or an admin can reverse an entry."
+POST {{api}}/transactions/{{card1aId}}/reverse
+Authorization: Bearer {{staff}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{ "reason": "Staff should not be able to" }
+
+### 6.19c Pay someone back. Expect 403, "Only the owner or an admin can pay
+# someone back."
+POST {{api}}/reimbursements
+Authorization: Bearer {{staff}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "personUserId": {{staffId}},
+  "accountId": {{bankId}},
+  "date": "{{today}}",
+  "items": [ { "transactionId": {{staffOwed.response.body.$.items[0].transactionId}},
+               "amount": { "minor": 100, "currency": "PKR" } } ]
+}
+
+### 6.19d Add a vendor. Expect 403, "Only the owner or an admin can add a vendor."
+POST {{api}}/vendors
+Authorization: Bearer {{staff}}
+Content-Type: application/json
+
+{ "name": "Test Staff Vendor", "kind": "company", "atlStatus": "unknown" }
+
+### 6.19e Issue a cheque. Expect 403, "Only the owner or an admin can issue a
+# cheque."
+POST {{api}}/cheques
+Authorization: Bearer {{staff}}
+Content-Type: application/json
+
+{
+  "accountId": {{bankId}},
+  "chequeNumber": "TEST-000199",
+  "payee": "Nobody",
+  "amount": { "minor": 100, "currency": "PKR" },
+  "issueDate": "{{today}}"
+}
+
+### 6.19f Merge history. Expect 403, "Only the owner can merge history."
+POST {{api}}/history/merge
+Authorization: Bearer {{staff}}
+Idempotency-Key: {{$guid}}
+
+### 6.19g No login at all. Expect 401, "Sign in to continue."
+GET {{api}}/accounts
+
+
+### ---- 6.21 Receipt upload refusals ---------------------------------------------
+
+### 6.21a A text file. Expect 400, UNSUPPORTED_FILE,
+# "A receipt has to be a photo or a PDF."
+POST {{api}}/transactions/{{card1aId}}/attachments
+Authorization: Bearer {{owner}}
+Content-Type: multipart/form-data; boundary=WinibexBoundary
+
+--WinibexBoundary
+Content-Disposition: form-data; name="file"; filename="notes.txt"
+Content-Type: text/plain
+
+< ./notes.txt
+--WinibexBoundary--
+
+### 6.21b No file. Expect 400, "No file was sent."
+POST {{api}}/transactions/{{card1aId}}/attachments
+Authorization: Bearer {{owner}}
+
+### 6.21c Read a receipt without signing in. Expect 401.
+GET {{api}}/attachments/{{card1aReceipt.response.body.$.attachment.id}}/file
+
+### 6.21d Read it signed in. Expect 200 and the PDF itself.
+GET {{api}}/attachments/{{card1aReceipt.response.body.$.attachment.id}}/file
+Authorization: Bearer {{owner}}
+
+
+###############################################################################
+# PART 7. API STEPS INSIDE THE APPROVALS TEST
+###############################################################################
+
+### 7.6a After the courier entry is rejected in step 7.6, find it.
+# Expect total 1: "Courier charges for contract documents", status "rejected".
+# @name courier
+GET {{api}}/transactions?search=Courier%20charges
+Authorization: Bearer {{owner}}
+
+### 7.6b Reverse an entry that never posted.
+# Expect 409, "Only a posted entry can be reversed."
+POST {{api}}/transactions/{{courier.response.body.$.transactions[0].id}}/reverse
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{ "reason": "Should not work" }
+
+### 7.9a Test Admin's entry from step 7.9. Sign in again first (0.3) if it has
+# been a while. Expect total 1: "Admin own entry test", status "pending".
+# (D4 fixed: it used to be stuck as a draft.)
+# @name adminPending
+GET {{api}}/transactions?status=pending
+Authorization: Bearer {{admin}}
+
+### 7.9b Test Admin tries to approve it anyway.
+# Expect 403, "Someone else has to approve an entry you created."
+POST {{api}}/transactions/{{adminPending.response.body.$.transactions[0].id}}/approve
+Authorization: Bearer {{admin}}
+Idempotency-Key: {{$guid}}
+
+### 7.9c Test Staff tries to approve it.
+# Expect 403, "Only the owner or an admin can approve an entry."
+POST {{api}}/transactions/{{adminPending.response.body.$.transactions[0].id}}/approve
+Authorization: Bearer {{staff}}
+Idempotency-Key: {{$guid}}
+
+
+###############################################################################
+# PART 8. FLAGS: CLEARED BY A RECEIPT, OR MARKED REVIEWED (decision 056)
+###############################################################################
+
+### 8.8a Find the printer paper entry from step 5.1. Expect total 1.
+# @name paper
+GET {{api}}/transactions?search=Printer%20paper
+Authorization: Bearer {{owner}}
+
+### 8.8b Attach a receipt to it, long after it posted. Expect 201.
+# Its "No receipt" flag resolves itself.
+POST {{api}}/transactions/{{paper.response.body.$.transactions[0].id}}/attachments
+Authorization: Bearer {{owner}}
+Content-Type: multipart/form-data; boundary=WinibexBoundary
+
+--WinibexBoundary
+Content-Disposition: form-data; name="file"; filename="receipt.jpg"
+Content-Type: image/jpeg
+
+< ./receipt.jpg
+--WinibexBoundary--
+
+### 8.8c Open flags. Expect 15 flags, and none of them is on "Printer paper
+# and pens" or is the "tea" description flag.
+GET {{api}}/flags
+Authorization: Bearer {{owner}}
+
+### 8.8d Resolved flags. Expect 11:
+#   10 with resolvedAutomatically true, resolvedByName null,
+#      resolutionNote "Receipt attached"
+#    1 THIN_DESCRIPTION on "tea", resolvedAutomatically false,
+#      resolvedByName the owner's name, resolutionNote your note from step 8.7
+# @name resolvedFlags
+GET {{api}}/flags?resolved=true
+Authorization: Bearer {{owner}}
+
+### 8.8e Dashboard. Expect openFlagCount 15, pendingCount 0.
+GET {{api}}/dashboard
+Authorization: Bearer {{owner}}
+
+### 8.9a Staff tries to mark a flag reviewed.
+# Expect 403, "Only the owner or an admin can mark a flag reviewed."
+POST {{api}}/flags/{{resolvedFlags.response.body.$.flags[0].id}}/resolve
+Authorization: Bearer {{staff}}
+Content-Type: application/json
+
+{ "note": "Staff should not be able to" }
+
+### 8.9b A note that is too short.
+# Expect 400, "Say why it needs nothing more, in a few words."
+POST {{api}}/flags/{{resolvedFlags.response.body.$.flags[0].id}}/resolve
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "note": "ok" }
+
+### 8.9c A flag that is already resolved.
+# Expect 409 INVALID_STATUS, "That flag has already been dealt with."
+POST {{api}}/flags/{{resolvedFlags.response.body.$.flags[0].id}}/resolve
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "note": "Second time around" }
+
+### 8.9d A flag that does not exist. Expect 404, "That flag does not exist."
+POST {{api}}/flags/999999/resolve
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+
+{ "note": "Nothing here" }

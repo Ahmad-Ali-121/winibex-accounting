@@ -238,6 +238,14 @@ String _$approvalsHash() => r'30d9b5febae84e39702af3424e2f6b14fe120221';
 ///
 /// Never retried automatically: approving is posting, and a write that may
 /// have landed must not be repeated on a guess.
+///
+/// Each returns null when it worked, or the refusal when it did not, so the
+/// screen can say why. An admin over their approval limit, or a payment with
+/// no receipt, used to fail without a word on screen. Defect D3.
+///
+/// Kept alive: it is read, never watched, so an auto-disposing provider could
+/// be disposed during the request, find itself unmounted, and skip reloading
+/// the inbox, which would leave an approved entry on screen.
 
 @ProviderFor(ApprovalActions)
 final approvalActionsProvider = ApprovalActionsProvider._();
@@ -246,19 +254,35 @@ final approvalActionsProvider = ApprovalActionsProvider._();
 ///
 /// Never retried automatically: approving is posting, and a write that may
 /// have landed must not be repeated on a guess.
+///
+/// Each returns null when it worked, or the refusal when it did not, so the
+/// screen can say why. An admin over their approval limit, or a payment with
+/// no receipt, used to fail without a word on screen. Defect D3.
+///
+/// Kept alive: it is read, never watched, so an auto-disposing provider could
+/// be disposed during the request, find itself unmounted, and skip reloading
+/// the inbox, which would leave an approved entry on screen.
 final class ApprovalActionsProvider
     extends $NotifierProvider<ApprovalActions, void> {
   /// Approving and rejecting.
   ///
   /// Never retried automatically: approving is posting, and a write that may
   /// have landed must not be repeated on a guess.
+  ///
+  /// Each returns null when it worked, or the refusal when it did not, so the
+  /// screen can say why. An admin over their approval limit, or a payment with
+  /// no receipt, used to fail without a word on screen. Defect D3.
+  ///
+  /// Kept alive: it is read, never watched, so an auto-disposing provider could
+  /// be disposed during the request, find itself unmounted, and skip reloading
+  /// the inbox, which would leave an approved entry on screen.
   ApprovalActionsProvider._()
       : super(
           from: null,
           argument: null,
           retry: noRetry,
           name: r'approvalActionsProvider',
-          isAutoDispose: true,
+          isAutoDispose: false,
           dependencies: null,
           $allTransitiveDependencies: null,
         );
@@ -279,12 +303,20 @@ final class ApprovalActionsProvider
   }
 }
 
-String _$approvalActionsHash() => r'e95c9b961bd4af170ec704c7d6b0d09ea3ded989';
+String _$approvalActionsHash() => r'a0a8330ed5321fd0555309691e0f744ba2e809a0';
 
 /// Approving and rejecting.
 ///
 /// Never retried automatically: approving is posting, and a write that may
 /// have landed must not be repeated on a guess.
+///
+/// Each returns null when it worked, or the refusal when it did not, so the
+/// screen can say why. An admin over their approval limit, or a payment with
+/// no receipt, used to fail without a word on screen. Defect D3.
+///
+/// Kept alive: it is read, never watched, so an auto-disposing provider could
+/// be disposed during the request, find itself unmounted, and skip reloading
+/// the inbox, which would leave an approved entry on screen.
 
 abstract class _$ApprovalActions extends $Notifier<void> {
   void build();

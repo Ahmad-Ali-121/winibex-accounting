@@ -24,6 +24,7 @@ export const ErrorCode = {
   REQUEST_IN_PROGRESS: 'REQUEST_IN_PROGRESS',
   DATABASE_UNAVAILABLE: 'DATABASE_UNAVAILABLE',
   INTERNAL: 'INTERNAL',
+  ALREADY_EXISTS: 'ALREADY_EXISTS',
 
   // Phase 1, the posting engine. The app switches on these, so they are
   // stable and map one to one to an `err` key in app_en.arb.
@@ -82,6 +83,18 @@ function asAppError(error) {
   if (error?.type === 'entity.too.large') {
     return new AppError(413, ErrorCode.PAYLOAD_TOO_LARGE, 'That request is too large.');
   }
+  // A unique key refused the write: a cheque number already used on the same
+  // account, for example. The database is what guarantees uniqueness, so this
+  // is the caller's mistake, not a server failure. Before this it answered 500
+  // and logged a stack trace. D8.
+  if (error?.code === 'ER_DUP_ENTRY') {
+    return new AppError(
+      409,
+      ErrorCode.ALREADY_EXISTS,
+      'That is already recorded. Something that must be unique, such as a cheque number on the same account, is already in use.',
+    );
+  }
+
   // Anything else that already carries a client status and says it is safe to
   // show, such as a bad Content-Type.
   if (error?.expose === true && error.status >= 400 && error.status < 500) {

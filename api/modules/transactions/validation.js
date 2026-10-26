@@ -13,6 +13,7 @@
 // "Same amount as JV-0042 on 3 July, Office rent" gets investigated.
 
 import { divideRounded } from '../../core/money.js';
+import { businessToday } from '../../core/dates.js';
 
 export const Blocked = Object.freeze({
   INACTIVE_ACCOUNT: 'INACTIVE_ACCOUNT',
@@ -55,8 +56,10 @@ function asDate(value) {
   return typeof value === 'string' ? value.slice(0, 10) : new Date(value).toISOString().slice(0, 10);
 }
 
+// Today in Pakistan, not in UTC. Between midnight and 05:00 the two differ,
+// and the UTC date refused the office's own today as a future date. D9.
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return businessToday();
 }
 
 // --- blocked ---------------------------------------------------------------
@@ -156,12 +159,18 @@ export async function collectWarnings(repo, connection, { input, amount, setting
   const warnings = [];
   const date = asDate(input.date);
 
+  // The two legs of one transfer are the same movement seen from each side.
+  // Matching one against the other would warn the person about their own
+  // transfer, so legs of the same group are never compared. D6.
+  const transferGroupId = input.transferGroupId ?? null;
+
   const duplicate = await repo.findSameAmountNearby(connection, {
     accountId: input.accountId,
     amount,
     date,
     days: 3,
     excludeId,
+    transferGroupId,
   });
   if (duplicate) {
     warnings.push({
@@ -178,6 +187,7 @@ export async function collectWarnings(repo, connection, { input, amount, setting
     date,
     days: 30,
     excludeId,
+    transferGroupId,
   });
   if (repeated) {
     warnings.push({
@@ -192,6 +202,7 @@ export async function collectWarnings(repo, connection, { input, amount, setting
     categoryId: input.categoryId,
     months: 6,
     excludeId,
+    today: today(),
   });
   if (usual && usual.count >= 3 && amount > usual.average * 3) {
     warnings.push({
@@ -238,8 +249,8 @@ export async function collectWarnings(repo, connection, { input, amount, setting
   if (input.fxRate && input.currency && input.currency !== 'PKR') {
     const last = await repo.lastRateFor(connection, input.currency, excludeId);
     if (last) {
-      const deviation = percentApart(Number(input.fxRate), Number(last.fx_rate));
-      if (deviation > settings.fxDeviationWarningPercent) {
+      const deviation = percentApart(input.fxRate, last.fx_rate);
+      if (deviation !== null && deviation > settings.fxDeviationWarningPercent) {
         warnings.push({
           code: Warning.RATE_DEVIATION,
           message: `That rate is ${deviation}% away from ${Number(last.fx_rate)}, used on ${asDate(last.date)}.`,
@@ -255,7 +266,11 @@ export async function collectWarnings(repo, connection, { input, amount, setting
 
 // --- flagged ---------------------------------------------------------------
 
-export function collectFlags({ input, hasReceipt }) {
+// `receiptMissing` is decided by the caller: true only when the entry is the
+// kind that should carry a receipt (attachments/service.js, receiptExpected)
+// and none is attached yet. It used to be "no receipt yet" alone, which
+// flagged money in, transfers and the opening entry too. Defect D1.
+export function collectFlags({ input, receiptMissing = false }) {
   const flags = [];
 
   if ((input.description ?? '').trim().length < 5) {
@@ -265,7 +280,7 @@ export function collectFlags({ input, hasReceipt }) {
     });
   }
 
-  if (!hasReceipt) {
+  if (receiptMissing) {
     flags.push({
       code: Flag.NO_RECEIPT,
       message: 'No receipt attached.',
@@ -282,13 +297,37 @@ function describe(row) {
   return `${number}${asDate(row.date)}, ${row.description}`;
 }
 
-function percentApart(a, b) {
-  if (b === 0) return 100;
-  const difference = Math.abs(a - b) * 10000;
-  return Number(divideRounded(BigInt(Math.trunc(difference)), BigInt(Math.trunc(b * 100)))) / 100;
+// A rate as a whole number of millionths, read from its digits so it never
+// passes through a float. "280.5" becomes 280500000. The database holds
+// rates as DECIMAL(18,6), so six places is all there ever is.
+function rateInMillionths(value) {
+  const match = /^(\d+)(?:\.(\d+))?$/.exec(String(value ?? '').trim());
+  if (!match) return null;
+  const fraction = (match[2] ?? '').slice(0, 6).padEnd(6, '0');
+  return BigInt(match[1]) * 1000000n + BigInt(fraction);
 }
 
+// How far one rate is from another, as a percentage of the earlier one with
+// two decimals, rounded half away from zero. 300 against 280.5 is 6.95.
+//
+// The first version divided by 100 once too often and answered 0.07 for that
+// pair, so the warning could only fire past a 500% jump. D5.
+export function percentApart(current, previous) {
+  const now = rateInMillionths(current);
+  const before = rateInMillionths(previous);
+  if (now === null || before === null || before === 0n) return null;
+
+  const difference = now > before ? now - before : before - now;
+  const hundredthsOfAPercent = divideRounded(difference * 10000n, before);
+  return Number(hundredthsOfAPercent) / 100;
+}
+
+// An average can carry a fraction of a paisa, and BigInt refuses a fraction
+// outright, which turned the unusual-amount warning into a 500. The fraction is
+// dropped before rounding to whole rupees: it cannot change the rupee figure
+// by more than one paisa. D14.
 function formatPkr(minor) {
-  const rupees = divideRounded(BigInt(minor), 100n);
+  const whole = BigInt(Math.trunc(Number(minor)));
+  const rupees = divideRounded(whole, 100n);
   return `PKR ${Number(rupees).toLocaleString('en-PK')}`;
 }

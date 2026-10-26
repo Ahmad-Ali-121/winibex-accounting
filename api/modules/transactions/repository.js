@@ -77,8 +77,14 @@ export async function findDetail(runner = getPool(), id) {
   const transaction = await findById(runner, id);
   if (!transaction) return null;
 
+  // Each line carries its ledger code and name, because the "View journal
+  // entry" panel shows "6400 Software subscriptions", not an id. D12.
   const [lines] = await runner.query(
-    'SELECT coa_id, debit, credit, line_no, memo FROM journal_lines WHERE transaction_id = ? ORDER BY line_no',
+    `SELECT j.coa_id, c.code, c.name, j.debit, j.credit, j.line_no, j.memo
+       FROM journal_lines j
+       JOIN chart_of_accounts c ON c.id = j.coa_id
+      WHERE j.transaction_id = ?
+      ORDER BY j.line_no`,
     [id],
   );
   const [taxes] = await runner.query(
@@ -206,7 +212,10 @@ export async function openingEntryExists(runner, excludeId = null) {
 
 // Same amount, same account, within a few days. The caller shows the match, so
 // the row itself comes back rather than a boolean.
-export async function findSameAmountNearby(runner, { accountId, amount, date, days, excludeId }) {
+//
+// The other leg of the same transfer is never a match: both legs are one
+// movement, and warning about it refused every transfer without a fee. D6.
+export async function findSameAmountNearby(runner, { accountId, amount, date, days, excludeId, transferGroupId = null }) {
   if (!accountId) return null;
   const [rows] = await runner.query(
     `SELECT id, journal_number, date, description FROM transactions
@@ -214,35 +223,41 @@ export async function findSameAmountNearby(runner, { accountId, amount, date, da
         AND status IN ('draft', 'pending', 'posted')
         AND date BETWEEN DATE_SUB(?, INTERVAL ? DAY) AND DATE_ADD(?, INTERVAL ? DAY)
         AND (? IS NULL OR id <> ?)
+        AND (? IS NULL OR transfer_group_id IS NULL OR transfer_group_id <> ?)
       ORDER BY date DESC, id DESC LIMIT 1`,
-    [accountId, amount, date, days, date, days, excludeId, excludeId],
+    [accountId, amount, date, days, date, days, excludeId, excludeId, transferGroupId, transferGroupId],
   );
   return rows[0] ?? null;
 }
 
-export async function findSameDescription(runner, { description, amount, date, days, excludeId }) {
+export async function findSameDescription(runner, { description, amount, date, days, excludeId, transferGroupId = null }) {
   const [rows] = await runner.query(
     `SELECT id, journal_number, date, description FROM transactions
       WHERE description = ? AND amount = ?
         AND status IN ('draft', 'pending', 'posted')
         AND date BETWEEN DATE_SUB(?, INTERVAL ? DAY) AND ?
         AND (? IS NULL OR id <> ?)
+        AND (? IS NULL OR transfer_group_id IS NULL OR transfer_group_id <> ?)
       ORDER BY date DESC, id DESC LIMIT 1`,
-    [description, amount, date, days, date, excludeId, excludeId],
+    [description, amount, date, days, date, excludeId, excludeId, transferGroupId, transferGroupId],
   );
   return rows[0] ?? null;
 }
 
 // What this category usually costs. Six months, posted entries only, and at
 // least three of them before the average means anything.
-export async function categoryAverage(runner, { categoryId, months, excludeId }) {
+//
+// The average is rounded to whole paisa here, half away from zero as decision
+// 052 sets, so money never leaves the database as a fraction. D14. `today` is
+// the Pakistan date, passed in, rather than the database's own UTC CURDATE().
+export async function categoryAverage(runner, { categoryId, months, excludeId, today = null }) {
   const [rows] = await runner.query(
-    `SELECT COUNT(*) AS n, COALESCE(AVG(amount), 0) AS average
+    `SELECT COUNT(*) AS n, COALESCE(ROUND(AVG(amount)), 0) AS average
        FROM transactions
       WHERE category_id = ? AND status = 'posted'
-        AND date >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)
+        AND date >= DATE_SUB(COALESCE(?, CURDATE()), INTERVAL ? MONTH)
         AND (? IS NULL OR id <> ?)`,
-    [categoryId, months, excludeId, excludeId],
+    [categoryId, today, months, excludeId, excludeId],
   );
   return { count: Number(rows[0].n), average: Number(rows[0].average) };
 }
@@ -430,16 +445,24 @@ export async function listPending(runner = getPool()) {
   return rows;
 }
 
-// Everything raised and not yet dealt with, for the review list.
+// A flag with the entry it is about, who confirmed it if it was a warning, and
+// who resolved it and why once it is dealt with. Decision 056.
+const FLAG_SELECT = `
+  SELECT f.id, f.transaction_id, f.severity, f.code, f.detail, f.resolved,
+         f.acknowledged_by, f.created_at,
+         f.resolved_by, f.resolved_at, f.resolution_note,
+         t.journal_number, t.date, t.description, t.amount, t.status,
+         ack.name AS acknowledged_by_name,
+         res.name AS resolved_by_name
+    FROM entry_flags f
+    JOIN transactions t ON t.id = f.transaction_id
+    LEFT JOIN users ack ON ack.id = f.acknowledged_by
+    LEFT JOIN users res ON res.id = f.resolved_by`;
+
+// Open flags for the review list, or resolved ones when asked for.
 export async function listFlags(runner = getPool(), { resolved = false, severity = null } = {}) {
   const [rows] = await runner.query(
-    `SELECT f.id, f.transaction_id, f.severity, f.code, f.detail, f.resolved,
-            f.acknowledged_by, f.created_at,
-            t.journal_number, t.date, t.description, t.amount, t.status,
-            ack.name AS acknowledged_by_name
-       FROM entry_flags f
-       JOIN transactions t ON t.id = f.transaction_id
-       LEFT JOIN users ack ON ack.id = f.acknowledged_by
+    `${FLAG_SELECT}
       WHERE f.resolved = ?
         AND (? IS NULL OR f.severity = ?)
       ORDER BY f.created_at DESC, f.id DESC
@@ -447,6 +470,28 @@ export async function listFlags(runner = getPool(), { resolved = false, severity
     [resolved ? 1 : 0, severity, severity],
   );
   return rows;
+}
+
+export async function findFlag(runner = getPool(), id) {
+  const [rows] = await runner.query(`${FLAG_SELECT} WHERE f.id = ?`, [id]);
+  return rows[0] ?? null;
+}
+
+// Held for the rest of the transaction, so two people marking the same flag
+// at once are serialised and the second is told it is already done.
+export async function lockFlag(runner, id) {
+  const [rows] = await runner.query('SELECT id, resolved FROM entry_flags WHERE id = ? FOR UPDATE', [id]);
+  return rows[0] ?? null;
+}
+
+export async function markFlagResolved(runner, id, { userId, note }) {
+  const [result] = await runner.query(
+    `UPDATE entry_flags
+        SET resolved = 1, resolved_by = ?, resolved_at = UTC_TIMESTAMP(), resolution_note = ?
+      WHERE id = ? AND resolved = 0`,
+    [userId, note, id],
+  );
+  return result.affectedRows;
 }
 
 // The audit trail for one transaction: who did what and when. The rows are

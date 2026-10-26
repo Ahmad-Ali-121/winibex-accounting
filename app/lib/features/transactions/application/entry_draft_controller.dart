@@ -122,13 +122,32 @@ Future<JournalPreview?> journalPreview(Ref ref) async {
   return ref.watch(transactionsRepositoryProvider).preview(draft);
 }
 
-/// What happened to the save: nothing yet, warnings to confirm, or a saved id.
+/// What happened to the save: nothing yet, in flight, warnings to confirm, a
+/// refusal to show, or a saved id.
 sealed class SaveOutcome {
   const SaveOutcome();
 }
 
 class SaveIdle extends SaveOutcome {
   const SaveIdle();
+}
+
+/// A request is in flight. The button is disabled, so a second press cannot
+/// start a second save while the first is still going.
+class SaveInProgress extends SaveOutcome {
+  const SaveInProgress();
+}
+
+/// The server refused, or could not be reached. The review step shows why.
+///
+/// When the refusal came at posting rather than at creation, for example a
+/// payment above the threshold with no receipt, the entry already exists as a
+/// draft. Pressing the button again with the same idempotency key replays the
+/// creation rather than making a second draft, so attaching the receipt and
+/// trying again posts the same entry. Defect D3.
+class SaveFailed extends SaveOutcome {
+  const SaveFailed(this.error);
+  final ApiException error;
 }
 
 class SaveNeedsConfirmation extends SaveOutcome {
@@ -162,8 +181,11 @@ class EntrySave extends _$EntrySave {
   /// with each warning naming the record it matched, and the same call with
   /// those codes acknowledged goes through.
   Future<void> save({required bool canPost}) async {
+    if (state is SaveInProgress) return;
+
     final repository = ref.read(transactionsRepositoryProvider);
     final draft = ref.read(entryDraftControllerProvider);
+    state = const SaveInProgress();
 
     try {
       final id = await repository.create(draft);
@@ -199,7 +221,12 @@ class EntrySave extends _$EntrySave {
         state = SaveNeedsConfirmation(error.warnings);
         return;
       }
-      rethrow;
+      // Rethrowing here is what left the person looking at a button that
+      // seemed to do nothing. The refusal is now state the screen shows. D3.
+      state = SaveFailed(error);
+    } catch (error) {
+      if (!ref.mounted) return;
+      state = SaveFailed(ApiException.from(error));
     }
   }
 

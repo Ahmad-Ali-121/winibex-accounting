@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/error_message.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_panel.dart';
@@ -108,7 +109,7 @@ class _ApprovalCard extends ConsumerWidget {
             Row(
               children: [
                 FilledButton(
-                  onPressed: () => ref.read(approvalActionsProvider.notifier).approve(entry.id),
+                  onPressed: () => _approve(context, ref, entry.id),
                   child: Text(l10n.actionApprove),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -119,6 +120,22 @@ class _ApprovalCard extends ConsumerWidget {
               ],
             ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _approve(BuildContext context, WidgetRef ref, int id) async {
+    final refusal = await ref.read(approvalActionsProvider.notifier).approve(id);
+    if (refusal != null && context.mounted) _showRefusal(context, refusal);
+  }
+
+  /// The server's reason, such as "That entry is above your approval limit."
+  /// D3: before this, the card simply stayed where it was.
+  void _showRefusal(BuildContext context, Object refusal) {
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(errorMessageFor(refusal, network: l10n.errNetwork, server: l10n.errServer)),
       ),
     );
   }
@@ -156,6 +173,7 @@ class _ApprovalCard extends ConsumerWidget {
     );
 
     if (reason == null || reason.isEmpty) return;
-    await ref.read(approvalActionsProvider.notifier).reject(id, reason);
+    final refusal = await ref.read(approvalActionsProvider.notifier).reject(id, reason);
+    if (refusal != null && context.mounted) _showRefusal(context, refusal);
   }
 }

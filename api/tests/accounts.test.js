@@ -14,6 +14,14 @@ import { openConnection, closePool } from '../core/db.js';
 import { splitSqlStatements } from '../core/sql-split.js';
 import * as accounts from '../modules/accounts/service.js';
 import * as transactions from '../modules/transactions/service.js';
+import { WARNING_CODES } from '../modules/transactions/validation.js';
+import { businessToday } from '../core/dates.js';
+
+// Entries are dated today in Pakistan. A fixed date such as 2026-07-05 went
+// stale on its own: from early October it was more than 90 days old, every
+// post was warned as backdated, and four tests failed with nothing broken.
+// The dashboard test also needs today, because it reads "this month".
+const TODAY = businessToday();
 
 const TABLES = [
   'attachments', 'cheques', 'entry_flags', 'journal_lines', 'period_locks',
@@ -43,6 +51,7 @@ before(async () => {
   for (const file of [
     '000_schema_migrations.sql', '001_phase0_tables.sql',
     '002_seed_reference.sql', '003_bootstrap.sql', '004_phase1_tables.sql',
+    '005_flag_resolution.sql',
   ]) {
     const sql = await readFile(new URL(`../migrations/${file}`, import.meta.url), 'utf8');
     for (const statement of splitSqlStatements(sql)) await setup.query(statement);
@@ -75,7 +84,10 @@ after(async () => {
   await setup.end();
 });
 
-async function postEntry({ direction, gross, categoryId, entryType = 'normal', date = '2026-07-05' }) {
+// This file is about balances, not validation, so every warning is confirmed
+// up front, as the app does once the person has read them. api-validation
+// tests the warnings themselves.
+async function postEntry({ direction, gross, categoryId, entryType = 'normal', date = TODAY }) {
   const created = await transactions.createDraft({
     user: owner,
     input: {
@@ -88,6 +100,7 @@ async function postEntry({ direction, gross, categoryId, entryType = 'normal', d
       categoryId,
       grossAmount: gross,
       entryType,
+      acknowledgedWarnings: WARNING_CODES,
     },
   });
   return transactions.approve({ user: owner, id: created.id });
@@ -132,9 +145,9 @@ test('a draft and a pending entry change nothing', async () => {
   const draft = await transactions.createDraft({
     user: owner,
     input: {
-      date: '2026-07-06', accountId: bankId, direction: 'out', currency: 'PKR',
+      date: TODAY, accountId: bankId, direction: 'out', currency: 'PKR',
       method: 'account', description: 'Not posted yet', categoryId: outCategoryId,
-      grossAmount: 10000000,
+      grossAmount: 10000000, acknowledgedWarnings: WARNING_CODES,
     },
   });
   await transactions.submitForApproval({ user: owner, id: draft.id });
@@ -213,11 +226,14 @@ test('the dashboard summary runs against real data and totals cash', async () =>
 
   const after = await accounts.dashboard();
   assert.equal(after.cashHeld.minor, beforeCash + 1500000, 'cash did not move by the posted amount');
-  // monthIn covers the current calendar month only; the helper dates its
-  // entries in July, so this entry is deliberately outside it. The cash
-  // assertion above is what proves the dashboard query runs.
-  assert.ok(after.cashHeld.minor > beforeCash);
-}); 
+  // Entries are now dated today, so this one is inside this month and the
+  // month figures can be checked exactly, not skipped.
+  assert.equal(after.monthIn.minor - before.monthIn.minor, 1500000, 'money in this month rose by exactly the entry');
+  assert.equal(after.monthOut.minor, before.monthOut.minor, 'money in is not money out');
+  // The earlier draft test left one entry waiting. Posting this one must not
+  // change that count.
+  assert.equal(after.pendingCount, before.pendingCount);
+});
 
 test('the trial balance is zero across every ledger account', async () => {
   const [rows] = await setup.query(

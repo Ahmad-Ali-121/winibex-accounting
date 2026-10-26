@@ -448,6 +448,23 @@ they can be reviewed later rather than only shown once at entry time.
 | acknowledged_by | BIGINT NULL | |
 | acknowledged_at | TIMESTAMP NULL | |
 | resolved | BOOL | |
+| resolved_by | BIGINT UNSIGNED FK NULL | who marked it reviewed. Null when it resolved itself or is still open. Migration 005 |
+| resolved_at | DATETIME NULL | UTC |
+| resolution_note | VARCHAR(255) NULL | why it needs nothing more. "Receipt attached" when a receipt cleared it |
+
+The codes in use are upper case, as the code writes them: `NO_RECEIPT`,
+`THIN_DESCRIPTION` for flags, and for confirmed warnings `POSSIBLE_DUPLICATE`,
+`REPEATED_DESCRIPTION`, `UNUSUAL_AMOUNT`, `BACKDATED`, `BANK_BELOW_ZERO`,
+`LARGE_CASH`, `RATE_DEVIATION`.
+
+`NO_RECEIPT` is raised only on normal money out that is not a transfer and not
+a 2114 or 1118 category, and only while no receipt is attached. Attaching a
+receipt resolves it in the same database transaction, with `resolved_by` null.
+The owner or an admin can resolve any flag with a note. A CHECK,
+`chk_entry_flags_resolved`, keeps the columns consistent: open means all three
+are null, resolved means `resolved_at` and `resolution_note` are set. A
+resolved flag is never deleted. Editing a draft still replaces that draft's
+flags, decision 053. Decision 056.
 
 Blocking rules are not stored here. They prevent the insert entirely:
 unbalanced journal lines, missing category or account, zero or negative amount,
@@ -495,7 +512,7 @@ suppliers, platforms. Required for withholding and the s.165 statement.
 | atl_status | ENUM | `atl`, `non_atl`, `unknown` |
 | atl_checked_on | DATE NULL | warn if older than 30 days at payment time |
 | default_tax_id | BIGINT NULL | |
-| country, email, phone | | |
+| country, email, phone | |
 | is_active | BOOL | |
 
 ---
@@ -852,15 +869,15 @@ before they exist.
 | --- | --- | --- |
 | 000 | `schema_migrations`, the runner's own record of what has been applied | applied |
 | 001 | the twelve Phase 0 tables: users, refresh_tokens, settings, company_profile, currencies, chart_of_accounts, fbr_return_heads, categories, accounts, sequences, audit_log, idempotency_keys | applied |
-| 002 | seed reference data: currencies, chart of accounts, categories, settings, sequences. Taxes deliberately not seeded | applied |
+| 002 | seed reference data: currencies, chart of accounts, categories, settings, sequences. Also seeds 1118 Funds in transit and the Transfer in, Transfer out and Opening balance categories. Taxes deliberately not seeded | applied |
 | 003 | company bootstrap: owner login, company profile, company accounts | applied |
-| 002 | also seeds 1118 Funds in transit and the Transfer in, Transfer out and Opening balance categories. Decision 053 | applied |
 | 004 | Phase 1, thirteen tables: taxes, tax_rules, vendors, cheques, transactions, journal_lines, transaction_taxes, transaction_charges, entry_flags, attachments, reimbursements, reimbursement_items, period_locks, plus four immutability triggers | applied |
+| 005 | flag resolution: `resolved_by`, `resolved_at`, `resolution_note` on entry_flags, the `chk_entry_flags_resolved` CHECK, and a backfill that resolves "No receipt" flags that should never have been raised or whose receipt exists. Decision 056 | applied locally by the test suite. Production: apply in phpMyAdmin before the push that carries the fixes |
 | Later | one per phase | |
 
 Every migration file is plain SQL, numbered, idempotent where it can be, and
 records itself in `schema_migrations` as its last statement. Tables are created
-`ENGINE = InnoDB` with `utf8mb4` and `utf8mb4_uca1400_ai_ci`.
+`ENGINE = InnoDB` with `utf8mb4` and `utf8mb4_unicode_ci`.
 
 ## Retention
 

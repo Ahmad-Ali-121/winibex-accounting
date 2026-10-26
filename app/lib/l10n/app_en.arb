@@ -507,5 +507,11 @@
   "historyEmpty": "Nothing has changed on this entry.",
   "historyCreated": "Created",
   "historyUpdated": "Edited",
-  "historyStatusChanged": "Status changed"
+  "historyStatusChanged": "Status changed",
+  "actionMarkReviewed": "Mark reviewed",
+  "@actionMarkReviewed": { "description": "Button on a flag in To review. Owner and admins only" },
+  "markReviewedTitle": "Mark as reviewed",
+  "fieldReviewNote": "Why it needs nothing more",
+  "hintReviewNote": "Kept with the flag, so anyone can see why it was cleared.",
+  "flagMarkedReviewed": "Marked as reviewed."
 }

@@ -1935,6 +1935,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Status changed'**
   String get historyStatusChanged;
+
+  /// Button on a flag in To review. Owner and admins only
+  ///
+  /// In en, this message translates to:
+  /// **'Mark reviewed'**
+  String get actionMarkReviewed;
+
+  /// No description provided for @markReviewedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as reviewed'**
+  String get markReviewedTitle;
+
+  /// No description provided for @fieldReviewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Why it needs nothing more'**
+  String get fieldReviewNote;
+
+  /// No description provided for @hintReviewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept with the flag, so anyone can see why it was cleared.'**
+  String get hintReviewNote;
+
+  /// No description provided for @flagMarkedReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as reviewed.'**
+  String get flagMarkedReviewed;
 }
 
 class _AppLocalizationsDelegate

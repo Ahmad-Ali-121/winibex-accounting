@@ -1001,6 +1001,103 @@ localhost default; production is passed at build with
 `--dart-define=API_BASE_URL=...`, so the same code serves both and nothing in
 the repository names the production host.
 
+### 056 — Flags clear themselves when fixed, and can be marked reviewed
+2026-10-20
+
+Fixes defect D2 in `docs/PHASE1-TEST.md`: nothing could clear a flag, so "To
+review" only ever grew. Ahmad's choice from three options: automatic only,
+manual only, or both. Both was recommended and taken.
+
+- **Automatic.** When the cause goes away, the flag resolves itself. Attaching
+  a receipt resolves that entry's "No receipt" flag. Recorded as resolved by
+  the system, with the time
+- **Manual.** The owner or an admin can mark any flag reviewed, with a short
+  note saying why. Staff cannot. Who, when and the note are kept
+- A resolved flag is never deleted. The review list shows open flags by
+  default and resolved ones on request, with who resolved them and why
+
+Also settles defect D1 without a new rule, because UI-GUIDE and decision 021
+already say it: "No receipt" is raised only on money out with no receipt.
+Money in, transfers, reimbursements, the opening entry and manual journals
+never carry it. Money out at or above `receipt_required_above` is already
+blocked from posting without one (decision 055), so in practice the flag
+marks small payments.
+
+Needs migration 005, adding `resolved_by`, `resolved_at` and
+`resolution_note` to `entry_flags`. Decision 052: after the first deploy an
+applied migration is never edited, so this is a new file.
+
+### 057 — Defect-fix round before the full Phase 1 test
+2026-10-20
+
+Ahmad's choice: fix the defects found while writing `docs/PHASE1-TEST.md`
+first, then run the full test, rather than a short confirmation run first.
+The defects were found in Claude's copy of the code from the build, so every
+fix is made against Ahmad's current files, not that copy.
+
+**Scope.** All code defects: D1 to D10, D12 and D14. The Phase 1 features
+with no screen yet (D15) are a later step.
+
+**Dashboard month figures (D11) count real money movement only.** "In this
+month" and "Out this month" mean money that entered or left the company's
+own accounts. A transfer between two company accounts is left out, because
+the company holds the same money afterwards. A reversal cancels its original
+on the same side: reversing money in lowers "In", it does not add to "Out".
+A cost paid on a personal card is left out, because no company account
+moved; the reimbursement that pays the person back is counted, because that
+is when the money leaves. With this rule, cash held at the start of the month
+plus In minus Out equals cash held now. Ahmad chose "real trading only"; this
+paragraph is how Claude turned that into a rule, open to correction.
+
+**Receipts (D13): decision 055 stands.** Only money out at or above
+`receipt_required_above` is blocked from posting without a receipt. Money in,
+transfers, reimbursements, the opening entry and manual journals are exempt.
+Decision 021 is superseded on this point, and UI-GUIDE's receipt table is
+corrected to match.
+
+**The business date is Pakistan's (D9).** "In the future", "more than 90 days
+ago" and "this month" are judged against today's date in Asia/Karachi, not
+UTC. Between midnight and 05:00 the server was refusing today's date as a
+future date. Timestamps are still stored in UTC; only the calendar date used
+for these checks changes.
+
+### 058 — Defect fixes as built
+2026-10-26
+
+The fixes decided in 056 and 057 are built and pass: 373 API tests (370 pass,
+3 argon2 skips) and 78 Flutter tests. Settled while building, each Claude's
+call and open to correction:
+
+**D4: who sees "Save and post".** The owner, or an admin with
+`auto_approve_own`. Every other admin and all staff see "Submit for approval".
+This matches the server's rule exactly, so the button never offers what the
+server will refuse. `AuthUser.canPostOwnEntries` holds it.
+
+**D3: refusals show the server's words.** A 4xx refusal is shown as the
+server wrote it, because it carries the figure that explains it. A missing
+answer or a 5xx gets the app's own wording from `app_en.arb`. The server's
+messages are already written to be shown, with no SQL or paths in them.
+
+**D7 is checked only when a vendor is named.** Withholding from a vendor with
+no NTN or CNIC is refused before anything is saved. Withholding with no vendor
+at all is still allowed, because requiring a vendor on every withheld line is
+a stricter rule and a separate choice. Open item O.
+
+**A refused posting can be retried as it is, not changed.** The retry reuses
+the idempotency key, so a posting refused for a missing receipt, retried
+after attaching one, posts the same draft. Changing the entry and pressing
+again sends a different body under the same key and is refused. Fixing this
+means editing the stored draft, which belongs with the "edit a draft" screen
+in D15.
+
+**Flags on a rejected entry stay open.** A rejected entry keeps its "No
+receipt" flag in the review count until someone marks it reviewed. Left as
+built for the test. Open item N.
+
+**The Phase 1 test guide is rewritten for the fixed code.** Every figure in
+`docs/PHASE1-TEST.md` comes from a model of the fixed rules, not from the old
+figures adjusted.
+
 ---
 
 ## Open, not yet decided
@@ -1020,6 +1117,8 @@ the repository names the production host.
 | K | ~~PRA registration~~ Answered: not registered. Whether it should be is for the accountant | Phase 1 |
 | L | Switch to argon2id at first deploy, or stay on bcryptjs. See decision 042 | Phase 0 close. Still open: decided at the first real Hostinger deploy |
 | M | Android emulator reaches the local API at 10.0.2.2, not localhost. Note for Phase 7 | Phase 7 |
+| N | Should a rejected entry's open flags stop counting in "To review", or stay until marked reviewed | Phase 1 polish |
+| O | Should every tax line Winibex withholds require a vendor, so the s.165 statement always has a payee | Phase 6, the s.165 statement |
 
 ---
 
