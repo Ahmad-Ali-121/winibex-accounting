@@ -874,7 +874,7 @@ before they exist.
 | 003 | company bootstrap: owner login, company profile, company accounts | applied |
 | 004 | Phase 1, thirteen tables: taxes, tax_rules, vendors, cheques, transactions, journal_lines, transaction_taxes, transaction_charges, entry_flags, attachments, reimbursements, reimbursement_items, period_locks, plus four immutability triggers | applied |
 | 005 | flag resolution: `resolved_by`, `resolved_at`, `resolution_note` on entry_flags, the `chk_entry_flags_resolved` CHECK, and a backfill that resolves "No receipt" flags that should never have been raised or whose receipt exists. Decision 056 | applied |
-| 006 | `request_hash` on idempotency_keys, so a key reused with different content is refused rather than replayed. Defect F7, decision 059 | written. Production: apply in phpMyAdmin before the push that carries the F7 fix |
+| 006 | `request_hash` on idempotency_keys, so a key reused with different content is refused rather than replayed. Defect F7, decision 059 | applied |
 | Later | one per phase | |
 
 Every migration file is plain SQL, numbered, idempotent where it can be, and

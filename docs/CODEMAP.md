@@ -193,6 +193,10 @@ Numbered SQL files, run in order. The database remembers which have run.
   of "No receipt" flags the first version raised by mistake. The first
   migration written after the live deploy, so a new file rather than an edit
   of 004. Decisions 052 and 056.
+- **`006_idempotency_request_hash.sql`**: one column on `idempotency_keys`
+  holding a fingerprint of each request, so the same key sent with different
+  content is refused instead of answered with the first result. Defect F7,
+  decision 059.
 
 ### `api/scripts/`: tools you run by hand
 

@@ -129,6 +129,14 @@ curl -fsS -X POST -H "X-Cron-Secret: $CRON_SECRET" https://api-accounting.winibe
 The daily job creates recurring instances, recalculates overdue invoice
 status, and raises time-based flags.
 
+## Resetting a database (test runs only)
+
+`api/scripts/test/phase1-reset.sql` drops every table. In phpMyAdmin, untick
+"Enable foreign key checks" below the SQL box first: that box overrides the
+script's own `SET FOREIGN_KEY_CHECKS = 0`, and with it ticked the drops stop
+at `transactions`. Tick it again before applying migrations. Never run this on
+production once real entries exist.
+
 ## Backups
 
 - Hostinger daily backups, already included
@@ -139,9 +147,13 @@ status, and raises time-based flags.
 ## Release checklist
 
 1. All tests pass, see `docs/TESTING.md`
-2. New migrations applied to production in order via phpMyAdmin
+2. New migrations applied to production in order via phpMyAdmin, **before**
+   the push. The API deploys itself on push, and new code may read columns
+   only the new migration creates
 3. Env vars changed? Restart the API app in hPanel
 4. Push to main: API auto-deploys via Git integration, web app deploys via
    GitHub Actions + FTP
-5. Smoke test: log in, view balances, create and post a test entry, reverse it
+5. Smoke test: log in, view balances, open each changed screen. **Do not
+   post test entries on production**: since 2026-10-27 it holds the real
+   books, and a posted entry can only be reversed, never removed
 6. Update `docs/PROGRESS.md`

@@ -81,8 +81,9 @@ balanced entry. See `docs/UI-GUIDE.md`.
 - Staff entries are approved by the owner login or an admin. Owner and
   admins' own entries post directly
 - Validation in three tiers: blocked, warned, flagged. About 25 rules
-- Mandatory receipts for client income, foreign currency, reimbursements, and
-  spending above a threshold
+- A receipt is required before posting any payment at or above a threshold
+  (5,000 PKR). Smaller payments without one are flagged for review. Money in,
+  transfers and reimbursements need none. Decisions 055 and 057
 - Gapless numbering, a full audit log, and an idempotency key on every
   money-creating request
 
@@ -181,9 +182,11 @@ petrol palette. See `docs/UI-GUIDE.md`.
 
 ## Status
 
-Phase 1 complete and deployed. The API runs at api-accounting.winibex.com and
-the web app at accounting.winibex.com. 347 API tests and 62 Flutter widget
-tests pass. CI/CD is in place: the API auto-deploys on push via Hostinger Git
+Phase 1 complete, tested end to end on 2026-10-27 (locally and on
+production), and production reset to empty books. The API runs at
+api-accounting.winibex.com and the web app at accounting.winibex.com. 389 API
+tests and 87 Flutter widget tests pass. Before real entries, the screens still
+missing from Phase 1 (D15 in PROGRESS.md) come first. CI/CD is in place: the API auto-deploys on push via Hostinger Git
 integration, and the web app deploys via GitHub Actions building Flutter web
 and uploading over FTP. Still waiting on accountant review of taxes and chart
 of accounts. See `docs/PROGRESS.md` for pending items before Phase 2.
