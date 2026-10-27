@@ -2,19 +2,21 @@
 
 Read this first. Update it before ending any session.
 
-**Last updated:** 2026-10-26
-**Current phase:** Phase 1 complete, built and deployed, defect fixes live.
-Phase 2 next.
-**Where we stopped:** The defect fixes are built, tested and deployed: 373 API
-tests (370 pass, 3 argon2 skips), 78 Flutter tests, analyze clean. Migration
-005 is on production and the fixes were pushed on 2026-10-26. Next is the full
-Phase 1 test (pending item 3), locally first, which Ahmad has started.
+**Last updated:** 2026-10-27
+**Current phase:** Phase 1 complete, tested end to end, and production reset.
+**Where we stopped:** The full Phase 1 test ran locally (50 steps) and a
+12-step re-test ran on production; every figure matched. All findings from it
+are fixed and deployed: 389 API tests (386 pass, 3 argon2 skips), 87 Flutter
+tests, analyze clean. Production was then wiped and rebuilt with migrations
+000 to 006; the owner must set a new password at first sign-in. The books are
+empty and ready for the real opening entry. What remains before real entries
+is in "Pending before Phase 2" below; D15 is the main piece of work.
 
 The API runs on
 Hostinger at api-accounting.winibex.com; the web app is at
 accounting.winibex.com. Both deploy automatically: the API via Hostinger Git
 integration on push, the web app via GitHub Actions building Flutter web and
-uploading over FTP. Migrations 000 to 005 are applied on production. The
+uploading over FTP. Migrations 000 to 006 are applied on production. The
 accountant review document is with the accountant.
 
 ## Deployed
@@ -43,15 +45,12 @@ These are not Phase 1 features. They are setup tasks and external dependencies.
 2. **Opening balances at 30 June 2026.** Ahmad to supply real figures from bank
    statements, plus open invoices and the director loan balance at that date.
    Blocks: the opening entry
-3. **Full Phase 1 test.** `docs/PHASE1-TEST.md`, with dummy data, the exact
-   result for every step, and support files in `api/scripts/test/` (seed,
-   checks and reset SQL, and a REST Client `.http` file for the features that
-   have no screen yet). Run locally, then on production, then reset
-   production with `phase1-reset.sql` and re-apply migrations 000 to 005.
-   Replaces the A to O script, which assumed buttons the app does not have.
-   Rewritten 2026-10-26 with the figures the fixed code produces
-4. **Owner password on production.** Set `must_change_password = 1` on the
-   owner row via phpMyAdmin so the first login forces a password change
+3. **Done 2026-10-27. Full Phase 1 test.** Locally, all 50 steps; on
+   production, a 12-step re-test of the fixes; then production reset and
+   rebuilt with migrations 000 to 006. Kit in `docs/PHASE1-TEST.md` and
+   `api/scripts/test/`
+4. **Done 2026-10-27. Owner password on production.** Set during the reset,
+   with `must_change_password = 1`
 5. **Onest font files.** Ahmad to download the four weights from Google Fonts
    and place them under `app/assets/fonts/`
 6. **check-docs.js guard script.** Rule 7 in the documentation rules. Not yet
@@ -353,6 +352,19 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-27 (production re-test and reset)
+Batch with F5, F2, O3, O7 passed (389 API, 87 Flutter) and was pushed with the
+app fixes batch; the category list got a capped height (`AppSizes.menuMaxHeight`).
+Production re-test, 12 steps, all matched: test data seeded, F1 sign-in
+message, opening entry, calendar date, F7 (one entry at 6,500), F2 refusal,
+approvals with three people and the reason dialog, transfers, a reversal, the
+F5 wrong-direction refusal, the reused-key 409, mark reviewed, F4 refresh and
+typed address, dashboard 684,450 = 560,000 + 140,000 - 15,550, trial balance
+zero, JV-1 to JV-12 with no gaps. Then reset: backup, `phase1-reset.sql`,
+migrations 000 to 006, owner hash with forced change, test receipts deleted.
+Lesson: phpMyAdmin's "Enable foreign key checks" box overrides
+`SET FOREIGN_KEY_CHECKS = 0` in a pasted script; untick it for the reset only.
 
 ### 2026-10-27 (F5, F2, O3, O7 written)
 App fixes batch passed: 381 API tests, 86 Flutter tests, checks 1 to 4 in the

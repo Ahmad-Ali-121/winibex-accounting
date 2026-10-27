@@ -22,6 +22,7 @@
 # ---------------------------------------------------------------------------
 
 @api = http://localhost:3000/api/v1
+# For production, put a # in front of the line above and remove it here:
 @today = 2026-10-27
 @ownerEmail = winibexoffice@gmail.com
 @ownerPassword = Winibex-Local-2026
@@ -1216,3 +1217,24 @@ Authorization: Bearer {{owner}}
 Content-Type: application/json
 
 { "note": "Nothing here" }
+
+### F5 check. A sales tax on money out. Expect 400 TAX_WRONG_DIRECTION.
+POST {{api}}/transactions
+Authorization: Bearer {{owner}}
+Content-Type: application/json
+Idempotency-Key: {{$guid}}
+
+{
+  "date": "{{today}}",
+  "direction": "out",
+  "method": "online",
+  "description": "Sales tax on a subscription, must be refused",
+  "categoryId": {{cat6400}},
+  "accountId": {{bankId}},
+  "gross": { "minor": 100000, "currency": "PKR" },
+  "taxes": [
+    { "taxId": 2, "baseAmount": { "minor": 100000, "currency": "PKR" },
+      "rateApplied": "1.0000", "atlStatusUsed": "atl", "atlParty": "company",
+      "amount": { "minor": 1000, "currency": "PKR" }, "deductedBy": "bank" }
+  ]
+}

@@ -604,10 +604,13 @@ Then empty the local upload folder (the `UPLOAD_DIR` in `api\.env`).
 **Production:**
 
 1. phpMyAdmin, accounting database, optional Export first. SQL tab, paste
-   `phase1-reset.sql`, Go. The final SHOW TABLES must return nothing
-2. Apply the migrations again in order: 000, 001, 002, 003, 004, 005. SQL
-   tab, paste each file, Go. Then `SELECT * FROM schema_migrations;` shows six
-   rows
+   `phase1-reset.sql`, **untick "Enable foreign key checks"** below the query
+   box, Go. phpMyAdmin's box overrides the script's own
+   `SET FOREIGN_KEY_CHECKS = 0`, and with it ticked the drop stops at
+   `transactions`. The final SHOW TABLES must return nothing
+2. Tick the box again. Apply the migrations in order: 000, 001, 002, 003,
+   004, 005, 006. SQL tab, paste each file, Go. Then
+   `SELECT * FROM schema_migrations;` shows seven rows
 3. Owner password: run `npm run hash:password` locally, enter the real
    password, then in phpMyAdmin:
    `UPDATE users SET password_hash = '<the printed hash>', must_change_password = 1 WHERE role = 'owner';`

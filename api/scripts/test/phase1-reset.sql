@@ -9,9 +9,12 @@
 --      accounting database and nothing else.
 --   2. Optional: Export it first (Export tab, Quick, SQL) in case you want to
 --      look at the test data later.
+--   3. UNTICK "Enable foreign key checks" below the SQL box before pressing
+--      Go. phpMyAdmin's box overrides the SET line below, and with it ticked
+--      the drops stop at `transactions`. Tick it again for the migrations.
 --
 -- After running, follow "Part 10. Reset" in docs/PHASE1-TEST.md:
--- re-apply migrations 000 to 005, set the owner password, delete the receipt
+-- re-apply migrations 000 to 006, set the owner password, delete the receipt
 -- files from the upload folder.
 
 SET FOREIGN_KEY_CHECKS = 0;
