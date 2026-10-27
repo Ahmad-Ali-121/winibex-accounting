@@ -13,6 +13,7 @@
 //   D11  dashboard In and Out count only money crossing the company's accounts
 //   D12  journal lines come back with their ledger code and name
 //   D14  an unusual-amount warning survives an average with a fraction of a paisa
+//   F6   the approval inbox carries every field of a ledger row, status included
 //
 // Every entry is dated today in Pakistan, except the opening entry, so the
 // whole file sits inside the current month and the dashboard can be checked
@@ -552,4 +553,45 @@ test('D2: a flag that does not exist is a 404', async () => {
     token: tokens.owner, body: { note: 'Nothing to resolve' },
   });
   assert.equal(response.status, 404, response.raw);
+});
+
+// --- F6 -----------------------------------------------------------------------
+// Found in the full Phase 1 test, not while writing it. The inbox rows are
+// ledger rows plus who and when, and the app reads them with the same parser
+// as the ledger. A missing field broke the whole screen, so every field the
+// ledger sends is checked here, not only the one that was missing.
+
+test('F6: the approval inbox carries every field of a ledger row, status included', async () => {
+  const created = await create(
+    entry({ description: 'Courier for signed contract', gross: pkr(90000) }),
+    tokens.staff,
+  );
+  assert.equal(created.status, 201, created.raw);
+  const id = created.body.transaction.id;
+
+  const submitted = await api.post(`/transactions/${id}/submit`, { token: tokens.staff });
+  assert.equal(submitted.status, 200, submitted.raw);
+
+  const inbox = await api.get('/approvals', { token: tokens.owner });
+  assert.equal(inbox.status, 200, inbox.raw);
+  const row = inbox.body.approvals.find((item) => item.id === id);
+  assert.ok(row, 'the submitted entry is in the inbox');
+
+  assert.equal(row.status, 'pending');
+  assert.equal(row.journalNumber, null);
+  assert.equal(row.isReversed, false);
+  assert.equal(row.isReversal, false);
+  assert.equal(row.isOwnEntry, false);
+  assert.ok(row.createdByName, 'who entered it is named');
+
+  const ledger = await api.get(`/transactions?status=pending`, { token: tokens.owner });
+  const ledgerRow = ledger.body.transactions.find((item) => item.id === id);
+  assert.ok(ledgerRow);
+  for (const key of Object.keys(ledgerRow)) {
+    assert.ok(key in row, `the inbox row has ${key}, as the ledger row does`);
+  }
+
+  const theirs = await api.get('/approvals', { token: tokens.staff });
+  assert.equal(theirs.status, 200, theirs.raw);
+  assert.equal(theirs.body.approvals.find((item) => item.id === id).isOwnEntry, true);
 });

@@ -428,10 +428,16 @@ export async function listLedger(runner = getPool(), filters) {
 
 // The approval inbox. Oldest first: an entry waiting three days matters more
 // than one submitted this morning.
+//
+// Selects every column summarise() in the service reads, including status. The
+// first version left status out, the app could not read the inbox, and the
+// approvals screen showed "Could not reach the server" for a list it had
+// received. Defect F6, found in the Phase 1 test.
 export async function listPending(runner = getPool()) {
   const [rows] = await runner.query(
-    `SELECT t.id, t.date, t.direction, t.amount, t.currency, t.description,
-            t.entry_type, a.name AS account_name, c.name AS category_name,
+    `SELECT t.id, t.journal_number, t.date, t.direction, t.amount, t.currency,
+            t.description, t.status, t.entry_type, t.reversed_by_id, t.reversal_of_id,
+            a.name AS account_name, c.name AS category_name,
             u.id AS created_by, u.name AS created_by_name, t.created_at,
             (SELECT COUNT(*) FROM entry_flags f
               WHERE f.transaction_id = t.id AND f.resolved = 0) AS flag_count
