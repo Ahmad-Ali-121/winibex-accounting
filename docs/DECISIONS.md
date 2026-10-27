@@ -1098,6 +1098,45 @@ built for the test. Open item N.
 `docs/PHASE1-TEST.md` comes from a model of the fixed rules, not from the old
 figures adjusted.
 
+**Correction, 2026-10-27.** The paragraph above on retrying a refused posting
+is wrong. The server does not refuse a changed body under the same key: it
+replays the first result. See decision 059.
+
+---
+
+### 059 — The full Phase 1 test: findings, and how F7 and F2 are fixed
+2026-10-27
+
+The full test ran locally on 2026-10-27, all 50 steps. Every balance,
+dashboard figure, journal number, status count and flag count matched the
+model. It found seven defects (F1 to F7) and seven smaller points (O1 to O7),
+listed in PROGRESS.md.
+
+**F7, critical: a changed entry posted the old figures.** After a posting was
+refused for a missing receipt, the amount was changed from 6,000 to 6,500 and
+saved again. The app said "Saved and posted" and the books recorded 6,000. The
+idempotency middleware compares only the user and the endpoint, never the
+content, so the second request was answered as a repeat of the first and the
+app posted the old draft. Request 6.17e confirmed it from the API alone. The
+docs had claimed the server refuses a changed body; they were wrong.
+
+Fixed in two halves, Ahmad's choice in both, the recommended options:
+
+- **Server: refuse it.** Each idempotency key stores a SHA-256 fingerprint of
+  the request body. The same key with a different body is refused with a 409
+  in plain words. Needs migration 006, one column on `idempotency_keys`
+- **App: update the same draft.** When a save fails after the draft exists
+  and the person then changes the entry, the app edits that draft, then posts
+  it. One entry, with the figures on screen, nothing left behind
+
+**F2: exchange rate and rupees must agree.** An entry stored $500 at rate 280
+with 140,250 rupees. Ahmad's choice, the recommended one: refuse and say why
+("500 × 280 is 140,000, not 140,250. Correct one of them."), because a
+mismatch is usually a typo. The rounding allowed is settled when it is built.
+
+**Order: F7 first, alone,** proven by its own tests and a short re-test,
+before the other findings.
+
 ---
 
 ## Open, not yet decided
@@ -1119,6 +1158,7 @@ figures adjusted.
 | M | Android emulator reaches the local API at 10.0.2.2, not localhost. Note for Phase 7 | Phase 7 |
 | N | Should a rejected entry's open flags stop counting in "To review", or stay until marked reviewed | Phase 1 polish |
 | O | Should every tax line Winibex withholds require a vendor, so the s.165 statement always has a payee | Phase 6, the s.165 statement |
+| P | Tax management screen: change a rate by closing the old row and adding a new one, never editing in place. Owner only | Before the first real tax entry |
 
 ---
 

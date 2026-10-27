@@ -11,7 +11,7 @@ import { connect, dropAll, buildSchema, seedUsers } from './helpers/api.js';
 import { getPool, closePool, withTransaction } from '../core/db.js';
 import { writeAudit, readAuditFor, AuditAction } from '../core/audit.js';
 import { allocate, peek } from '../core/sequences.js';
-import { idempotency, purgeExpiredKeys } from '../core/idempotency.js';
+import { idempotency, purgeExpiredKeys, fingerprintOf } from '../core/idempotency.js';
 import { errorHandler, notFoundHandler } from '../core/errors.js';
 
 let connection;
@@ -405,6 +405,89 @@ test('a request still in flight is told so, rather than running twice', async ()
     assert.equal(response.status, 409);
     assert.equal(response.body.error.code, 'REQUEST_IN_PROGRESS');
     assert.equal(runs, 0, 'the work ran while an identical request was in flight');
+  } finally {
+    await app.close();
+  }
+});
+
+// Defect F7, found in the full Phase 1 test. A changed entry sent again under
+// its old key was answered with the first result, and the old figures posted.
+test('the same key with different content is refused, and the work does not run again', async () => {
+  let runs = 0;
+  const app = await startApp(
+    buildIdempotentApp({
+      onRequest: () => {
+        runs += 1;
+        return { status: 201, body: { created: runs } };
+      },
+    }),
+  );
+
+  try {
+    const key = crypto.randomUUID();
+    const first = await app.post('/things', { key, body: { amount: 600000 } });
+    const changed = await app.post('/things', { key, body: { amount: 650000 } });
+
+    assert.equal(first.status, 201);
+    assert.equal(changed.status, 409, 'a changed request was answered as a repeat');
+    assert.equal(changed.body.error.code, 'IDEMPOTENCY_KEY_REUSED');
+    assert.doesNotMatch(changed.body.error.message, /Idempotency-Key/, 'the message is for a person, not a developer');
+    assert.equal(changed.replayed, false);
+    assert.equal(runs, 1, 'the work ran for the changed request');
+  } finally {
+    await app.close();
+  }
+});
+
+test('the same content with its keys in another order is still a repeat', async () => {
+  let runs = 0;
+  const app = await startApp(
+    buildIdempotentApp({
+      onRequest: () => {
+        runs += 1;
+        return { status: 201, body: { created: runs } };
+      },
+    }),
+  );
+
+  try {
+    const key = crypto.randomUUID();
+    await app.post('/things', { key, body: { amount: 500, note: 'tea', lines: [1, 2] } });
+    const again = await app.post('/things', { key, body: { lines: [1, 2], note: 'tea', amount: 500 } });
+
+    assert.equal(again.status, 201);
+    assert.equal(again.replayed, true);
+    assert.equal(runs, 1);
+  } finally {
+    await app.close();
+  }
+});
+
+test('a fingerprint sees inside nested objects and keeps array order', () => {
+  assert.equal(fingerprintOf({ a: { b: 1, c: 2 } }), fingerprintOf({ a: { c: 2, b: 1 } }));
+  assert.notEqual(fingerprintOf({ a: { b: 1 } }), fingerprintOf({ a: { b: 2 } }));
+  assert.notEqual(fingerprintOf({ lines: [1, 2] }), fingerprintOf({ lines: [2, 1] }));
+  assert.equal(fingerprintOf(undefined), fingerprintOf({}), 'no body and an empty body are the same request');
+  assert.match(fingerprintOf({ amount: 1 }), /^[0-9a-f]{64}$/);
+});
+
+test('a key stored before fingerprints existed is still replayed, by person and address', async () => {
+  const key = crypto.randomUUID();
+  await getPool().query(
+    `INSERT INTO idempotency_keys (idempotency_key, user_id, endpoint, response_json)
+     VALUES (?, ?, 'POST /things', ?)`,
+    [key, ownerId, JSON.stringify({ status: 201, body: { created: 'before 006' } })],
+  );
+
+  const app = await startApp(
+    buildIdempotentApp({ onRequest: () => ({ status: 201, body: { created: 'again' } }) }),
+  );
+
+  try {
+    const response = await app.post('/things', { key, body: { anything: true } });
+    assert.equal(response.status, 201);
+    assert.equal(response.replayed, true);
+    assert.deepEqual(response.body, { created: 'before 006' });
   } finally {
     await app.close();
   }

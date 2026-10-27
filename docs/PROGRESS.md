@@ -3,19 +3,19 @@
 Read this first. Update it before ending any session.
 
 **Last updated:** 2026-10-26
-**Current phase:** Phase 1 complete, built and deployed. Defect fixes done
-locally, not yet on production. Phase 2 next.
-**Where we stopped:** The defect fixes from the Phase 1 test guide are built
-and pass locally: 373 API tests (370 pass, 3 argon2 skips), 78 Flutter tests,
-analyze clean. Docs and `docs/PHASE1-TEST.md` are updated to match. Next is
-pending item 9: migration 005 on production, push, then the full test.
+**Current phase:** Phase 1 complete, built and deployed, defect fixes live.
+Phase 2 next.
+**Where we stopped:** The defect fixes are built, tested and deployed: 373 API
+tests (370 pass, 3 argon2 skips), 78 Flutter tests, analyze clean. Migration
+005 is on production and the fixes were pushed on 2026-10-26. Next is the full
+Phase 1 test (pending item 3), locally first, which Ahmad has started.
 
-Production still runs the code from before the fixes. The API runs on
+The API runs on
 Hostinger at api-accounting.winibex.com; the web app is at
 accounting.winibex.com. Both deploy automatically: the API via Hostinger Git
 integration on push, the web app via GitHub Actions building Flutter web and
-uploading over FTP. Migrations 000 to 004 are applied on production; 005 is
-not yet. The accountant review document is with the accountant.
+uploading over FTP. Migrations 000 to 005 are applied on production. The
+accountant review document is with the accountant.
 
 ## Deployed
 
@@ -66,7 +66,7 @@ These are not Phase 1 features. They are setup tasks and external dependencies.
    status, history merge, adding users, editing a draft, resubmitting a
    rejected entry, currencies other than USD on the form). Next step after the
    test
-9. **Roll the fixes out to production, in this order.** The API deploys
+9. **Done 2026-10-26.** Roll the fixes out to production, in this order. The API deploys
    itself on push, and the new code reads columns that only migration 005
    creates, so the order matters:
    1. phpMyAdmin, accounting database, SQL tab: paste
@@ -76,6 +76,34 @@ These are not Phase 1 features. They are setup tasks and external dependencies.
    3. Wait for both deploys, then sign in at accounting.winibex.com and check
       the dashboard opens
    4. Run the full test (item 3) on production, then reset it
+
+## Findings from the full Phase 1 test (2026-10-27)
+
+Local run, all 50 steps. Books, dashboard and counts all matched. Fix F7 first
+(decision 059), then the rest, then re-test only the affected steps, then the
+production run and reset. Production has the same code but holds only test
+data; no real entries until F7 is fixed.
+
+| # | Finding | Severity | Status |
+| --- | --- | --- | --- |
+| F7 | A changed entry after a refused posting posts the old figures. Idempotency compares user and endpoint, not content | Critical | Fix written: migration 006, fingerprint check, app edits the existing draft. Awaiting Ahmad's test run |
+| F6a | `/approvals` rows had no `status`, so the app could not read the inbox | High | Fixed and pushed, 374 API tests |
+| F6b | A reply the app cannot read is shown as "Could not reach the server" | High | Open |
+| F5 | Tax lines not checked for direction, dates, active flag or size against their base (to confirm from the code) | High | Open, with a tax screen (open item P) |
+| F2 | Exchange rate and rupee amount may disagree | Medium | Decided: refuse, decision 059 |
+| F1 | Wrong password shows no message on the sign-in screen | Medium | Open, likely the splash in `app.dart` |
+| F4 | Refresh or a typed address lands on the dashboard | Medium | Open, likely the same cause as F1 |
+| F3 | The date picker does not open; dates are typed | Medium | Open |
+| O1 | Two ways to record rebillable spend, one category named "absorbed" | Low | With D15 |
+| O2 | "A issued cheque" should be "An issued cheque" | Low | Open |
+| O3 | Technical messages an accountant cannot read, idempotency first | Low | Open |
+| O4 | "Send it back" and "Mark as reviewed" dialogs too narrow, hints cut off | Low | Open |
+| O5 | A too-short review note closes the dialog silently | Low | Open |
+| O7 | 6100 Salaries and 6110 Staff welfare easy to mis-pick; 1,200 went to the wrong one in the test | Low, affects P&L | Open |
+
+Test kit glitch: requests 8.9a to 8.9c could not read the flag id from 8.8d;
+typing the id worked. To fix in the `.http` file. The guide writes JV-0014
+where the system shows JV-14.
 
 ## Phase 2 scope
 
@@ -191,12 +219,13 @@ Deploy — done:
 - [x] .htaccess: force HTTPS, SPA fallback, COOP/COEP, cache headers
 - [x] CORS_ORIGINS set to the https origin
 - [x] Migrations 000-004 applied via phpMyAdmin
-- [ ] Migration 005 applied via phpMyAdmin (pending item 9)
+- [x] Migration 005 applied via phpMyAdmin, 2026-10-26
+- [x] Defect fixes pushed and deployed, 2026-10-26
 - [x] Owner password hash set on production
 
 347 API tests. 62 Flutter widget tests. Flutter analyze clean.
 
-Defect fixes, 2026-10-26, local only until pending item 9:
+Defect fixes, 2026-10-26, deployed to production the same day:
 
 - [x] D1 "No receipt" only on money out with no receipt
 - [x] D2 flags clear themselves, and can be marked reviewed. Migration 005
@@ -323,6 +352,35 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-27 (F7 fix written)
+Server: migration 006 adds `request_hash` to `idempotency_keys`; the
+middleware stores a SHA-256 of the canonical request body and refuses the same
+key with a different body, in plain words. Rows from before 006 are replayed
+on person and address only and expire within a day. App: `EntrySave`
+remembers the draft it created and edits it with `PATCH` when the entry
+changed after a refusal, uploads a receipt only once, then posts. Tests: 4 in
+`core-services.test.js`, 3 in `defect-fixes.test.js`, 1 new and 1 rewritten
+widget test. API.md, SCHEMA.md, FRONTEND.md, PHASE1-TEST.md and the `.http`
+file corrected; they had described a refusal the server never made. The guide
+now writes journal numbers as the system does, JV-14 not JV-0014.
+
+### 2026-10-27 (full Phase 1 test, local)
+All 50 steps run with Ahmad, one at a time. Trial balance 144305900 both
+sides, numbering 1 to 31 with no gaps, every ledger balance and flag count as
+modelled. Findings in the table above. The serious one, F7, appeared only on
+the last step, which deliberately tried the documented "known limit" and
+showed the limit was not what the docs said. F6a was fixed during the run so
+the approvals steps could continue. Decision 059 records the F7 and F2 fixes.
+
+### 2026-10-26 (fixes rolled out to production)
+Migration 005 applied in phpMyAdmin; `schema_migrations` shows six rows. The
+fixes pushed to `main`, then the commit amended to drop a co-author line Ahmad
+did not want and pushed again with `--force-with-lease`. Checked after the
+deploy: GitHub Actions green, `/api/v1/health` up, sign-in, dashboard and To
+review open without an error. Full Phase 1 test started locally. Test kit
+lives in `api/scripts/test/`, with the three dummy upload files kept out of
+git by `.gitignore`.
 
 ### 2026-10-26 (defect fixes, batches 1 to 4)
 Fixed every code defect from the test guide, in four batches, each checked

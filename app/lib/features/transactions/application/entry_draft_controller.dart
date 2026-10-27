@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/api/api_exception.dart';
@@ -142,9 +144,9 @@ class SaveInProgress extends SaveOutcome {
 ///
 /// When the refusal came at posting rather than at creation, for example a
 /// payment above the threshold with no receipt, the entry already exists as a
-/// draft. Pressing the button again with the same idempotency key replays the
-/// creation rather than making a second draft, so attaching the receipt and
-/// trying again posts the same entry. Defect D3.
+/// draft. Pressing the button again finishes that same draft: unchanged, it is
+/// posted as it is; changed, it is edited first and then posted. Defect D3,
+/// and F7 for the changed case.
 class SaveFailed extends SaveOutcome {
   const SaveFailed(this.error);
   final ApiException error;
@@ -174,6 +176,11 @@ class EntrySave extends _$EntrySave {
   @override
   SaveOutcome build() => const SaveIdle();
 
+  /// The draft this form has already created on the server, if any, and what
+  /// was last sent for it. Tied to the form's idempotency key, so a new form
+  /// (a new key) never finishes an old draft.
+  _SentDraft? _sent;
+
   /// Creates the entry, then posts it when [canPost], otherwise submits it for
   /// someone else to approve.
   ///
@@ -188,24 +195,43 @@ class EntrySave extends _$EntrySave {
     state = const SaveInProgress();
 
     try {
-      final id = await repository.create(draft);
+      // The first press creates the draft. A later press for the same form,
+      // after a refusal, finishes the draft that already exists: edited first
+      // if the person changed anything, so what posts is what the screen
+      // shows. Sending the old key with new content is what posted 6,000 for
+      // an entry that read 6,500. Defect F7, decision 059.
+      final body = jsonEncode(draft.toRequest());
+      var sent = _sent;
+
+      if (sent == null || sent.idempotencyKey != draft.idempotencyKey) {
+        final id = await repository.create(draft);
+        sent = _SentDraft(idempotencyKey: draft.idempotencyKey, id: id, body: body);
+        _sent = sent;
+      } else if (sent.body != body) {
+        await repository.update(sent.id, draft);
+        sent = sent.copyWith(body: body);
+        _sent = sent;
+      }
 
       // Before posting, not after. A payment above the threshold is refused
-      // without its receipt, and the receipt has to be there by then.
+      // without its receipt, and the receipt has to be there by then. A
+      // receipt already sent for this draft is not sent a second time.
       final receipt = draft.receipt;
-      if (receipt != null) {
+      if (receipt != null && !identical(receipt, sent.receipt)) {
         await repository.uploadReceipt(
-          transactionId: id,
+          transactionId: sent.id,
           bytes: receipt.bytes,
           filename: receipt.filename,
           mime: receipt.mime,
         );
+        sent = sent.copyWith(receipt: receipt);
+        _sent = sent;
       }
 
       if (canPost) {
-        await repository.approve(id, newIdempotencyKey());
+        await repository.approve(sent.id, newIdempotencyKey());
       } else {
-        await repository.submit(id);
+        await repository.submit(sent.id);
       }
 
       if (!ref.mounted) return;
@@ -213,7 +239,7 @@ class EntrySave extends _$EntrySave {
       // Balances changed, so ask for them again rather than adjusting
       // anything here. The server is the only thing that knows.
       ref.invalidate(accountsProvider);
-      state = SaveSucceeded(id, posted: canPost);
+      state = SaveSucceeded(sent.id, posted: canPost);
     } on ApiException catch (error) {
       if (!ref.mounted) return;
 
@@ -244,4 +270,27 @@ class EntrySave extends _$EntrySave {
   }
 
   void dismiss() => state = const SaveIdle();
+}
+
+/// What the server already holds for the open form: the draft's id, the body
+/// it was last given, and the receipt already attached.
+class _SentDraft {
+  const _SentDraft({
+    required this.idempotencyKey,
+    required this.id,
+    required this.body,
+    this.receipt,
+  });
+
+  final String idempotencyKey;
+  final int id;
+  final String body;
+  final DraftAttachment? receipt;
+
+  _SentDraft copyWith({String? body, DraftAttachment? receipt}) => _SentDraft(
+        idempotencyKey: idempotencyKey,
+        id: id,
+        body: body ?? this.body,
+        receipt: receipt ?? this.receipt,
+      );
 }

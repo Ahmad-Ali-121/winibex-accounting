@@ -67,13 +67,13 @@ settled. Each row says where to see the fix.
 | D14 | The unusual-amount warning could answer 500 on a fractional average | Fixed. Covered by an API test, not reachable with this guide's numbers | none |
 | D15 | Opening entry, transfers, reversal, reimbursements, people balances, vendors, cheques, tax and charge lines on the form, petty cash status, history merge, adding users, editing a draft, resubmitting a rejected entry have no screen. The form offers USD only as a foreign currency | Still open. Planned after this test | Part 6 |
 
-Two limits remain, both by design for now:
+One limit remains, by design for now: the D7 check runs only when a vendor
+is named on the entry.
 
-- If posting is refused and you then **change** the entry and press the
-  button again, the server answers "That Idempotency-Key was already used for a
-  different request." Press the button again without changes and it works. To
-  save a changed entry, go back to step 1 or reload the page
-- The D7 check runs only when a vendor is named on the entry
+Correction, 2026-10-27: this guide once said a changed entry after a refused
+posting is refused by the server. It was not; it was posted with the old
+figures (F7). Fixed in decision 059: the app now edits the draft it already
+created, and the server refuses a key reused with different content.
 
 If a step behaves differently from what is written here, that is a new
 finding. Note the step number and what you saw.
@@ -256,7 +256,7 @@ figures: bank 500,000, office cash 50,000, petty cash 10,000, director loan
 In `phase1-api-tests.http` send 0.1 to 0.4, then 4.1 to 4.4. The expected
 result is written above each request.
 
-What 4.2 posts, the first journal entry (JV-0001):
+What 4.2 posts, the first journal entry (JV-1):
 
 | Ledger | Debit | Credit |
 | --- | --- | --- |
@@ -276,7 +276,7 @@ What 4.2 posts, the first journal entry (JV-0001):
   opening entry is not trading. No "to review" tile: the opening entry needs
   no receipt (D1)
 - Transactions: one row, "Opening balances at 30 June 2026 (TEST)", dated
-  2026-07-01, JV-0001
+  2026-07-01, JV-1
 
 ---
 
@@ -385,9 +385,9 @@ Money out, today, 5,600, Winibex bank, 6400, "Claude Pro subscription
 October" (exactly as 5.5). Save and post. The dialog lists two warnings,
 each naming the entry it matched:
 
-- "Same amount on the same account as JV-0006, <today>, Claude Pro
+- "Same amount on the same account as JV-6, <today>, Claude Pro
   subscription October."
-- "Same description and amount as JV-0006, <today>, Claude Pro subscription
+- "Same description and amount as JV-6, <today>, Claude Pro subscription
   October."
 
 Press **Go back and check**. Nothing is saved. Leave the form. Transactions
@@ -433,7 +433,7 @@ and check**. Nothing saved. Leave the form.
 | --- | --- |
 | Accounts | Winibex bank 787,150.00, Office cash 38,100.00, Petty cash 9,700.00, Total held 834,950.00 |
 | Dashboard | Cash 834,950.00. In this month 320,250.00. Out this month 42,800.00. "10 entries to review". No waiting tile |
-| Transactions | "Showing 14 of 14". JV-0001 to JV-0014, no Draft rows |
+| Transactions | "Showing 14 of 14". JV-1 to JV-14, no Draft rows |
 
 In is 150,000 + 140,250 + 30,000. Out is 1,200 + 1,500 + 1,800 + 4,900 +
 5,600 + 7,500 + 20,000 + 300. Not in Out: the personal card (5.11) and the
@@ -469,8 +469,8 @@ What each block proves, and the balances after it:
 | 6.19 | What staff cannot do | | | | |
 | 6.21 | Receipt upload refusals, receipts need a login | | | | |
 
-Blank cells mean no change. Journal numbers run on without gaps: JV-0015 at
-6.4 to JV-0027 at 6.17.
+Blank cells mean no change. Journal numbers run on without gaps: JV-15 at
+6.4 to JV-27 at 6.17.
 
 Why the count moves where it does: 6.4 and 6.11 each add one confirmed
 warning (their receipts clear their "No receipt" flags), and 6.17 adds one "No
@@ -496,7 +496,7 @@ If any of them succeeds, stop: the triggers from migration 004 are missing.
 - Dashboard: Cash 476,194.00, In this month 170,250.00, Out this month
   251,556.00, "13 entries to review"
 - Transactions: the website advance struck through, and a new row "Reversal
-  of JV-0008: Test reversal, wrong client". Both stay. There is no "Test No-ID
+  of JV-8: Test reversal, wrong client". Both stay. There is no "Test No-ID
   Freelancer" row: step 6.8a was refused before anything was saved
 
 In dropped by 150,000 because the reversal cancels the website advance on the
@@ -573,7 +573,7 @@ above each query. The ones that matter most:
 | --- | --- |
 | C1 trial balance | total_debit 144305900, total_credit 144305900, difference 0 |
 | C2 ledger balances | 1113 = 41514700, 1111 = 3514700, 1112 = 1010000, 1118 = 0, 2114 = 0, 3400 = -36000000, and the rest as listed |
-| C3 numbering | 31 numbered entries, 31 distinct, first JV-0001, last JV-0031. No gaps, even though several postings failed along the way |
+| C3 numbering | 31 numbered entries, 31 distinct, first JV-1, last JV-31. No gaps, even though several postings failed along the way |
 | C4 status | posted/normal 28, posted/opening 1, posted/historical 1, reversed/normal 1, rejected/normal 1 |
 | C5 approval method | auto 27, owner 3, admin 1 |
 | C8 receipts | 10 files, each with a fingerprint and kept ten years |

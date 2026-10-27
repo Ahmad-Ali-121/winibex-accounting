@@ -113,6 +113,21 @@ class TransactionsRepository {
     }
   }
 
+  /// Replaces a draft's content with what the form now holds. Used when a
+  /// draft was already created and the person changed the entry before it
+  /// posted: the same draft is edited rather than a second one made, and the
+  /// old key is never sent with new content. Defect F7, decision 059.
+  ///
+  /// No idempotency key: editing a draft moves no money, and sending the same
+  /// edit twice leaves the draft the same.
+  Future<void> update(int id, EntryDraft draft) async {
+    try {
+      await dio.patch<Map<String, dynamic>>('/transactions/$id', data: draft.toRequest());
+    } catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+
   Future<LedgerPage> ledger(LedgerQuery query) async {
     try {
       final response = await dio.get<Map<String, dynamic>>(

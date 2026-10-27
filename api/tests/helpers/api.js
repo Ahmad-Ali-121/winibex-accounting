@@ -80,6 +80,7 @@ export async function buildSchema(connection) {
   await applyMigration(connection, '002_seed_reference.sql');
   await applyMigration(connection, '004_phase1_tables.sql');
   await applyMigration(connection, '005_flag_resolution.sql');
+  await applyMigration(connection, '006_idempotency_request_hash.sql');
 
   // The receipt rule is off unless a test turns it on. It is real company
   // policy, not a property of the schema, and leaving it on would make every

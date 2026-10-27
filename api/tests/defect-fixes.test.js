@@ -14,6 +14,7 @@
 //   D12  journal lines come back with their ledger code and name
 //   D14  an unusual-amount warning survives an average with a fraction of a paisa
 //   F6   the approval inbox carries every field of a ledger row, status included
+//   F7   a changed entry under its old key is refused, never posted with the old figures
 //
 // Every entry is dated today in Pakistan, except the opening entry, so the
 // whole file sits inside the current month and the dashboard can be checked
@@ -27,7 +28,7 @@ import {
   startServer, signIn, accountId, userId, idempotencyKey,
 } from './helpers/api.js';
 import { businessDate, businessToday, addDays } from '../core/dates.js';
-import { percentApart } from '../modules/transactions/validation.js';
+import { percentApart, WARNING_CODES } from '../modules/transactions/validation.js';
 
 const OPENING_BANK = 50000000;   // PKR 500,000
 const OPENING_CASH = 5000000;    // PKR 50,000
@@ -594,4 +595,68 @@ test('F6: the approval inbox carries every field of a ledger row, status include
   const theirs = await api.get('/approvals', { token: tokens.staff });
   assert.equal(theirs.status, 200, theirs.raw);
   assert.equal(theirs.body.approvals.find((item) => item.id === id).isOwnEntry, true);
+});
+
+// --- F7 -----------------------------------------------------------------------
+// Found on the last step of the full Phase 1 test. A posting was refused for a
+// missing receipt, the amount was changed from 6,000 to 6,500, and the second
+// save under the same key was answered with the first draft, which was then
+// posted at 6,000. Decision 059.
+
+test('F7: the same key with a changed amount is refused, and nothing new is saved', async () => {
+  const headers = idempotencyKey();
+  const body = entry({ description: 'Limit test, same key', gross: pkr(600000),
+    acknowledged_warnings: WARNING_CODES });
+
+  const first = await api.post('/transactions', { token: tokens.owner, headers, body });
+  assert.equal(first.status, 201, first.raw);
+
+  const [before] = await connection.query('SELECT COUNT(*) AS n FROM transactions');
+
+  const changed = await api.post('/transactions', {
+    token: tokens.owner, headers, body: { ...body, gross: pkr(650000) },
+  });
+  assert.equal(changed.status, 409, changed.raw);
+  assert.equal(changed.body.error.code, 'IDEMPOTENCY_KEY_REUSED');
+
+  const [after] = await connection.query('SELECT COUNT(*) AS n FROM transactions');
+  assert.equal(Number(after[0].n), Number(before[0].n), 'the changed request created something');
+
+  const [rows] = await connection.query('SELECT amount FROM transactions WHERE id = ?', [first.body.transaction.id]);
+  assert.equal(Number(rows[0].amount), 600000, 'the first draft was left as it was');
+});
+
+test('F7: the same key with the same body still replays the first answer', async () => {
+  const headers = idempotencyKey();
+  const body = entry({ description: 'Limit test, true repeat', gross: pkr(70000),
+    acknowledged_warnings: WARNING_CODES });
+
+  const first = await api.post('/transactions', { token: tokens.owner, headers, body });
+  const again = await api.post('/transactions', { token: tokens.owner, headers, body });
+
+  assert.equal(first.status, 201, first.raw);
+  assert.equal(again.status, 201, again.raw);
+  assert.equal(again.body.transaction.id, first.body.transaction.id);
+});
+
+test('F7: a changed draft is saved by editing it, and posts with the new figures', async () => {
+  const body = entry({ description: 'Limit test, edited draft', gross: pkr(600000),
+    acknowledged_warnings: WARNING_CODES });
+  const created = await create(body);
+  assert.equal(created.status, 201, created.raw);
+  const id = created.body.transaction.id;
+
+  const edited = await api.patch(`/transactions/${id}`, {
+    token: tokens.owner, body: { ...body, gross: pkr(650000) },
+  });
+  assert.equal(edited.status, 200, edited.raw);
+
+  const posted = await api.post(`/transactions/${id}/approve`, {
+    token: tokens.owner, headers: idempotencyKey(),
+  });
+  assert.equal(posted.status, 200, posted.raw);
+
+  const [rows] = await connection.query('SELECT amount, status FROM transactions WHERE id = ?', [id]);
+  assert.equal(Number(rows[0].amount), 650000);
+  assert.equal(rows[0].status, 'posted');
 });

@@ -32,6 +32,12 @@ with the result for 24 hours and returns the same result for a repeat. This is
 what stops a double tap or a flaky mobile connection from posting the same
 expense twice.
 
+A repeat must be the same request. The server keeps a SHA-256 fingerprint of
+the body with each key (migration 006), and the same key with a different
+body is refused with 409 `IDEMPOTENCY_KEY_REUSED`, never answered with the
+first result. To change a draft that already exists, edit it with
+`PATCH /transactions/:id`. Decision 059, defect F7.
+
 ### Errors
 ```json
 {
@@ -185,6 +191,7 @@ Stable, and each maps one to one to an `err` key in `app_en.arb`.
 | HISTORY_DOES_NOT_RECONCILE | 409 | merge refused, differences in `details` |
 | RECEIPT_REQUIRED | 400 | money out at or above `receipt_required_above` has no receipt at posting |
 | ALREADY_EXISTS | 409 | a unique value is already used, such as a cheque number on the same account |
+| IDEMPOTENCY_KEY_REUSED | 409 | that key was already used by another person, on another address, or with different content |
 | UNSUPPORTED_FILE | 400 | a receipt that is not an image or a PDF |
 | FILE_TOO_LARGE | 400 | over the upload size limit |
 | CASH_BELOW_ZERO, FUTURE_DATE, INACTIVE_ACCOUNT, INACTIVE_CATEGORY, BEFORE_OPENING_DATE, HISTORICAL_AFTER_GO_LIVE, LIVE_BEFORE_GO_LIVE, OPENING_WRONG_DATE | 400 | blocking validation |

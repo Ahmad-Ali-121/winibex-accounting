@@ -414,6 +414,7 @@ paid posted transactions minus reimbursements.
 | --- | --- | --- |
 | idempotency_key | CHAR(36) PK | from the client. Named `idempotency_key`, not `key`, which is reserved |
 | user_id, endpoint | | |
+| request_hash | CHAR(64) NULL | SHA-256 of the request body the key was first used with. The same key with a different body is refused. Null on rows from before migration 006. Decision 059 |
 | response_json | JSON | returned on repeat. Text on MariaDB, so stringify and parse |
 | created_at | TIMESTAMP | purged after 24 hours, the one table that is purged |
 
@@ -872,7 +873,8 @@ before they exist.
 | 002 | seed reference data: currencies, chart of accounts, categories, settings, sequences. Also seeds 1118 Funds in transit and the Transfer in, Transfer out and Opening balance categories. Taxes deliberately not seeded | applied |
 | 003 | company bootstrap: owner login, company profile, company accounts | applied |
 | 004 | Phase 1, thirteen tables: taxes, tax_rules, vendors, cheques, transactions, journal_lines, transaction_taxes, transaction_charges, entry_flags, attachments, reimbursements, reimbursement_items, period_locks, plus four immutability triggers | applied |
-| 005 | flag resolution: `resolved_by`, `resolved_at`, `resolution_note` on entry_flags, the `chk_entry_flags_resolved` CHECK, and a backfill that resolves "No receipt" flags that should never have been raised or whose receipt exists. Decision 056 | applied locally by the test suite. Production: apply in phpMyAdmin before the push that carries the fixes |
+| 005 | flag resolution: `resolved_by`, `resolved_at`, `resolution_note` on entry_flags, the `chk_entry_flags_resolved` CHECK, and a backfill that resolves "No receipt" flags that should never have been raised or whose receipt exists. Decision 056 | applied |
+| 006 | `request_hash` on idempotency_keys, so a key reused with different content is refused rather than replayed. Defect F7, decision 059 | written. Production: apply in phpMyAdmin before the push that carries the F7 fix |
 | Later | one per phase | |
 
 Every migration file is plain SQL, numbered, idempotent where it can be, and

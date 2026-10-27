@@ -22,29 +22,22 @@
 # ---------------------------------------------------------------------------
 
 @api = http://localhost:3000/api/v1
-# For production, put a # in front of the line above and remove it here:
-# @api = https://api-accounting.winibex.com/api/v1
-
-# The date you are testing on, as YYYY-MM-DD. Must match the app's date.
-@today = 2026-10-26
-
+@today = 2026-10-27
 @ownerEmail = winibexoffice@gmail.com
-@ownerPassword = PUT-THE-CURRENT-OWNER-PASSWORD-HERE
+@ownerPassword = Winibex-Local-2026
 @testPassword = Winibex-Test-2026
-
-# From phase1-checks.sql, Section A. Replace every 0.
-@bankId = 0
-@cashId = 0
-@pettyId = 0
-@staffId = 0
-@cat5100 = 0
-@cat6200 = 0
-@cat6400 = 0
-@cat6600 = 0
-@coa8100 = 0
-@coa8200 = 0
-@tax236y = 0
-@tax153 = 0
+@bankId = 1
+@cashId = 2
+@pettyId = 3
+@staffId = 4
+@cat5100 = 14
+@cat6200 = 22
+@cat6400 = 24
+@cat6600 = 27
+@coa8100 = 90
+@coa8200 = 91
+@tax236y = 1
+@tax153 = 3
 
 # Tokens, filled automatically by the sign-in requests below.
 @owner = {{ownerLogin.response.body.$.accessToken}}
@@ -104,7 +97,7 @@ Idempotency-Key: {{$guid}}
 
 ### 4.2 Owner posts the opening entry.
 # Bank 500,000, office cash 50,000, petty cash 10,000, director loan 200,000.
-# Expect 201: openingEntry.journalNumber is the first number (e.g. JV-0001),
+# Expect 201: openingEntry.journalNumber is the first number (e.g. JV-1),
 # date "2026-07-01", total.minor 56000000, lines 5.
 # The fifth line is 3400 Opening balance equity, credit 360,000, which the
 # system works out itself.
@@ -126,7 +119,7 @@ Idempotency-Key: {{$guid}}
 
 ### 4.3 A second opening entry.
 # Expect 409, OPENING_ALREADY_EXISTS,
-# "There is already an opening entry, JV-0001."
+# "There is already an opening entry, JV-1."
 POST {{api}}/opening-entry
 Authorization: Bearer {{owner}}
 Content-Type: application/json
@@ -282,7 +275,7 @@ Content-Type: application/pdf
 < ./receipt.pdf
 --WinibexBoundary--
 
-### 6.4e Post it. Expect 200: status "posted", journalNumber the 15th (JV-0015).
+### 6.4e Post it. Expect 200: status "posted", journalNumber the 15th (JV-15).
 POST {{api}}/transactions/{{card1aId}}/approve
 Authorization: Bearer {{owner}}
 Idempotency-Key: {{$guid}}
@@ -418,7 +411,7 @@ Content-Type: application/pdf
 < ./receipt.pdf
 --WinibexBoundary--
 
-### 6.7c Post. Expect 200, posted, the 16th journal number (JV-0016).
+### 6.7c Post. Expect 200, posted, the 16th journal number (JV-16).
 POST {{api}}/transactions/{{wh1.response.body.$.transaction.id}}/approve
 Authorization: Bearer {{owner}}
 Idempotency-Key: {{$guid}}
@@ -915,7 +908,7 @@ Idempotency-Key: abc
 POST {{api}}/transactions
 Authorization: Bearer {{owner}}
 Content-Type: application/json
-Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
 
 {
   "date": "{{today}}",
@@ -924,14 +917,15 @@ Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
   "description": "Idempotency test, should exist once",
   "categoryId": {{cat6600}},
   "accountId": {{pettyId}},
-  "gross": { "minor": 80000, "currency": "PKR" }
+  "gross": { "minor": 80000, "currency": "PKR" },
+  "acknowledged_warnings": ["POSSIBLE_DUPLICATE", "REPEATED_DESCRIPTION"]
 }
 
 ### 6.17d Send exactly the same again. Expect 201 with the SAME transaction.id.
 POST {{api}}/transactions
 Authorization: Bearer {{owner}}
 Content-Type: application/json
-Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
 
 {
   "date": "{{today}}",
@@ -940,15 +934,18 @@ Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
   "description": "Idempotency test, should exist once",
   "categoryId": {{cat6600}},
   "accountId": {{pettyId}},
-  "gross": { "minor": 80000, "currency": "PKR" }
+  "gross": { "minor": 80000, "currency": "PKR" },
+  "acknowledged_warnings": ["POSSIBLE_DUPLICATE", "REPEATED_DESCRIPTION"]
 }
 
-### 6.17e Same key, different amount. Expect 409,
-# "That Idempotency-Key was already used for a different request."
+### 6.17e Same key, different amount. Expect 409 IDEMPOTENCY_KEY_REUSED,
+# "This was already sent once with different details, so it was not saved
+# again. Start it again as a new entry." (F7: before the fix this answered 201
+# with the first entry, as if nothing had changed.)
 POST {{api}}/transactions
 Authorization: Bearer {{owner}}
 Content-Type: application/json
-Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
+Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
 
 {
   "date": "{{today}}",
@@ -1184,6 +1181,10 @@ Authorization: Bearer {{owner}}
 ### 8.8e Dashboard. Expect openFlagCount 15, pendingCount 0.
 GET {{api}}/dashboard
 Authorization: Bearer {{owner}}
+
+# If 8.9a to 8.9c answer "Expected number, received nan", the flag id did not
+# carry over from 8.8d. Copy the first "id" from the 8.8d response and type it
+# in place of {{resolvedFlags.response.body.$.flags[0].id}} in all three.
 
 ### 8.9a Staff tries to mark a flag reviewed.
 # Expect 403, "Only the owner or an admin can mark a flag reviewed."

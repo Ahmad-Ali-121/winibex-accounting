@@ -113,11 +113,12 @@ SELECT c.code, c.name, SUM(j.debit) - SUM(j.credit) AS net_debit
  ORDER BY c.code;
 
 -- C3. Journal numbers have no gaps.
---     Expected: numbered 31, first = the first number (for example JV-0001),
---     last = the 31st (for example JV-0031). numbered must equal the count of
---     distinct numbers.
+--     Expected: numbered 31, distinct_numbers 31, first 1, last 31.
+--     Numbers are JV-1, JV-2 and so on, so first and last are read as numbers:
+--     compared as text, JV-9 would sort after JV-31.
 SELECT COUNT(*) AS numbered, COUNT(DISTINCT journal_number) AS distinct_numbers,
-       MIN(journal_number) AS first, MAX(journal_number) AS last
+       MIN(CAST(SUBSTRING(journal_number, 4) AS UNSIGNED)) AS first,
+       MAX(CAST(SUBSTRING(journal_number, 4) AS UNSIGNED)) AS last
   FROM transactions WHERE journal_number IS NOT NULL;
 
 -- C4. Rows by status and type.

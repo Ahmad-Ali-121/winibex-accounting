@@ -102,15 +102,18 @@ with the warnings, `SaveSucceeded`, or `SaveFailed` with the refusal.
   or submit. The receipt goes before posting because a payment at or above
   the threshold is refused without it
 - `SaveFailed` shows a red box on the review step with the reason. Going back
-  a step clears it. Pressing the button again reuses the same idempotency key,
-  so a refused posting retried after attaching a receipt posts the same draft
-  rather than creating a second one
+  a step clears it. If the draft was already created, pressing the button
+  again finishes that same draft: it is edited first with
+  `PATCH /transactions/:id` when anything changed, its receipt is sent only
+  if it has not been sent already, then it is posted. The form never resends
+  its key with different content. Defect F7, decision 059
 - `SaveSucceeded` shows the confirmation, then throws the draft away and
   returns to step 1, so the next entry gets empty fields and a new key.
   Defect D10
-- Known limit: after a refused posting, changing a field and pressing again
-  sends a different body under the same key, which the server refuses as a
-  reused key. Go back to step 1 or reload to start a new entry
+- `EntrySave` remembers the draft it created (`_SentDraft`: id, the body last
+  sent, the receipt already attached), tied to the form's idempotency key, so
+  a new form never finishes an old draft. A receipt removed after it was sent
+  stays attached on the server; there is no way yet to remove one
 
 Whether the button reads "Save and post" or "Submit for approval" comes from
 `AuthUser.canPostOwnEntries`: the owner, or an admin with `autoApproveOwn`.
@@ -162,4 +165,5 @@ Widget tests replace the repository with a fake and let the real providers,
 widgets and models run, so parsing and rendering are exercised; only the
 network is stubbed. Both themes are covered. 62 tests at the end of Phase 1,
 78 after the defect fixes: refused saves and approvals, the key reused on a
-retry, the form resetting, the review list, and who may post.
+retry, the form resetting, the review list, and who may post. 79 with F7: a
+changed entry after a refusal edits and posts the same draft.

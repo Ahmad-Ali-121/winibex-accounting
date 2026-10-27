@@ -1,0 +1,30 @@
+﻿
+> winibex-accounting-api@0.1.0 test
+> node --env-file=.env --test --test-concurrency=1
+
+Ô£ö every seeded account starts at zero (1109.4634ms)
+Ô£ö a balance carries its ledger code, because that is what it is made of (4.7505ms)
+Ô£ö money in raises the balance and money out lowers it (69.692ms)
+Ô£ö a draft and a pending entry change nothing (26.6136ms)
+Ô£ö a reversal returns the balance to where it was (51.0841ms)
+Ô£ö historical entries are excluded while history is not merged (34.0582ms)
+Ô£ö an inactive account is hidden unless asked for (8.4139ms)
+Ô£ö an account that does not exist is a 404, not a zero balance (2.7677ms)
+Ô£ö the balance from journal lines equals the balance from transactions (4.5616ms)
+Ô£ö the dashboard summary runs against real data and totals cash (31.2437ms)
+Ô£ö the trial balance is zero across every ledger account (1.7304ms)
+Ô£ö a receipt is stored, fingerprinted and kept for ten years (2233.2489ms)
+Ô£ö the file lands outside the repository, under a year and month (2.1452ms)
+Ô£ö the receipt is listed against its entry (67.8574ms)
+Ô£ö a receipt cannot be read without a login (57.074ms)
+Ô£ö anything that is not a photo or a PDF is refused (29.4729ms)
+Ô£ö a request with no file is refused in words (35.6775ms)
+Ô£ö attaching to an entry that does not exist is a 404 (8.1661ms)
+Ô£ö a large payment cannot post without a receipt (48.4843ms)
+Ô£ö the same payment posts once its receipt is attached (63.572ms)
+Ô£ö a small payment needs no receipt (42.3447ms)
+Ô£ö a receipt can be attached after an entry is posted (59.7007ms)
+
+Interrupted while running:
+
+ÔÜá tests\api-auth.test.js (tests\api-auth.test.js:1:1)

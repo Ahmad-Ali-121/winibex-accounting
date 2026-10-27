@@ -62,6 +62,12 @@ class _FakeTransactionsRepository extends TransactionsRepository {
   int createCalls = 0;
   int approveCalls = 0;
 
+  /// Every draft edit, in order, with the id it was sent to.
+  final List<(int, EntryDraft)> updates = [];
+
+  /// The id of every approve, in order.
+  final List<int> approvedIds = [];
+
   /// The idempotency key of every create, in order.
   final List<String> createdKeys = [];
 
@@ -132,8 +138,14 @@ class _FakeTransactionsRepository extends TransactionsRepository {
   }
 
   @override
+  Future<void> update(int id, EntryDraft draft) async {
+    updates.add((id, draft));
+  }
+
+  @override
   Future<void> approve(int id, String idempotencyKey) async {
     approveCalls += 1;
+    approvedIds.add(id);
     final failure = approveFails;
     if (failure != null) {
       approveFails = null;
@@ -426,7 +438,7 @@ void main() {
     expect(repository.createCalls, 1);
   });
 
-  testWidgets('a posting refused after creation says why, and the retry reuses the key', (tester) async {
+  testWidgets('a posting refused after creation says why, and the retry posts the same draft', (tester) async {
     const reason = 'A payment of this size needs a receipt attached before it can be posted.';
     final repository = _FakeTransactionsRepository(
       approveFails: const ApiException(code: 'RECEIPT_REQUIRED', message: reason, status: 400),
@@ -442,12 +454,52 @@ void main() {
     await tester.tap(find.text('Save and post'));
     await tester.pumpAndSettle();
 
-    expect(repository.approveCalls, 2);
-    expect(
-      repository.createdKeys[1],
-      repository.createdKeys[0],
-      reason: 'the same key replays the draft rather than making a second one',
+    expect(repository.createCalls, 1, reason: 'the draft exists, so it is not created again');
+    expect(repository.updates, isEmpty, reason: 'nothing changed, so nothing is edited');
+    expect(repository.approvedIds, [42, 42], reason: 'the same draft is posted, not a second one');
+    expect(find.text('Saved and posted.'), findsOneWidget);
+  });
+
+  // -------------------------------------------------------------------------
+  // Defect F7: a changed entry after a refusal posts what the screen shows
+  // -------------------------------------------------------------------------
+
+  testWidgets('a refused posting, then a changed amount, posts the changed amount on the same draft', (tester) async {
+    const reason = 'A payment of this size needs a receipt attached before it can be posted.';
+    final repository = _FakeTransactionsRepository(
+      approveFails: const ApiException(code: 'RECEIPT_REQUIRED', message: reason, status: 400),
     );
+
+    await _pump(tester, transactions: repository);
+    await _fillIn(tester);
+
+    await tester.tap(find.text('Save and post'));
+    await tester.pumpAndSettle();
+    expect(find.text(reason), findsOneWidget);
+
+    // Back from the review step to the amount, the way a person would.
+    for (var step = 0; step < 4; step += 1) {
+      await tester.tap(find.text('Back'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Step 2 of 6'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).first, '6500');
+    await tester.pumpAndSettle();
+    for (var step = 0; step < 4; step += 1) {
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
+    }
+
+    await tester.tap(find.text('Save and post'));
+    await tester.pumpAndSettle();
+
+    expect(repository.createCalls, 1, reason: 'no second draft');
+    expect(repository.updates.length, 1, reason: 'the existing draft was edited');
+    final (editedId, edited) = repository.updates.single;
+    expect(editedId, 42);
+    expect(edited.toRequest()['gross'], {'minor': 650000, 'currency': 'PKR'});
+    expect(repository.approvedIds, [42, 42], reason: 'the edited draft is the one posted');
     expect(find.text('Saved and posted.'), findsOneWidget);
   });
 
