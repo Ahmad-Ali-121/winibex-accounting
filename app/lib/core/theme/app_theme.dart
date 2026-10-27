@@ -256,6 +256,14 @@ abstract final class AppSizes {
   static const double navRailWidth = 232;
   static const double contentMaxWidth = 1280;
   static const double formMaxWidth = 640;
+
+  /// A dialog that asks for a sentence, such as a rejection reason. Wide
+  /// enough that its hint reads in full. O4.
+  static const double dialogWidth = 480;
+
+  /// The tallest a dropdown list may open. Longer lists scroll inside it, so
+  /// a long category list never covers the whole form.
+  static const double menuMaxHeight = 320;
 }
 
 // ---------------------------------------------------------------------------

@@ -209,7 +209,7 @@
       }
     }
   },
-  "errNetwork": "Could not reach the server. Your entry is kept. Try again when connected.",
+  "errNetwork": "Could not reach the server. Check the connection and try again.",
   "errSignIn": "Email or password is incorrect.",
   "warnPossibleDuplicate": "An entry for the same amount on {account} was recorded on {date}.",
   "@warnPossibleDuplicate": {
@@ -513,5 +513,11 @@
   "markReviewedTitle": "Mark as reviewed",
   "fieldReviewNote": "Why it needs nothing more",
   "hintReviewNote": "Kept with the flag, so anyone can see why it was cleared.",
-  "flagMarkedReviewed": "Marked as reviewed."
+  "flagMarkedReviewed": "Marked as reviewed.",
+  "errNetworkEntryKept": "Could not reach the server. Your entry is kept. Try again when connected.",
+  "errUnreadable": "The app could not read the server's answer. Try again. If it keeps happening, tell whoever looks after the app.",
+  "errNoteTooShort": "Write at least 3 characters.",
+  "actionPickDate": "Pick a date",
+  "hintDateFormat": "YYYY-MM-DD",
+  "hintCategorySearch": "Type a name or a code, such as welfare or 6110"
 }

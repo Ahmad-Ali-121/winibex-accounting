@@ -120,6 +120,29 @@ Whether the button reads "Save and post" or "Submit for approval" comes from
 Every other admin, and all staff, submit. It used to be "owner or admin",
 which offered posting to admins the server refuses. Defect D4.
 
+## The root widget and the splash
+
+`app.dart` builds one `MaterialApp.router` from the first frame. While the
+session is being restored on launch, the router's builder draws a splash in
+place of the page, and the redirect holds position, so a refreshed or typed
+address survives. The splash is a one-way latch: once the first answer is in,
+it never comes back. Signing in does not set the session to loading. Defects
+F1 and F4, decision 060.
+
+## Errors on screen
+
+`ApiException.isNetwork` is true only for code `NETWORK`, no answer at all. An
+answer the app could not read becomes code `UNREADABLE`, printed with
+`debugPrint`, and shown as `errUnreadable`. `ErrorPanel` and `errorMessageFor`
+tell the three apart. Defect F6b.
+
+## Dialogs that ask for a reason
+
+`core/widgets/reason_dialog.dart`, `askForReason(...)`, used for rejecting an
+entry and marking a flag reviewed. `AppSizes.dialogWidth` wide, hint on up to
+three lines, and under three characters it stays open with
+`errNoteTooShort`. O4 and O5.
+
 ## The review list
 
 `FlagsScreen(canReview:)` shows a Mark reviewed button on each flag when
@@ -166,4 +189,6 @@ widgets and models run, so parsing and rendering are exercised; only the
 network is stubbed. Both themes are covered. 62 tests at the end of Phase 1,
 78 after the defect fixes: refused saves and approvals, the key reused on a
 retry, the form resetting, the review list, and who may post. 79 with F7: a
-changed entry after a refusal edits and posts the same draft.
+changed entry after a refusal edits and posts the same draft. 86 with the app
+fixes: the sign-in error inside the real app, the date picker, the three kinds
+of error, and the reason dialog.

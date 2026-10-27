@@ -13,8 +13,8 @@ transactions, triggers, constraints.
 cd api && npm run test
 ```
 
-373 API tests after the defect fixes of 2026-10-26: 370 pass, 3 skip (the
-argon2 tests, until that package is installed). 78 Flutter widget tests.
+389 API tests after the Phase 1 test fixes of 2026-10-27: 386 pass, 3 skip
+(the argon2 tests, until that package is installed). 87 Flutter widget tests.
 Flutter analyze clean.
 
 ### Must always pass

@@ -5,9 +5,9 @@ Four internal users. Real company books, so correctness beats speed of delivery.
 
 ## Stack
 
-- `app/` Flutter (Dart) — web and Android from one codebase
-- `api/` Node + Express + MariaDB — all business logic
-- `mcp/` Node — MCP server exposing read-only tools over the same database
+- `app/` Flutter (Dart) -- web and Android from one codebase
+- `api/` Node + Express + MariaDB -- all business logic
+- `mcp/` Node -- MCP server exposing read-only tools over the same database
 - Deployed on Hostinger Business (Node 24 runtime + managed MariaDB 11.8)
 
 ## Commands
@@ -42,8 +42,9 @@ Local development runs the same major version in Docker. What this changes:
   mysql2 driver (3.23+) parses it for you, so go through `core/json.js`, whose
   `fromJsonColumn` copes whether the driver hands back a string or an object.
   Decision 047. Never query inside a JSON column, and never use `->` or `->>`
-- Collation is `utf8mb4_uca1400_ai_ci`. MySQL's `utf8mb4_0900_ai_ci` does not
-  exist here
+- Collation is `utf8mb4_unicode_ci`. MariaDB's `utf8mb4_uca1400_ai_ci` is not
+  available on Hostinger's server (though the local Docker 11.8 has it).
+  MySQL's `utf8mb4_0900_ai_ci` does exist on Hostinger. Decision 054
 - Global `sql_mode` and server time zone cannot be set on Hostinger. Every
   connection sets strict mode, `time_zone = '+00:00'` and READ-COMMITTED
   itself, in `api/core/db.js`
@@ -101,10 +102,19 @@ folder rather than editing ten shared files.
 
 ```
 api/modules/<feature>/   routes.js  service.js  repository.js  schema.js
-api/core/                db, auth, audit, validation, errors, password
-app/lib/features/<f>/    data/  domain/  presentation/
+api/core/                db, auth, audit, validation, errors, password,
+                         money, json, sequences, idempotency, sql-split
+app/lib/features/<f>/    data/  domain/  application/  presentation/
 app/lib/core/            theme, glossary, http, widgets
 ```
+
+API modules built in Phase 0 and 1: health, auth, accounts, transactions,
+taxes, vendors, cheques, reimbursements, attachments, categories, users,
+dashboard, flags, history.
+
+App features built: auth, shell, dashboard, accounts, transactions (entry form,
+ledger, journal panel, approval inbox, edit history, receipt upload), flags,
+change_password.
 
 Features never import from each other directly. Cross-feature needs go through
 a service interface documented in `docs/API.md`. Shared code lives in `core/`.
@@ -129,6 +139,7 @@ a service interface documented in `docs/API.md`. Shared code lives in `core/`.
   guarantees being tested live in the database
 - ESLint 9 flat config, no plugins. `Math.round` and `parseFloat` are blocked
   rules, because money is whole paisa and must never become a decimal
+- 347 API tests, 62 Flutter widget tests as of Phase 1
 - Full rules in `docs/TESTING.md`
 
 ## UI rules
@@ -154,17 +165,18 @@ See `docs/UI-GUIDE.md`. Non-negotiable points:
 
 ## Where to look
 
-- `docs/OVERVIEW.md` — the whole project in one read
-- `docs/SCHEMA.md` — tables, fields, relationships, posting rules
-- `docs/CHART-OF-ACCOUNTS.md` — account codes and worked journal postings
-- `docs/TAXES.md` — Pakistan tax types, rates pending accountant review
-- `docs/FRONTEND.md` — Flutter structure and Riverpod conventions
-- `docs/UI-GUIDE.md` — terminology, validation tiers, receipt rules
-- `docs/TESTING.md` — what must pass before merge
-- `docs/PROGRESS.md` — what is done, what is next. Read this first each session
-- `docs/DECISIONS.md` — why things are the way they are
-- `docs/API.md` — endpoint contracts
-- `docs/DEPLOY.md` — Hostinger setup
+- `docs/OVERVIEW.md` -- the whole project in one read
+- `docs/SCHEMA.md` -- tables, fields, relationships, posting rules
+- `docs/CHART-OF-ACCOUNTS.md` -- account codes and worked journal postings
+- `docs/TAXES.md` -- Pakistan tax types, rates pending accountant review
+- `docs/FRONTEND.md` -- Flutter structure and Riverpod conventions
+- `docs/UI-GUIDE.md` -- terminology, validation tiers, receipt rules
+- `docs/TESTING.md` -- what must pass before merge
+- `docs/PROGRESS.md` -- what is done, what is next. Read this first each session
+- `docs/DECISIONS.md` -- why things are the way they are
+- `docs/API.md` -- endpoint contracts
+- `docs/DEPLOY.md` -- Hostinger setup
+- `docs/CODEMAP.md` -- what every file does, in plain words
 
 ## Session discipline
 

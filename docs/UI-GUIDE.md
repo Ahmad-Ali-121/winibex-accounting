@@ -139,6 +139,10 @@ Dates
 
 Currency and tax
 - Foreign currency with neither a rate nor a PKR amount
+- Foreign amount x rate more than PKR 1 away from the PKR amount entered.
+  The refusal gives the figure it should be. Decision 061
+- A tax that is switched off, or that belongs to the other direction
+  (a sales tax on money out, a purchases tax on money in)
 - Rate of zero or below
 - A tax line larger than the amount it is calculated on
 - A tax that was not in effect on the transaction date

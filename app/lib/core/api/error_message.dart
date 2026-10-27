@@ -17,10 +17,14 @@ String errorMessageFor(
   Object error, {
   required String network,
   required String server,
+  String? unreadable,
 }) {
   final failure = ApiException.from(error);
 
-  if (failure.code == 'NETWORK') return network;
+  if (failure.isNetwork) return network;
+  // The server answered and the app could not read it. Not the connection,
+  // and not a refusal. F6b.
+  if (failure.isUnreadable) return unreadable ?? server;
 
   final status = failure.status;
   if (status == null || status >= 500) return server;

@@ -25,7 +25,18 @@ export const Blocked = Object.freeze({
   OPENING_ALREADY_EXISTS: 'OPENING_ALREADY_EXISTS',
   LIVE_BEFORE_GO_LIVE: 'LIVE_BEFORE_GO_LIVE',
   CASH_BELOW_ZERO: 'CASH_BELOW_ZERO',
+  TAX_UNKNOWN: 'TAX_UNKNOWN',
+  TAX_INACTIVE: 'TAX_INACTIVE',
+  TAX_NOT_IN_EFFECT: 'TAX_NOT_IN_EFFECT',
+  TAX_WRONG_DIRECTION: 'TAX_WRONG_DIRECTION',
+  TAX_LARGER_THAN_BASE: 'TAX_LARGER_THAN_BASE',
+  RATE_AMOUNT_MISMATCH: 'RATE_AMOUNT_MISMATCH',
 });
+
+// How far the rupees may be from foreign amount × rate before the entry is
+// refused: one rupee, for the rounding a bank does. Anything further is
+// almost always a typo in one of the two. Decision 059, defect F2.
+const RATE_TOLERANCE_PAISA = 100n;
 
 export const Warning = Object.freeze({
   POSSIBLE_DUPLICATE: 'POSSIBLE_DUPLICATE',
@@ -132,6 +143,11 @@ export async function collectBlocking(repo, connection, { input, amount, setting
     }
   }
 
+  problems.push(...(await checkTaxLines(repo, connection, { input, date })));
+
+  const mismatch = checkRateAgainstRupees(input);
+  if (mismatch) problems.push(mismatch);
+
   // You cannot spend cash you do not have. A bank account can go overdrawn in
   // real life, so that one is a warning rather than a block.
   if (input.direction === 'out' && input.accountId) {
@@ -151,6 +167,83 @@ export async function collectBlocking(repo, connection, { input, amount, setting
   }
 
   return problems;
+}
+
+// Every tax line is checked against the tax it names. UI-GUIDE lists these as
+// blocking; before this nothing checked them, so a sales tax could sit on a
+// software subscription, or last year's rate on this year's entry. F5.
+async function checkTaxLines(repo, connection, { input, date }) {
+  const lines = input.taxes ?? [];
+  if (lines.length === 0) return [];
+
+  const problems = [];
+  const taxes = await repo.taxesForValidation(
+    connection,
+    [...new Set(lines.map((line) => Number(line.taxId)))],
+  );
+  const direction = input.direction === 'in' ? 'in' : 'out';
+
+  for (const line of lines) {
+    const tax = taxes.get(Number(line.taxId));
+    if (!tax) {
+      problems.push({ code: Blocked.TAX_UNKNOWN, message: 'One of the tax lines names a tax that does not exist.' });
+      continue;
+    }
+    const label = `${tax.name} (${tax.short_code})`;
+
+    if (!tax.is_active) {
+      problems.push({ code: Blocked.TAX_INACTIVE, message: `${label} is switched off, so it cannot be used.` });
+    }
+
+    const from = asDate(tax.effective_from);
+    const to = tax.effective_to ? asDate(tax.effective_to) : null;
+    if (date < from || (to && date > to)) {
+      const range = to ? `from ${from} to ${to}` : `from ${from}`;
+      problems.push({
+        code: Blocked.TAX_NOT_IN_EFFECT,
+        message: `${label} was not in force on ${date}. It applies ${range}.`,
+      });
+    }
+
+    const wrongWay = (tax.applies_to === 'sales' && direction === 'out')
+      || (tax.applies_to === 'purchases' && direction === 'in');
+    if (wrongWay) {
+      const belongs = tax.applies_to === 'sales' ? 'money coming in' : 'money going out';
+      const entry = direction === 'in' ? 'money coming in' : 'money going out';
+      problems.push({
+        code: Blocked.TAX_WRONG_DIRECTION,
+        message: `${label} is for ${belongs}, and this entry is ${entry}.`,
+      });
+    }
+
+    if (Number(line.amount) > Number(line.baseAmount)) {
+      problems.push({
+        code: Blocked.TAX_LARGER_THAN_BASE,
+        message: `${label} is ${formatPaisa(line.amount)} on a base of ${formatPaisa(line.baseAmount)}. A tax cannot be more than the amount it is charged on.`,
+      });
+    }
+  }
+  return problems;
+}
+
+// The rupees and the rate must tell the same story: 500 USD at 280 is
+// PKR 140,000.00, so an entry saying 140,250.00 has a typo in one of them.
+// Both minor units are hundredths, so foreign minor × rate is paisa. F2.
+function checkRateAgainstRupees(input) {
+  if (!input.foreignAmount || !input.fxRate) return null;
+  const rate = rateInMillionths(input.fxRate);
+  if (rate === null) return null;
+
+  const expected = divideRounded(BigInt(input.foreignAmount) * rate, 1000000n);
+  const gross = BigInt(input.grossAmount);
+  const difference = gross > expected ? gross - expected : expected - gross;
+  if (difference <= RATE_TOLERANCE_PAISA) return null;
+
+  const foreign = `${input.currency} ${formatMinor(BigInt(input.foreignAmount))}`;
+  return {
+    code: Blocked.RATE_AMOUNT_MISMATCH,
+    message: `${foreign} at ${Number(input.fxRate)} is ${formatPaisa(expected)}, not ${formatPaisa(gross)}. Correct the rate or the rupees.`,
+  };
 }
 
 // --- warned ----------------------------------------------------------------
@@ -320,6 +413,21 @@ export function percentApart(current, previous) {
   const difference = now > before ? now - before : before - now;
   const hundredthsOfAPercent = divideRounded(difference * 10000n, before);
   return Number(hundredthsOfAPercent) / 100;
+}
+
+// Whole units and hundredths, with thousands separators: 14000000 is
+// "140,000.00". Built from the integer, never through a float.
+function formatMinor(minor) {
+  const negative = minor < 0n;
+  const value = negative ? -minor : minor;
+  const units = value / 100n;
+  const hundredths = (value % 100n).toString().padStart(2, '0');
+  const grouped = units.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `${negative ? '-' : ''}${grouped}.${hundredths}`;
+}
+
+function formatPaisa(minor) {
+  return `PKR ${formatMinor(BigInt(minor))}`;
 }
 
 // An average can carry a fraction of a paisa, and BigInt refuses a fraction

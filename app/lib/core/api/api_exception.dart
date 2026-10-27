@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// The server's error shape, as one Dart type:
 ///   { "error": { "code", "message", "field", "details" } }
@@ -27,7 +28,16 @@ class ApiException implements Exception {
   /// No response at all: the server is down, or the phone is offline. Told
   /// apart from a server-sent error so the UI can say "check your connection"
   /// rather than "something went wrong on our side".
-  bool get isNetwork => status == null;
+  ///
+  /// Decided by the code, not by a missing status. An answer the app could not
+  /// read also has no status, and calling that a lost connection is how the
+  /// approvals screen said "Could not reach the server" about a list it had
+  /// received. Defect F6b.
+  bool get isNetwork => code == 'NETWORK';
+
+  /// The server answered, but the app could not read the answer: a field
+  /// missing or of the wrong type. A bug, on one side or the other.
+  bool get isUnreadable => code == 'UNREADABLE';
 
   /// Warnings are not failures. The entry is fine; the person is being asked
   /// to confirm something before it is saved. docs/API.md.
@@ -73,7 +83,11 @@ class ApiException implements Exception {
       return const ApiException(code: 'NETWORK', message: 'Could not reach the server.');
     }
 
-    return ApiException(code: 'UNKNOWN', message: error.toString());
+    // Anything else is the app failing to read what it was given, usually a
+    // fromJson meeting a field it did not expect. Printed in debug builds, so
+    // the console names the actual field rather than leaving a guess. F6b.
+    debugPrint('Could not read the server answer: $error');
+    return ApiException(code: 'UNREADABLE', message: error.toString());
   }
 
   @override

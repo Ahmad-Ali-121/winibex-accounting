@@ -605,7 +605,7 @@ Content-Type: application/json
 }
 
 ### 6.12c Straight from issued to cleared.
-# Expect 409, "A issued cheque cannot become cleared."
+# Expect 409, "An issued cheque cannot become cleared."
 PATCH {{api}}/cheques/{{cheque1.response.body.$.cheque.id}}/status
 Authorization: Bearer {{owner}}
 Content-Type: application/json

@@ -421,7 +421,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errNetwork =>
-      'Could not reach the server. Your entry is kept. Try again when connected.';
+      'Could not reach the server. Check the connection and try again.';
 
   @override
   String get errSignIn => 'Email or password is incorrect.';
@@ -1066,4 +1066,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flagMarkedReviewed => 'Marked as reviewed.';
+
+  @override
+  String get errNetworkEntryKept =>
+      'Could not reach the server. Your entry is kept. Try again when connected.';
+
+  @override
+  String get errUnreadable =>
+      'The app could not read the server\'s answer. Try again. If it keeps happening, tell whoever looks after the app.';
+
+  @override
+  String get errNoteTooShort => 'Write at least 3 characters.';
+
+  @override
+  String get actionPickDate => 'Pick a date';
+
+  @override
+  String get hintDateFormat => 'YYYY-MM-DD';
+
+  @override
+  String get hintCategorySearch =>
+      'Type a name or a code, such as welfare or 6110';
 }

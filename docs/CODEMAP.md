@@ -212,8 +212,8 @@ Numbered SQL files, run in order. The database remembers which have run.
 
 Every `.js` file here tests one area. They run against a real database, never a
 fake one, because the guarantees being tested live in the database. `npm test`
-runs them all. 373 tests after the defect fixes: 370 pass, 3 argon2 tests
-skip until that package is installed.
+runs them all. 389 tests after the Phase 1 test fixes: 386 pass, 3 argon2
+tests skip until that package is installed.
 
 Test files:
 
@@ -299,6 +299,9 @@ Test files:
   with an icon, a message and an optional action button.
 - **`widgets/error_panel.dart`**: displays API errors with the human-readable
   message and a retry button. Maps error codes to localised strings.
+- **`widgets/reason_dialog.dart`**: the one dialog that asks for a short
+  reason (rejecting an entry, marking a flag reviewed). Wide enough to read,
+  and says so when the reason is too short.
 - **`widgets/receipt_field.dart`**: the receipt picker: camera or file, with
   preview thumbnail and remove. Uses file_picker.
 - **`api/api_retry.dart`**: wraps API calls with automatic retry on network
@@ -366,7 +369,7 @@ Current features:
 
 ### `app/test/`
 
-78 Flutter widget tests after the defect fixes. Flutter analyze clean.
+87 Flutter widget tests after the fixes of 2026-10-27. Flutter analyze clean.
 
 - **`foundation_test.dart`**: checks the theme and glossary hold together.
 - **`login_test.dart`**: checks the login screen behaves on success, wrong
@@ -385,6 +388,8 @@ Current features:
   approval that says why and leaves the card in place.
 - **`flags_screen_test.dart`**: the review list, the Mark reviewed button
   for the owner and admins only, a short note sending nothing, a refusal shown.
+- **`errors_test.dart`**: no answer, an unreadable answer and a refusal are
+  told apart and each gets its own message.
 - **`auth_user_test.dart`**: who may post their own entries: the owner, and
   an admin with auto-approve. Nobody else.
 

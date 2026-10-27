@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/error_message.dart';
+import '../../../core/widgets/reason_dialog.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_panel.dart';
@@ -144,35 +145,16 @@ class _ApprovalCard extends ConsumerWidget {
   /// what to fix, and the reason stays on the entry.
   Future<void> _reject(BuildContext context, WidgetRef ref, int id) async {
     final l10n = AppLocalizations.of(context);
-    final controller = TextEditingController();
 
-    final reason = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.rejectTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 255,
-          decoration: InputDecoration(
-            labelText: l10n.fieldReason,
-            helperText: l10n.hintRejectReason,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.actionCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: Text(l10n.actionReject),
-          ),
-        ],
-      ),
+    final reason = await askForReason(
+      context,
+      title: l10n.rejectTitle,
+      label: l10n.fieldReason,
+      hint: l10n.hintRejectReason,
+      confirmLabel: l10n.actionReject,
     );
 
-    if (reason == null || reason.isEmpty) return;
+    if (reason == null) return;
     final refusal = await ref.read(approvalActionsProvider.notifier).reject(id, reason);
     if (refusal != null && context.mounted) _showRefusal(context, refusal);
   }

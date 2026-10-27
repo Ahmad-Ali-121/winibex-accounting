@@ -120,14 +120,22 @@ void main() {
     expect(find.text(l10n.flagMarkedReviewed), findsOneWidget);
   });
 
-  testWidgets('a reason shorter than three characters sends nothing', (tester) async {
+  testWidgets('a reason shorter than three characters sends nothing, and says why', (tester) async {
     final repository = _FakeFlagsRepository();
     await _pump(tester, repository);
+    final l10n = _l10n(tester);
 
     await _markReviewed(tester, 'ok');
 
     expect(repository.resolvedId, isNull);
-    expect(find.text('tea'), findsOneWidget);
+    expect(find.text(l10n.errNoteTooShort), findsOneWidget, reason: 'O5: it used to close silently');
+    expect(find.text(l10n.markReviewedTitle), findsOneWidget, reason: 'the dialog stays open');
+
+    await tester.enterText(find.byType(TextField), 'Office tea, nothing to add');
+    await tester.tap(find.widgetWithText(FilledButton, l10n.actionMarkReviewed));
+    await tester.pumpAndSettle();
+
+    expect(repository.resolvedNote, 'Office tea, nothing to add');
   });
 
   testWidgets('a refusal says why', (tester) async {

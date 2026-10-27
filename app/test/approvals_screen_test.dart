@@ -172,6 +172,8 @@ void main() {
       isNull,
       reason: 'a rejection with no reason tells the person nothing to fix',
     );
+    expect(find.text(l10n.errNoteTooShort), findsOneWidget, reason: 'O5: say why, do not close');
+    expect(find.text(l10n.rejectTitle), findsOneWidget, reason: 'the dialog stays open');
   });
 
   testWidgets('an empty inbox says so rather than showing an empty list', (tester) async {

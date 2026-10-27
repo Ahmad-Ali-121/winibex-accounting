@@ -35,7 +35,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       'INVALID_CREDENTIALS' => l10n.errSignIn,
       'ACCOUNT_INACTIVE' => l10n.errAccountInactive,
       'RATE_LIMITED' => l10n.errTooManyAttempts,
-      'NETWORK' || 'UNKNOWN' => l10n.errNetwork,
+      'NETWORK' => l10n.errNetwork,
+      'UNREADABLE' => l10n.errUnreadable,
       _ => l10n.errServer,
     };
   }

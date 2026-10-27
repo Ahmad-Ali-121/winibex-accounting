@@ -106,10 +106,12 @@ export async function changeStatus({ user, id, status, clearedOn = null, ip = nu
 
     const allowed = NEXT[current.status] ?? [];
     if (!allowed.includes(status)) {
+      // "An issued cheque", not "A issued cheque". O2.
+      const article = /^[aeiou]/i.test(current.status) ? 'An' : 'A';
       throw new AppError(
         409,
         ErrorCode.INVALID_STATUS,
-        `A ${current.status} cheque cannot become ${status}.`,
+        `${article} ${current.status} cheque cannot become ${status}.`,
         { details: { from: current.status, allowed } },
       );
     }

@@ -1137,6 +1137,61 @@ mismatch is usually a typo. The rounding allowed is settled when it is built.
 **Order: F7 first, alone,** proven by its own tests and a short re-test,
 before the other findings.
 
+### 060 — App fixes from the Phase 1 test: one router, honest errors, one reason dialog
+2026-10-27
+
+Small choices made by Claude while fixing F1, F4, F6b, F3, O2, O4 and O5,
+under decision 059's order. Open to correction.
+
+- **One MaterialApp.router for the app's whole life.** The splash is drawn by
+  the router's builder, once, while the session is restored on launch, and
+  never again. A second MaterialApp for the splash is what lost the browser
+  address (F4) and the sign-in error (F1)
+- **Signing in does not put the session into loading.** Loading means "still
+  finding out who is signed in", true only on launch. The button shows its own
+  progress. A failed attempt leaves the session signed out, unchanged
+- **Three kinds of failure, three messages.** No answer: "Could not reach the
+  server. Check the connection and try again." An answer the app could not
+  read: its own message, and the real error printed to the console. A refusal:
+  the server's words. The entry form keeps "Your entry is kept", which only
+  makes sense there
+- **The calendar offers 1 July 2026 to today.** Go-live is the first date this
+  form records; earlier is history. The server's `books_live_from` stays the
+  rule. Typing any date still works, so the server can refuse it with a reason
+- **One dialog asks for every short reason,** 480 wide (`AppSizes.dialogWidth`),
+  and refuses under three characters in words, as the server does
+
+### 061 — Tax lines and exchange rates are checked; the category picker is searchable
+2026-10-27
+
+Fixes F5, F2, O3 and O7 from the full Phase 1 test, in one batch at Ahmad's
+request. The choices below are Claude's, open to correction.
+
+**Tax lines (F5).** Each line is refused before anything is saved when its
+tax does not exist, is switched off, is not in force on the entry's date
+(`effective_from` to `effective_to`), belongs to the other direction
+(`applies_to` sales is money in, purchases is money out, both is either), or is
+larger than the base it is charged on. Every message names the tax. Changing a
+rate stays a data change: close the old row and add a new one (open item P).
+
+**Exchange rate against rupees (F2).** Foreign amount x rate, rounded to the
+paisa, must be within PKR 1 of the rupees entered. One rupee covers the
+bank's rounding; beyond it the entry is refused with the figure it should be:
+"USD 500.00 at 280 is PKR 140,000.00, not PKR 140,250.00. Correct the rate or
+the rupees." A bank whose rounding differs by more can be matched by entering
+its rate to more decimals, up to six.
+
+**Category picker (O7).** Searchable by name or code, each line code first
+("6110  Staff welfare"), sorted by code. Main-head grouping is dropped from
+the list; the code order keeps related heads together.
+
+**Plain wording (O3), scope.** Every message the app shows in normal use is
+written for a person: server refusals, the idempotency refusal (decision 059),
+and the app's own network and unreadable-answer messages (decision 060).
+Messages that only a developer can trigger, such as a missing Idempotency-Key
+header or a malformed field, stay technical; in the app they would mean a bug,
+and F6b now reports those honestly.
+
 ---
 
 ## Open, not yet decided

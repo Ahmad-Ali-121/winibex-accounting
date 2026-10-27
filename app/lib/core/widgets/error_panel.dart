@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/generated/app_localizations.dart';
 import '../api/api_exception.dart';
 import '../theme/app_theme.dart';
 
@@ -8,8 +9,18 @@ import '../theme/app_theme.dart';
 /// A server-sent error carries a message written for a person, so it is shown
 /// as it stands. Everything else gets a general line, because a Dio stack
 /// trace means nothing to Maryam.
+///
+/// Three cases are told apart: no answer at all (the connection), an answer
+/// the app could not read (a bug), and a refusal the server explained. The
+/// second used to be reported as the first. Defect F6b.
 class ErrorPanel extends StatelessWidget {
-  const ErrorPanel({super.key, required this.message, this.onRetry, this.retryLabel});
+  const ErrorPanel({
+    super.key,
+    required this.message,
+    this.onRetry,
+    this.retryLabel,
+    this.unreadable = false,
+  });
 
   factory ErrorPanel.from(
     Object error, {
@@ -22,9 +33,11 @@ class ErrorPanel extends StatelessWidget {
     return ErrorPanel(
       message: switch (failure) {
         final value when value.isNetwork => networkMessage,
+        final value when value.isUnreadable => serverMessage,
         final value when value.status != null && value.status! >= 500 => serverMessage,
         _ => failure.message,
       },
+      unreadable: failure.isUnreadable,
       onRetry: onRetry,
       retryLabel: retryLabel,
     );
@@ -34,9 +47,14 @@ class ErrorPanel extends StatelessWidget {
   final VoidCallback? onRetry;
   final String? retryLabel;
 
+  /// The answer arrived but could not be read. The wording comes from the
+  /// strings file at build time, which the factory has no context to reach.
+  final bool unreadable;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final shown = unreadable ? AppLocalizations.of(context).errUnreadable : message;
 
     return Center(
       child: Padding(
@@ -54,7 +72,7 @@ class ErrorPanel extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadii.container),
               ),
               child: Text(
-                message,
+                shown,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.negative),
               ),

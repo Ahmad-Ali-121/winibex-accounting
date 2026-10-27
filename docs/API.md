@@ -2,7 +2,7 @@
 
 Node, Express, MariaDB. REST over JSON. Base path `/api/v1`.
 
-Status: Phase 0 and Phase 1 endpoints built and tested. 373 API tests: 370
+Status: Phase 0 and Phase 1 endpoints built and tested. 389 API tests: 386
 pass and 3 skip, the argon2 tests, until that package is installed. Updated
 2026-10-26 for the defect fixes (decisions 056 and 057).
 
@@ -195,6 +195,8 @@ Stable, and each maps one to one to an `err` key in `app_en.arb`.
 | UNSUPPORTED_FILE | 400 | a receipt that is not an image or a PDF |
 | FILE_TOO_LARGE | 400 | over the upload size limit |
 | CASH_BELOW_ZERO, FUTURE_DATE, INACTIVE_ACCOUNT, INACTIVE_CATEGORY, BEFORE_OPENING_DATE, HISTORICAL_AFTER_GO_LIVE, LIVE_BEFORE_GO_LIVE, OPENING_WRONG_DATE | 400 | blocking validation |
+| TAX_UNKNOWN, TAX_INACTIVE, TAX_NOT_IN_EFFECT, TAX_WRONG_DIRECTION, TAX_LARGER_THAN_BASE | 400 | a tax line that does not fit its tax. The message names the tax. Decision 061 |
+| RATE_AMOUNT_MISMATCH | 400 | foreign amount x rate is more than PKR 1 from the rupees. The message gives the right figure. Decision 061 |
 
 ### Phase 2
 Clients, projects, time entries, earning accounts, earning receipts, client

@@ -181,6 +181,18 @@ export async function taxCoaIds(runner, taxIds) {
   return new Map(rows.map((row) => [Number(row.id), Number(row.coa_id)]));
 }
 
+// What validation needs to know about each tax on an entry: whether it is
+// switched on, when it is in force, and which direction it belongs to. F5.
+export async function taxesForValidation(runner, taxIds) {
+  if (taxIds.length === 0) return new Map();
+  const [rows] = await runner.query(
+    `SELECT id, name, short_code, applies_to, is_active, effective_from, effective_to
+       FROM taxes WHERE id IN (${taxIds.map(() => '?').join(', ')})`,
+    taxIds,
+  );
+  return new Map(rows.map((row) => [Number(row.id), row]));
+}
+
 // --- what validation needs to ask the database ------------------------------
 
 // A balance from the ledger, used to refuse cash going below zero and to warn

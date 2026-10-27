@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_panel.dart';
 import '../../../core/widgets/money_text.dart';
+import '../../../core/widgets/reason_dialog.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../application/flags_providers.dart';
 import '../data/flags_repository.dart';
@@ -117,37 +118,18 @@ class _FlagCard extends ConsumerWidget {
 
   Future<void> _markReviewed(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
-    final controller = TextEditingController();
 
-    final note = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.markReviewedTitle),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 255,
-          decoration: InputDecoration(
-            labelText: l10n.fieldReviewNote,
-            helperText: l10n.hintReviewNote,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.actionCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: Text(l10n.actionMarkReviewed),
-          ),
-        ],
-      ),
+    // "Reviewed" with no reason is a flag dismissed by reflex. The dialog
+    // wants three characters at least, as the server does, and says so.
+    final note = await askForReason(
+      context,
+      title: l10n.markReviewedTitle,
+      label: l10n.fieldReviewNote,
+      hint: l10n.hintReviewNote,
+      confirmLabel: l10n.actionMarkReviewed,
     );
 
-    // "Reviewed" with no reason is a flag dismissed by reflex. The server
-    // wants three characters at least, and so does this.
-    if (note == null || note.length < 3 || !context.mounted) return;
+    if (note == null || !context.mounted) return;
 
     // Taken now: once the flag is resolved the list reloads and this card is
     // gone, so its context cannot be used afterwards.

@@ -859,7 +859,7 @@ abstract class AppLocalizations {
   /// No description provided for @errNetwork.
   ///
   /// In en, this message translates to:
-  /// **'Could not reach the server. Your entry is kept. Try again when connected.'**
+  /// **'Could not reach the server. Check the connection and try again.'**
   String get errNetwork;
 
   /// No description provided for @errSignIn.
@@ -1965,6 +1965,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Marked as reviewed.'**
   String get flagMarkedReviewed;
+
+  /// No description provided for @errNetworkEntryKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server. Your entry is kept. Try again when connected.'**
+  String get errNetworkEntryKept;
+
+  /// No description provided for @errUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'The app could not read the server\'s answer. Try again. If it keeps happening, tell whoever looks after the app.'**
+  String get errUnreadable;
+
+  /// No description provided for @errNoteTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least 3 characters.'**
+  String get errNoteTooShort;
+
+  /// No description provided for @actionPickDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a date'**
+  String get actionPickDate;
+
+  /// No description provided for @hintDateFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'YYYY-MM-DD'**
+  String get hintDateFormat;
+
+  /// No description provided for @hintCategorySearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a name or a code, such as welfare or 6110'**
+  String get hintCategorySearch;
 }
 
 class _AppLocalizationsDelegate

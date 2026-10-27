@@ -85,6 +85,22 @@ class _FakeTransactionsRepository extends TransactionsRepository {
             ledgerCode: '6400',
             ledgerName: 'Software subscriptions',
           ),
+          Category(
+            id: 21,
+            name: 'Staff welfare',
+            mainHead: 'admin',
+            direction: 'out',
+            ledgerCode: '6110',
+            ledgerName: 'Staff welfare',
+          ),
+          Category(
+            id: 20,
+            name: 'Salaries and wages',
+            mainHead: 'admin',
+            direction: 'out',
+            ledgerCode: '6100',
+            ledgerName: 'Salaries and wages',
+          ),
         ],
       ),
     ];
@@ -203,9 +219,9 @@ Future<void> _fillIn(WidgetTester tester) async {
   await tester.pumpAndSettle();
 
   // Step 4: category and description.
-  await tester.tap(find.byType(DropdownButtonFormField<int>));
+  await tester.tap(find.byType(DropdownMenu<int>));
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Software subscriptions  6400').last);
+  await tester.tap(find.text('6400  Software subscriptions').last);
   await tester.pumpAndSettle();
 
   await tester.enterText(find.byType(TextFormField).last, 'Claude subscription');
@@ -227,6 +243,55 @@ void main() {
     expect(parseMinorUnits('0.05'), 5);
     expect(parseMinorUnits('5953.5'), 595350);
     expect(parseMinorUnits(''), 0);
+  });
+
+  // Defect F3: the date was a text box only.
+  testWidgets('the date can be picked from a calendar, and typing still works', (tester) async {
+    await _pump(tester, transactions: _FakeTransactionsRepository());
+
+    await tester.tap(find.byTooltip('Pick a date'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, '2026-07-10');
+    await tester.pumpAndSettle();
+    expect(find.text('2026-07-10'), findsOneWidget);
+  });
+
+  // O7: 6100 and 6110 sat next to each other and one was picked for the other.
+  testWidgets('categories are listed code first, in code order, and can be searched', (tester) async {
+    await _pump(tester, transactions: _FakeTransactionsRepository());
+
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).first, '1200');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Winibex bank'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownMenu<int>));
+    await tester.pumpAndSettle();
+
+    final salaries = tester.getTopLeft(find.text('6100  Salaries and wages').last);
+    final welfare = tester.getTopLeft(find.text('6110  Staff welfare').last);
+    final software = tester.getTopLeft(find.text('6400  Software subscriptions').last);
+    expect(salaries.dy < welfare.dy && welfare.dy < software.dy, isTrue, reason: 'in code order');
+
+    await tester.enterText(
+      find.descendant(of: find.byType(DropdownMenu<int>), matching: find.byType(TextField)),
+      'welfare',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('6110  Staff welfare'), findsWidgets);
+    expect(find.text('6100  Salaries and wages'), findsNothing);
   });
 
   testWidgets('the form asks one thing at a time', (tester) async {

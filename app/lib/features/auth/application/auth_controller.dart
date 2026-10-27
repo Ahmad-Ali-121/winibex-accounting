@@ -20,12 +20,21 @@ class AuthController extends _$AuthController {
   /// Returns null on success, or the error on failure. The screen uses the
   /// return value rather than reading state back after an await, which is
   /// unsafe once the widget may have rebuilt.
+  ///
+  /// The session is not put into loading while this runs. Loading means "still
+  /// finding out whether anyone is signed in", which is only true on launch,
+  /// and treating a sign-in attempt the same way replaced the whole app with
+  /// the splash and lost the sign-in screen's error. Defect F1. A failed
+  /// attempt leaves the session exactly as it was: signed out.
   Future<Object?> login({required String email, required String password}) async {
     final repo = ref.read(authRepositoryProvider);
-    state = const AsyncLoading();
-    final result = await AsyncValue.guard(() => repo.login(email: email, password: password));
-    state = result;
-    return result.hasError ? result.error : null;
+    try {
+      final user = await repo.login(email: email, password: password);
+      state = AsyncData(user);
+      return null;
+    } catch (error) {
+      return error;
+    }
   }
 
   /// Changes the password and updates the held user, so mustChangePassword

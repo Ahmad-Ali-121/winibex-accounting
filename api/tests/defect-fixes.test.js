@@ -15,6 +15,8 @@
 //   D14  an unusual-amount warning survives an average with a fraction of a paisa
 //   F6   the approval inbox carries every field of a ledger row, status included
 //   F7   a changed entry under its old key is refused, never posted with the old figures
+//   F5   a tax line is checked against its tax: on, in force, right direction, not above its base
+//   F2   foreign amount x rate must agree with the rupees, within one rupee
 //
 // Every entry is dated today in Pakistan, except the opening entry, so the
 // whole file sits inside the current month and the dashboard can be checked
@@ -659,4 +661,114 @@ test('F7: a changed draft is saved by editing it, and posts with the new figures
   const [rows] = await connection.query('SELECT amount, status FROM transactions WHERE id = ?', [id]);
   assert.equal(Number(rows[0].amount), 650000);
   assert.equal(rows[0].status, 'posted');
+});
+
+// --- F5 -----------------------------------------------------------------------
+// Found in the full Phase 1 test: nothing checked a tax line against the tax
+// it named. UI-GUIDE lists every one of these as blocking.
+
+function taxLine(taxId, { base = 1000000, amount = 40000, deductedBy = 'us', party = 'vendor' } = {}) {
+  return {
+    taxId, baseAmount: pkr(base), rateApplied: '4.0000', atlStatusUsed: 'atl',
+    atlParty: party, amount: pkr(amount), deductedBy,
+  };
+}
+
+async function extraTax({ code, appliesTo = 'purchases', from = '2026-07-01', to = null, active = 1 }) {
+  await connection.query(
+    `INSERT INTO taxes (name, short_code, authority, kind, applies_to, computation,
+                        rate_atl, rate_non_atl, status_basis, coa_id, effective_from, effective_to, is_active)
+     SELECT ?, ?, 'fbr', 'withholding', ?, 'percent', 4.0000, 8.0000, 'counterparty', id, ?, ?, ?
+       FROM chart_of_accounts WHERE code = '2132'`,
+    [`Test tax ${code}`, code, appliesTo, from, to, active],
+  );
+  const [rows] = await connection.query('SELECT id FROM taxes WHERE short_code = ?', [code]);
+  return Number(rows[0].id);
+}
+
+async function expectRefused(body, code) {
+  const response = await create({ ...body, acknowledged_warnings: WARNING_CODES });
+  assert.equal(response.status, 400, response.raw);
+  assert.equal(response.body.error.code, code);
+  return response.body.error.message;
+}
+
+test('F5: a tax that is switched off is refused, by name', async () => {
+  const id = await extraTax({ code: 'T-OFF', active: 0 });
+  const message = await expectRefused(
+    entry({ description: 'Tax switched off', gross: pkr(1000000), taxes: [taxLine(id)] }),
+    'TAX_INACTIVE',
+  );
+  assert.match(message, /T-OFF/);
+});
+
+test('F5: a tax not yet in force on the entry date is refused, with its dates', async () => {
+  const id = await extraTax({ code: 'T-LATER', from: addDays(today, 30) });
+  const message = await expectRefused(
+    entry({ description: 'Tax not yet in force', gross: pkr(1000000), taxes: [taxLine(id)] }),
+    'TAX_NOT_IN_EFFECT',
+  );
+  assert.match(message, /was not in force on/);
+});
+
+test('F5: a tax that has ended is refused', async () => {
+  const id = await extraTax({ code: 'T-ENDED', from: '2026-07-01', to: addDays(today, -1) });
+  await expectRefused(
+    entry({ description: 'Tax that has ended', gross: pkr(1000000), taxes: [taxLine(id)] }),
+    'TAX_NOT_IN_EFFECT',
+  );
+});
+
+test('F5: a tax for money coming in is refused on money going out', async () => {
+  const id = await extraTax({ code: 'T-SALES', appliesTo: 'sales' });
+  const message = await expectRefused(
+    entry({ description: 'Sales tax on a subscription', gross: pkr(1000000),
+      taxes: [taxLine(id, { deductedBy: 'bank', party: 'company' })] }),
+    'TAX_WRONG_DIRECTION',
+  );
+  assert.match(message, /is for money coming in, and this entry is money going out/);
+});
+
+test('F5: a tax larger than the amount it is charged on is refused', async () => {
+  await expectRefused(
+    entry({ description: 'Tax above its base', gross: pkr(1000000),
+      taxes: [taxLine(withholdingTaxId, { base: 100000, amount: 200000 })] }),
+    'TAX_LARGER_THAN_BASE',
+  );
+});
+
+test('F5: a tax that fits on every count goes through', async () => {
+  const id = await extraTax({ code: 'T-FINE' });
+  const response = await create({
+    ...entry({ description: 'Tax that fits', gross: pkr(1000000), taxes: [taxLine(id)] }),
+    acknowledged_warnings: WARNING_CODES,
+  });
+  assert.equal(response.status, 201, response.raw);
+});
+
+// --- F2 -----------------------------------------------------------------------
+// Found in the full Phase 1 test: USD 500 at 280 was saved with PKR 140,250.
+
+test('F2: rupees that do not match foreign amount x rate are refused, with the right figure', async () => {
+  const message = await expectRefused(
+    entry({
+      direction: 'in', categoryId: inCategory, method: 'account',
+      description: 'Rate and rupees disagree',
+      foreign: { minor: 50000, currency: 'USD' }, fxRate: '280', gross: pkr(14025000),
+    }),
+    'RATE_AMOUNT_MISMATCH',
+  );
+  assert.equal(message, 'USD 500.00 at 280 is PKR 140,000.00, not PKR 140,250.00. Correct the rate or the rupees.');
+});
+
+test('F2: a difference of up to one rupee is accepted, for the bank rounding', async () => {
+  const response = await create({
+    ...entry({
+      direction: 'in', categoryId: inCategory, method: 'account',
+      description: 'Rate and rupees one rupee apart',
+      foreign: { minor: 50000, currency: 'USD' }, fxRate: '280', gross: pkr(14000100),
+    }),
+    acknowledged_warnings: WARNING_CODES,
+  });
+  assert.equal(response.status, 201, response.raw);
 });

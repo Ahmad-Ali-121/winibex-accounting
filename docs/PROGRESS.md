@@ -86,20 +86,20 @@ data; no real entries until F7 is fixed.
 
 | # | Finding | Severity | Status |
 | --- | --- | --- | --- |
-| F7 | A changed entry after a refused posting posts the old figures. Idempotency compares user and endpoint, not content | Critical | Fix written: migration 006, fingerprint check, app edits the existing draft. Awaiting Ahmad's test run |
+| F7 | A changed entry after a refused posting posts the old figures. Idempotency compares user and endpoint, not content | Critical | Fixed and deployed 2026-10-27: migration 006 on production, 381 API and 79 Flutter tests, re-tested in the app (one entry, 6,500) and with 6.17e (409) |
 | F6a | `/approvals` rows had no `status`, so the app could not read the inbox | High | Fixed and pushed, 374 API tests |
-| F6b | A reply the app cannot read is shown as "Could not reach the server" | High | Open |
-| F5 | Tax lines not checked for direction, dates, active flag or size against their base (to confirm from the code) | High | Open, with a tax screen (open item P) |
-| F2 | Exchange rate and rupee amount may disagree | Medium | Decided: refuse, decision 059 |
-| F1 | Wrong password shows no message on the sign-in screen | Medium | Open, likely the splash in `app.dart` |
-| F4 | Refresh or a typed address lands on the dashboard | Medium | Open, likely the same cause as F1 |
-| F3 | The date picker does not open; dates are typed | Medium | Open |
+| F6b | A reply the app cannot read is shown as "Could not reach the server" | High | Fix written: `isNetwork` by code, new `UNREADABLE` code and message, printed to the console |
+| F5 | Tax lines not checked for direction, dates, active flag or size against their base (confirmed from the code) | High | Fix written: blocked with the tax named. The tax screen is open item P |
+| F2 | Exchange rate and rupee amount may disagree | Medium | Fix written: refused beyond PKR 1, with the right figure |
+| F1 | Wrong password shows no message on the sign-in screen | Medium | Fix written: sign-in no longer sets loading; the splash shows once only |
+| F4 | Refresh or a typed address lands on the dashboard | Medium | Fix written: one MaterialApp.router from the first frame |
+| F3 | The date picker does not open; dates are typed | Medium | Fix written: calendar button, typing still works |
 | O1 | Two ways to record rebillable spend, one category named "absorbed" | Low | With D15 |
-| O2 | "A issued cheque" should be "An issued cheque" | Low | Open |
-| O3 | Technical messages an accountant cannot read, idempotency first | Low | Open |
-| O4 | "Send it back" and "Mark as reviewed" dialogs too narrow, hints cut off | Low | Open |
-| O5 | A too-short review note closes the dialog silently | Low | Open |
-| O7 | 6100 Salaries and 6110 Staff welfare easy to mis-pick; 1,200 went to the wrong one in the test | Low, affects P&L | Open |
+| O2 | "A issued cheque" should be "An issued cheque" | Low | Fix written |
+| O3 | Technical messages an accountant cannot read, idempotency first | Low | Done for every message the app shows in normal use. Developer-only messages stay technical. Decision 061 |
+| O4 | "Send it back" and "Mark as reviewed" dialogs too narrow, hints cut off | Low | Fix written: shared reason dialog, `AppSizes.dialogWidth` |
+| O5 | A too-short review note closes the dialog silently | Low | Fix written: the dialog stays open and says why, for rejection too |
+| O7 | 6100 Salaries and 6110 Staff welfare easy to mis-pick; 1,200 went to the wrong one in the test | Low, affects P&L | Fix written: searchable picker, code first, code order |
 
 Test kit glitch: requests 8.9a to 8.9c could not read the flag id from 8.8d;
 typing the id worked. To fix in the `.http` file. The guide writes JV-0014
@@ -220,6 +220,7 @@ Deploy — done:
 - [x] CORS_ORIGINS set to the https origin
 - [x] Migrations 000-004 applied via phpMyAdmin
 - [x] Migration 005 applied via phpMyAdmin, 2026-10-26
+- [x] Migration 006 applied via phpMyAdmin, 2026-10-27
 - [x] Defect fixes pushed and deployed, 2026-10-26
 - [x] Owner password hash set on production
 
@@ -352,6 +353,30 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-27 (F5, F2, O3, O7 written)
+App fixes batch passed: 381 API tests, 86 Flutter tests, checks 1 to 4 in the
+app. Then F5: each tax line is refused if its tax is unknown, switched off,
+not in force on the entry date, for the other direction, or larger than its
+base. F2: foreign amount x rate must be within PKR 1 of the rupees. O7: the
+category picker is searchable, code first, in code order. O3 closed with a
+stated scope. Decision 061. 8 new API tests (389), 1 new Flutter test (87).
+
+### 2026-10-27 (app fixes written: F1, F4, F6b, F3, O2, O4, O5)
+F1 and F4 had one cause: `app.dart` swapped in a second MaterialApp as a
+splash whenever the session was loading, on launch and on every sign-in. Now
+one MaterialApp.router exists from the first frame, the splash shows once
+while the session is restored, and sign-in does not set loading. F6b: an
+unreadable answer gets its own code and message instead of "network". F3: a
+calendar button on the date. O4 and O5: one reason dialog for rejecting and
+for marking reviewed, wider, and it says when the reason is too short. O2:
+"An issued cheque". Decision 060. 8 new Flutter tests, 86 expected.
+
+### 2026-10-27 (F7 deployed)
+Migration 006 applied in phpMyAdmin, `schema_migrations` shows seven rows. Fix
+pushed; Approvals and To review open on the live site. Locally the F7 scenario
+now posts one entry at 6,500, and 6.17e answers 409 in plain words. Next batch:
+F1, F4, F6b, F3, with O4 and O5.
 
 ### 2026-10-27 (F7 fix written)
 Server: migration 006 adds `request_hash` to `idempotency_keys`; the

@@ -159,6 +159,8 @@ class _DirectionStep extends ConsumerWidget {
           value: draft.date,
           onChanged: controller.setDate,
           label: l10n.fieldDate,
+          hint: l10n.hintDateFormat,
+          pickTooltip: l10n.actionPickDate,
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(l10n.hintDateIsPaymentDate, style: Theme.of(context).textTheme.bodySmall),
@@ -354,24 +356,30 @@ class _CategoryStep extends ConsumerWidget {
       children: [
         _Question(l10n.stepCategoryQuestion),
 
+        // Searchable, code first, in code order. In the Phase 1 test 1,200 of
+        // staff welfare (6110) went to salaries (6100), one line above it in a
+        // long list. Typing "welfare" or "6110" leaves only the right line.
+        // O7, decision 061.
         switch (groups) {
-          AsyncData(:final value) => DropdownButtonFormField<int>(
-              initialValue: draft.categoryId,
-              isExpanded: true,
-              decoration: InputDecoration(labelText: l10n.fieldCategory),
-              items: [
-                for (final group in value) ...[
-                  for (final category in group.categories)
-                    DropdownMenuItem(
-                      value: category.id,
-                      child: Text(
-                        '${category.name}  ${category.ledgerCode}',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
+          AsyncData(:final value) => DropdownMenu<int>(
+              initialSelection: draft.categoryId,
+              expandedInsets: EdgeInsets.zero,
+              menuHeight: AppSizes.menuMaxHeight,
+              label: Text(l10n.fieldCategory),
+              hintText: l10n.hintCategorySearch,
+              enableFilter: true,
+              enableSearch: true,
+              requestFocusOnTap: true,
+              dropdownMenuEntries: [
+                for (final category in [
+                  for (final group in value) ...group.categories,
+                ]..sort((a, b) => a.ledgerCode.compareTo(b.ledgerCode)))
+                  DropdownMenuEntry(
+                    value: category.id,
+                    label: '${category.ledgerCode}  ${category.name}',
+                  ),
               ],
-              onChanged: (id) => id == null ? null : controller.setCategory(id),
+              onSelected: (id) => id == null ? null : controller.setCategory(id),
             ),
           AsyncError() => Text(l10n.errServer, style: Theme.of(context).textTheme.bodySmall),
           _ => const LinearProgressIndicator(),
@@ -449,8 +457,9 @@ class _ReviewStep extends ConsumerWidget {
           _RefusalBanner(
             message: errorMessageFor(
               outcome.error,
-              network: l10n.errNetwork,
+              network: l10n.errNetworkEntryKept,
               server: l10n.errServer,
+              unreadable: l10n.errUnreadable,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -589,21 +598,95 @@ class _Question extends StatelessWidget {
   }
 }
 
-class _DateField extends StatelessWidget {
-  const _DateField({required this.value, required this.onChanged, required this.label});
+/// The date the money moved. Typed, or picked from a calendar.
+///
+/// It was a text box only, so every date had to be typed by hand. F3. Typing
+/// still works, which is how a date the calendar does not offer, such as one
+/// in the future, can still be tried and refused by the server.
+class _DateField extends StatefulWidget {
+  const _DateField({
+    required this.value,
+    required this.onChanged,
+    required this.label,
+    required this.hint,
+    required this.pickTooltip,
+  });
 
   final String value;
   final ValueChanged<String> onChanged;
   final String label;
+  final String hint;
+  final String pickTooltip;
+
+  /// The calendar starts at go-live: everything earlier is history, which
+  /// this form does not record. The server's books_live_from setting is the
+  /// rule; this only bounds what the calendar offers.
+  static final DateTime firstPickable = DateTime(2026, 7, 1);
+
+  @override
+  State<_DateField> createState() => _DateFieldState();
+}
+
+class _DateFieldState extends State<_DateField> {
+  late final TextEditingController _text = TextEditingController(text: widget.value);
+
+  @override
+  void didUpdateWidget(covariant _DateField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A new form after a save starts with today's date. Without this the box
+    // would keep showing the last entry's date while the draft held today's.
+    if (widget.value != _text.text) _text.text = widget.value;
+  }
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  static String _format(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+
+  Future<void> _pick() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final first = _DateField.firstPickable.isAfter(today) ? today : _DateField.firstPickable;
+
+    var initial = DateTime.tryParse(_text.text) ?? today;
+    if (initial.isBefore(first)) initial = first;
+    if (initial.isAfter(today)) initial = today;
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: first,
+      lastDate: today,
+    );
+    if (picked == null || !mounted) return;
+
+    final value = _format(picked);
+    _text.text = value;
+    widget.onChanged(value);
+  }
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: value,
-      decoration: InputDecoration(labelText: label, hintText: 'YYYY-MM-DD'),
+      controller: _text,
+      decoration: InputDecoration(
+        labelText: widget.label,
+        hintText: widget.hint,
+        suffixIcon: IconButton(
+          tooltip: widget.pickTooltip,
+          icon: const Icon(Icons.calendar_today_outlined),
+          onPressed: _pick,
+        ),
+      ),
       keyboardType: TextInputType.datetime,
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9-]'))],
-      onChanged: onChanged,
+      onChanged: widget.onChanged,
     );
   }
 }
