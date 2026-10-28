@@ -27,6 +27,12 @@ function actorFrom(req) {
   return { id: Number(req.user.id), role: req.user.role };
 }
 
+// What the opening entry screen needs: the accounts a balance can be given
+// for, and the entry itself once it exists. Decision 065.
+historyRoutes.get('/opening-entry', requireAuth, async (req, res) => {
+  res.json(await service.openingInfo());
+});
+
 historyRoutes.post('/opening-entry', requireAuth, idempotency({ required: true }), async (req, res) => {
   const body = parseOrThrow(openingBody, req.body ?? {});
 

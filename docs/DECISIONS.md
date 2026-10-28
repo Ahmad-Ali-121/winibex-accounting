@@ -1303,6 +1303,43 @@ Production holds no taxes yet, so suggestions appear there only once the
 accountant's rates are entered (open item P, batch E). Charges and currencies
 work everywhere.
 
+### 065 — Moving money, paying back, reversing and the opening balances on screen
+2026-10-28
+
+D15 batch C. Claude's choices, open to correction.
+
+**On the Accounts screen, not new menu items.** The owner and admins see
+"Move money" and "Pay someone back" there, a top-up hint when petty cash is
+below its float, and the list of people the company owes. The owner also sees
+"Opening balances". Staff see the accounts only. Every figure on it,
+including the suggested top-up, comes from the server.
+
+**Reversing is on the journal panel** of a posted entry, for the owner and
+admins, and asks why. The reason shows in the ledger beside the reversal.
+
+**A transfer is reversed whole.** Reversing either leg reverses both,
+together, so money is never left half moved in 1118 Funds in transit.
+
+**Two reversals are refused.** A reversal is not reversed again: to put the
+original back, it is recorded again as a new entry. The opening entry is
+reversed only when history is merged (decision 037); a wrong opening balance
+is corrected with a journal entry.
+
+**Paying back picks the costs.** Each ticked cost is paid in full unless the
+amount is changed. What is still owed afterwards is the server's figure.
+
+**Opening balances are typed as plain figures,** the way a statement shows
+them, grouped as what the company had, what it owed, and share capital. The
+server picks the debit or credit side and works out 3400 itself, and the
+screen shows the entry read only once posted. `GET /opening-entry` serves the
+screen. An overdrawn account cannot be typed as a negative; the screen says
+to ask the accountant first.
+
+**A charge line says where it goes,** "Goes to 8200 Forex and card fees",
+with the account picker behind "Use another account". Ahmad had no
+preference between the options; this was the recommended one. Refines
+decision 064.
+
 ---
 
 ## Open, not yet decided

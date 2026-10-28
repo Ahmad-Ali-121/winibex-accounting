@@ -55,6 +55,18 @@ class VendorOption {
   final String atlStatus;
 }
 
+/// The account each kind of charge goes to when the person leaves it alone.
+/// The server holds the same list (CHARGE_LEDGER in the transactions
+/// service) and is the one that applies it; this copy only lets the form say
+/// where the charge will go. Decision 064.
+const usualChargeLedger = {
+  'bank_charge': '8100',
+  'forex_fee': '8200',
+  'card_fee': '8200',
+  'platform_fee': '5400',
+  'other': '8100',
+};
+
 /// A cost account a charge may go to, for the account picker on a charge line.
 class ChargeAccount {
   const ChargeAccount({required this.id, required this.code, required this.name});

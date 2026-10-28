@@ -16,7 +16,11 @@ import 'widgets/journal_panel.dart';
 /// the entries that reversed them. Nothing is ever deleted from the book.
 /// Decision 012.
 class LedgerScreen extends ConsumerWidget {
-  const LedgerScreen({super.key});
+  const LedgerScreen({super.key, this.canReverse = false});
+
+  /// The owner and admins may reverse a posted entry from its journal panel.
+  /// The server checks again. Decision 065.
+  final bool canReverse;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,7 +36,7 @@ class LedgerScreen extends ConsumerWidget {
                 title: l10n.emptyLedgerTitle,
                 detail: l10n.emptyLedgerDetail,
               ),
-            AsyncData(:final value) => _LedgerTable(page: value),
+            AsyncData(:final value) => _LedgerTable(page: value, canReverse: canReverse),
             AsyncError(:final error) => ErrorPanel.from(
                 error,
                 networkMessage: l10n.errNetwork,
@@ -81,9 +85,10 @@ class _SearchBar extends ConsumerWidget {
 }
 
 class _LedgerTable extends ConsumerWidget {
-  const _LedgerTable({required this.page});
+  const _LedgerTable({required this.page, required this.canReverse});
 
   final LedgerPage page;
+  final bool canReverse;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -95,7 +100,7 @@ class _LedgerTable extends ConsumerWidget {
         Expanded(
           child: ListView.builder(
             itemCount: page.transactions.length,
-            itemBuilder: (context, index) => _LedgerRow(entry: page.transactions[index]),
+            itemBuilder: (context, index) => _LedgerRow(entry: page.transactions[index], canReverse: canReverse),
           ),
         ),
         Container(
@@ -135,9 +140,10 @@ class _LedgerTable extends ConsumerWidget {
 }
 
 class _LedgerRow extends StatelessWidget {
-  const _LedgerRow({required this.entry});
+  const _LedgerRow({required this.entry, required this.canReverse});
 
   final TransactionSummary entry;
+  final bool canReverse;
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +151,7 @@ class _LedgerRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return InkWell(
-      onTap: entry.isPosted ? () => showJournalPanel(context, entry) : null,
+      onTap: entry.isPosted ? () => showJournalPanel(context, entry, canReverse: canReverse) : null,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,

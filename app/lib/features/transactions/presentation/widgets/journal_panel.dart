@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/money_text.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../money/presentation/reverse_entry.dart';
 import '../../application/ledger_providers.dart';
 import '../../domain/ledger.dart';
 import 'history_panel.dart';
@@ -13,22 +14,29 @@ import 'history_panel.dart';
 /// UI-GUIDE wants this on every posted entry, because the whole point of the
 /// system is that the books are visible rather than hidden behind a list of
 /// payments.
-Future<void> showJournalPanel(BuildContext context, TransactionSummary entry) {
+Future<void> showJournalPanel(BuildContext context, TransactionSummary entry, {bool canReverse = false}) {
   return showDialog(
     context: context,
     builder: (context) => Dialog(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 560),
-        child: _JournalPanel(entry: entry),
+        constraints: const BoxConstraints(maxWidth: AppSizes.dialogWideWidth),
+        child: _JournalPanel(entry: entry, canReverse: canReverse),
       ),
     ),
   );
 }
 
 class _JournalPanel extends ConsumerWidget {
-  const _JournalPanel({required this.entry});
+  const _JournalPanel({required this.entry, required this.canReverse});
 
   final TransactionSummary entry;
+  final bool canReverse;
+
+  /// A posted entry may be reversed, once. Not a reversal itself, and not the
+  /// opening entry, which is reversed only when history is merged. The server
+  /// refuses both anyway. Decision 065.
+  bool get _reversible =>
+      canReverse && entry.status == 'posted' && !entry.isReversed && !entry.isReversal && entry.entryType != 'opening';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,7 +64,7 @@ class _JournalPanel extends ConsumerWidget {
               if (entry.isReversed) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Text(l10n.ledgerReversedNotice,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colors.reversed),),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colors.reversed)),
               ],
             ],
           ),
@@ -120,6 +128,18 @@ class _JournalPanel extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                if (_reversible) ...[
+                  TextButton(
+                    style: TextButton.styleFrom(foregroundColor: colors.negative),
+                    onPressed: () async {
+                      final navigator = Navigator.of(context);
+                      final done = await reverseEntry(context, ref, transactionId: entry.id);
+                      if (done) navigator.pop();
+                    },
+                    child: Text(l10n.actionReverse),
+                  ),
+                  const Spacer(),
+                ],
                 TextButton(
                   onPressed: () => showHistoryPanel(context, entry.id, entry.description),
                   child: Text(l10n.actionViewHistory),

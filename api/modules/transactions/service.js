@@ -533,89 +533,133 @@ async function settlementAccount(connection, row) {
 // charge breakdown of its own, because for money in the amount subtracts them
 // and repeating the split would not reconcile. Its lines mirror the original,
 // flipped, so the two together net to nothing. Decision 052.
-export async function reverse({ user, id, reason, ip = null }) {
+export async function reverse({ user, id, reason, ip = null, allowOpening = false }) {
   if (!reason) throw badRequest(ErrorCode.VALIDATION_FAILED, 'Say why it is being reversed.');
 
   const result = await withTransaction(async (connection) => {
     const row = await repo.lockById(connection, id);
     if (!row) throw notFound('That entry does not exist.');
+    assertReversible(row, user, { allowOpening });
 
-    // Already reversed is checked first. Its status is 'reversed' by then, so
-    // the status check below would otherwise answer with the less useful
-    // "only a posted entry can be reversed".
-    if (row.status === 'reversed' || row.reversed_by_id) {
-      throw new AppError(409, ErrorCode.ALREADY_REVERSED, 'That entry has already been reversed.');
-    }
-    if (row.status !== 'posted') {
-      throw new AppError(409, ErrorCode.INVALID_STATUS, 'Only a posted entry can be reversed.');
-    }
-    if (!POSTABLE_BY.has(user.role)) {
-      throw forbidden('Only the owner or an admin can reverse an entry.');
-    }
-
-    const [originalLines] = await connection.query(
-      'SELECT coa_id AS coaId, debit, credit, memo FROM journal_lines WHERE transaction_id = ? ORDER BY line_no',
-      [id],
-    );
-    const lines = reverseJournalLines(originalLines.map((line) => ({
-      coaId: Number(line.coaId), debit: Number(line.debit), credit: Number(line.credit), memo: line.memo,
-    })));
-
-    const reversalId = await repo.insertTransaction(connection, {
-      date: row.date,
-      account_id: row.account_id,
-      direction: row.direction === 'out' ? 'in' : 'out',
-      amount: Number(row.amount),
-      currency: row.currency,
-      foreign_amount: row.foreign_amount,
-      fx_rate: row.fx_rate,
-      fx_rate_source: row.fx_rate_source,
-      method: row.method,
-      description: `Reversal of ${row.journal_number}: ${reason}`.slice(0, 255),
-      category_id: row.category_id,
-      client_id: row.client_id,
-      project_id: row.project_id,
-      is_rebillable: 0,
-      fund_source: row.fund_source,
-      paid_by_type: row.paid_by_type,
-      paid_by_user_id: row.paid_by_user_id,
-      gross_amount: Number(row.amount),
-      tax_total: 0,
-      charges_total: 0,
-      withheld_total: 0,
-      status: 'draft',
-      entry_type: row.entry_type,
-      created_by: user.id,
-    });
-
-    await connection.query(
-      'UPDATE transactions SET reversal_of_id = ?, reversal_reason = ? WHERE id = ?',
-      [id, reason, reversalId],
-    );
-
-    const { formatted: journalNumber } = await allocate(connection, 'journal');
-    await repo.insertJournalLines(connection, reversalId, lines);
-    await repo.markPosted(connection, reversalId, {
-      journalNumber, approvedBy: user.id, approvalMethod: user.role === 'owner' ? 'owner' : 'admin',
-      possibleSelfApproval: false,
-    });
-
-    const marked = await repo.markReversed(connection, id, reversalId);
-    if (marked !== 1) {
-      throw new AppError(409, ErrorCode.ALREADY_REVERSED, 'That entry was reversed by someone else.');
+    // A transfer is one movement recorded as two legs. Reversing one leg
+    // alone would leave the money half moved, stuck in 1118 Funds in transit,
+    // so both legs are reversed together, whichever one was picked.
+    // Decision 065.
+    if (row.transfer_group_id) {
+      const [legs] = await connection.query(
+        'SELECT id FROM transactions WHERE transfer_group_id = ? ORDER BY id FOR UPDATE',
+        [row.transfer_group_id],
+      );
+      const reversed = [];
+      for (const leg of legs) {
+        const legRow = Number(leg.id) === Number(id) ? row : await repo.lockById(connection, leg.id);
+        assertReversible(legRow, user, { allowOpening });
+        reversed.push(await reverseOne(connection, { user, row: legRow, reason, ip }));
+      }
+      const picked = reversed.find((item) => item.id === Number(id)) ?? reversed[0];
+      return { ...picked, legs: reversed.map(({ id: legId, reversalId, journalNumber }) => ({ id: legId, reversalId, journalNumber })) };
     }
 
-    await writeAudit(connection, {
-      userId: user.id, ip, table: 'transactions', recordId: Number(id),
-      action: AuditAction.STATUS_CHANGE,
-      before: { status: 'posted' },
-      after: { status: 'reversed', reversedBy: reversalId, reason },
-    });
-
-    return { id: Number(id), reversalId, journalNumber, lines };
+    return reverseOne(connection, { user, row, reason, ip });
   });
 
   return result;
+}
+
+// Whether this entry may be reversed by this person. Decision 065 adds two
+// refusals: a reversal is not reversed again, and the opening entry is
+// reversed only by merging history.
+function assertReversible(row, user, { allowOpening }) {
+  // Already reversed is checked first. Its status is 'reversed' by then, so
+  // the status check below would otherwise answer with the less useful
+  // "only a posted entry can be reversed".
+  if (row.status === 'reversed' || row.reversed_by_id) {
+    throw new AppError(409, ErrorCode.ALREADY_REVERSED, 'That entry has already been reversed.');
+  }
+  if (row.status !== 'posted') {
+    throw new AppError(409, ErrorCode.INVALID_STATUS, 'Only a posted entry can be reversed.');
+  }
+  if (!POSTABLE_BY.has(user.role)) {
+    throw forbidden('Only the owner or an admin can reverse an entry.');
+  }
+  if (row.reversal_of_id) {
+    throw new AppError(
+      409,
+      ErrorCode.INVALID_STATUS,
+      'This entry is itself a reversal. To put the original back, record it again as a new entry.',
+    );
+  }
+  if (row.entry_type === 'opening' && !allowOpening) {
+    throw new AppError(
+      409,
+      ErrorCode.INVALID_STATUS,
+      'The opening entry is reversed only when history is merged. To correct a balance, post a journal entry.',
+    );
+  }
+}
+
+async function reverseOne(connection, { user, row, reason, ip }) {
+  const id = Number(row.id);
+  const [originalLines] = await connection.query(
+    'SELECT coa_id AS coaId, debit, credit, memo FROM journal_lines WHERE transaction_id = ? ORDER BY line_no',
+    [id],
+  );
+  const lines = reverseJournalLines(originalLines.map((line) => ({
+    coaId: Number(line.coaId), debit: Number(line.debit), credit: Number(line.credit), memo: line.memo,
+  })));
+
+  const reversalId = await repo.insertTransaction(connection, {
+    date: row.date,
+    account_id: row.account_id,
+    direction: row.direction === 'out' ? 'in' : 'out',
+    amount: Number(row.amount),
+    currency: row.currency,
+    foreign_amount: row.foreign_amount,
+    fx_rate: row.fx_rate,
+    fx_rate_source: row.fx_rate_source,
+    method: row.method,
+    description: `Reversal of ${row.journal_number}: ${reason}`.slice(0, 255),
+    category_id: row.category_id,
+    client_id: row.client_id,
+    project_id: row.project_id,
+    is_rebillable: 0,
+    fund_source: row.fund_source,
+    paid_by_type: row.paid_by_type,
+    paid_by_user_id: row.paid_by_user_id,
+    gross_amount: Number(row.amount),
+    tax_total: 0,
+    charges_total: 0,
+    withheld_total: 0,
+    status: 'draft',
+    entry_type: row.entry_type,
+    created_by: user.id,
+  });
+
+  await connection.query(
+    'UPDATE transactions SET reversal_of_id = ?, reversal_reason = ? WHERE id = ?',
+    [id, reason, reversalId],
+  );
+
+  const { formatted: journalNumber } = await allocate(connection, 'journal');
+  await repo.insertJournalLines(connection, reversalId, lines);
+  await repo.markPosted(connection, reversalId, {
+    journalNumber, approvedBy: user.id, approvalMethod: user.role === 'owner' ? 'owner' : 'admin',
+    possibleSelfApproval: false,
+  });
+
+  const marked = await repo.markReversed(connection, id, reversalId);
+  if (marked !== 1) {
+    throw new AppError(409, ErrorCode.ALREADY_REVERSED, 'That entry was reversed by someone else.');
+  }
+
+  await writeAudit(connection, {
+    userId: user.id, ip, table: 'transactions', recordId: Number(id),
+    action: AuditAction.STATUS_CHANGE,
+    before: { status: 'posted' },
+    after: { status: 'reversed', reversedBy: reversalId, reason },
+  });
+
+  return { id, reversalId, journalNumber, lines };
 }
 
 // --- permissions ------------------------------------------------------------

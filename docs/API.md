@@ -2,9 +2,9 @@
 
 Node, Express, MariaDB. REST over JSON. Base path `/api/v1`.
 
-Status: Phase 0 and Phase 1 endpoints built and tested. 411 API tests: 408
+Status: Phase 0 and Phase 1 endpoints built and tested. 416 API tests: 413
 pass and 3 skip, the argon2 tests, until that package is installed. Updated
-2026-10-28 for tax and charge lines on the form (decision 064).
+2026-10-28 for batch C (decision 065).
 
 ## Conventions
 
@@ -141,7 +141,7 @@ to `POST /transactions` and `/transactions/preview`. Decision 064.
 | POST | /transactions/:id/submit | draft to pending |
 | POST | /transactions/:id/approve | posts it: allocates the journal number, writes the lines |
 | POST | /transactions/:id/reject | reason required |
-| POST | /transactions/:id/reverse | reason required, once only |
+| POST | /transactions/:id/reverse | reason required, once only. A transfer leg reverses the whole transfer, both legs, and the answer lists them in `legs`. Refused with 409 for a reversal, and for the opening entry, which only the history merge reverses. Decision 065 |
 | GET | /transactions/:id | with lines, taxes and charges |
 | GET | /transactions/:id/journal | the debit and credit lines, for the journal panel. Each line carries `coaId`, `code` and `name` |
 | GET | /transactions/:id/history | edit history from the audit log: what changed, by whom, when |
@@ -158,6 +158,7 @@ to `POST /transactions` and `/transactions/preview`. Decision 064.
 | GET | /people/balances | what the company owes each person |
 | GET | /people/:id/outstanding | the costs behind that figure |
 | POST | /reimbursements | pays a person back and clears the payable, in one transaction |
+| GET | /opening-entry | what the opening balances screen needs: `balancesAt`, the ledger accounts a balance can be given for (asset, liability, equity; not headings, 3400 or 1118), and `entry` with its lines once posted, otherwise null. Decision 065 |
 | POST | /opening-entry | owner only, once. Balances at 2026-06-30, equity takes the difference |
 | GET | /transactions | ledger: search, filter by account/category/status/direction/date, paginated |
 | GET | /transactions/:id/attachments | receipts and advices on an entry |

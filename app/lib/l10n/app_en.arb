@@ -731,7 +731,6 @@
   "fieldChargeType": "Charge",
   "fieldChargeAmount": "Amount",
   "fieldChargeAccount": "Ledger account",
-  "chargeUsualAccount": "Usual account for this charge",
   "hintChargeAccount": "Leave it on the usual account unless the accountant says otherwise.",
   "totalLeaves": "Leaves the account",
   "totalArrives": "Reaches the account",
@@ -743,5 +742,135 @@
       }
     }
   },
-  "fieldPkrPaid": "Rupees actually paid"
+  "fieldPkrPaid": "Rupees actually paid",
+  "chargeGoesTo": "Goes to {account}",
+  "@chargeGoesTo": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "actionUseAnotherAccount": "Use another account",
+  "actionBackToUsualAccount": "Back to {account}",
+  "@actionBackToUsualAccount": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "actionMoveMoney": "Move money",
+  "moveMoneyTitle": "Move money between accounts",
+  "moveMoneyHint": "For money that stays in the company: cash drawn from the bank, petty cash topped up. Both sides are recorded together.",
+  "fieldMoveFrom": "From",
+  "fieldMoveTo": "To",
+  "moveMoneySameAccount": "Choose two different accounts.",
+  "fieldTransferFee": "Bank fee, if any",
+  "hintTransferFee": "Only if the bank took a fee for the transfer. It is recorded as a bank charge.",
+  "fieldDescriptionOptional": "Note (optional)",
+  "moveMoneyDone": "Moved. Recorded as {numbers}.",
+  "@moveMoneyDone": {
+    "placeholders": {
+      "numbers": {
+        "type": "String"
+      }
+    }
+  },
+  "actionPaySomeoneBack": "Pay someone back",
+  "actionPayBack": "Pay back",
+  "payBackTitle": "Pay someone back",
+  "payBackHint": "For someone who paid company costs with their own money. Tick the costs being paid back now.",
+  "fieldPayBackPerson": "Who",
+  "payBackCostsTitle": "Costs they paid",
+  "payBackNothingOwed": "Nothing is owed to them.",
+  "fieldPayingBack": "Paying back",
+  "hintPayingBack": "The full amount, unless only part is paid now.",
+  "fieldPaidFrom": "Paid from",
+  "payBackDone": "Paid back. Recorded as {number}. Still owed to them: {owed}.",
+  "@payBackDone": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "owed": {
+        "type": "String"
+      }
+    }
+  },
+  "actionOpeningBalances": "Opening balances",
+  "pettyLowLead": "{account} holds",
+  "@pettyLowLead": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "pettyLowFloat": ", below its float of",
+  "pettyLowSuggest": ". Top up by",
+  "actionTopUp": "Top up",
+  "owedTitle": "Owed to people",
+  "owedHint": "Company costs people paid with their own money, not yet paid back.",
+  "owedNobody": "Nobody is owed money.",
+  "reverseTitle": "Reverse this entry",
+  "fieldReverseReason": "Why",
+  "hintReverseReason": "Say what was wrong, such as \"Entered twice\" or \"Wrong account\". It shows in the ledger beside the reversal.",
+  "reverseDone": "Reversed. The correction is {number}.",
+  "@reverseDone": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "openingTitle": "Opening balances",
+  "openingSubtitle": "What the company had and owed at the end of {date}, the day before the books started.",
+  "@openingSubtitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "openingOwnerOnly": "Only the owner posts the opening balances.",
+  "openingPosted": "Posted as {number} on {date}. It cannot be changed. A wrong balance is corrected with a journal entry.",
+  "@openingPosted": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "openingMerged": "Posted as {number}, and reversed when history was merged.",
+  "@openingMerged": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "openingHowTo": "Type each balance as a plain figure, the way the bank statement or the record shows it. Leave an account empty if it held nothing. If an account was overdrawn, ask the accountant before posting.",
+  "openingAssets": "What the company had",
+  "openingAssetsHint": "Bank and cash, money clients owed, advance tax paid.",
+  "openingLiabilities": "What the company owed",
+  "openingLiabilitiesHint": "Loans, unpaid bills, tax kept back and not yet paid to FBR, money owed to people.",
+  "openingEquity": "Owners' money",
+  "openingEquityHint": "Share capital. The rest is worked out for you.",
+  "fieldBalance": "Balance",
+  "actionReviewOpening": "Review and post",
+  "openingReviewTitle": "Post these opening balances?",
+  "openingReviewNote": "Whatever is left over goes to 3400 Opening balance equity, worked out by the server. Once posted, this cannot be changed.",
+  "actionPostOpening": "Post opening balances",
+  "openingDone": "Opening balances posted as {number}.",
+  "@openingDone": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  }
 }

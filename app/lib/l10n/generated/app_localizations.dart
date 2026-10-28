@@ -2674,12 +2674,6 @@ abstract class AppLocalizations {
   /// **'Ledger account'**
   String get fieldChargeAccount;
 
-  /// No description provided for @chargeUsualAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Usual account for this charge'**
-  String get chargeUsualAccount;
-
   /// No description provided for @hintChargeAccount.
   ///
   /// In en, this message translates to:
@@ -2709,6 +2703,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rupees actually paid'**
   String get fieldPkrPaid;
+
+  /// No description provided for @chargeGoesTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Goes to {account}'**
+  String chargeGoesTo(String account);
+
+  /// No description provided for @actionUseAnotherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another account'**
+  String get actionUseAnotherAccount;
+
+  /// No description provided for @actionBackToUsualAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to {account}'**
+  String actionBackToUsualAccount(String account);
+
+  /// No description provided for @actionMoveMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Move money'**
+  String get actionMoveMoney;
+
+  /// No description provided for @moveMoneyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move money between accounts'**
+  String get moveMoneyTitle;
+
+  /// No description provided for @moveMoneyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For money that stays in the company: cash drawn from the bank, petty cash topped up. Both sides are recorded together.'**
+  String get moveMoneyHint;
+
+  /// No description provided for @fieldMoveFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get fieldMoveFrom;
+
+  /// No description provided for @fieldMoveTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get fieldMoveTo;
+
+  /// No description provided for @moveMoneySameAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose two different accounts.'**
+  String get moveMoneySameAccount;
+
+  /// No description provided for @fieldTransferFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank fee, if any'**
+  String get fieldTransferFee;
+
+  /// No description provided for @hintTransferFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Only if the bank took a fee for the transfer. It is recorded as a bank charge.'**
+  String get hintTransferFee;
+
+  /// No description provided for @fieldDescriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get fieldDescriptionOptional;
+
+  /// No description provided for @moveMoneyDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved. Recorded as {numbers}.'**
+  String moveMoneyDone(String numbers);
+
+  /// No description provided for @actionPaySomeoneBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay someone back'**
+  String get actionPaySomeoneBack;
+
+  /// No description provided for @actionPayBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay back'**
+  String get actionPayBack;
+
+  /// No description provided for @payBackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay someone back'**
+  String get payBackTitle;
+
+  /// No description provided for @payBackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For someone who paid company costs with their own money. Tick the costs being paid back now.'**
+  String get payBackHint;
+
+  /// No description provided for @fieldPayBackPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Who'**
+  String get fieldPayBackPerson;
+
+  /// No description provided for @payBackCostsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Costs they paid'**
+  String get payBackCostsTitle;
+
+  /// No description provided for @payBackNothingOwed.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is owed to them.'**
+  String get payBackNothingOwed;
+
+  /// No description provided for @fieldPayingBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Paying back'**
+  String get fieldPayingBack;
+
+  /// No description provided for @hintPayingBack.
+  ///
+  /// In en, this message translates to:
+  /// **'The full amount, unless only part is paid now.'**
+  String get hintPayingBack;
+
+  /// No description provided for @fieldPaidFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid from'**
+  String get fieldPaidFrom;
+
+  /// No description provided for @payBackDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid back. Recorded as {number}. Still owed to them: {owed}.'**
+  String payBackDone(String number, String owed);
+
+  /// No description provided for @actionOpeningBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening balances'**
+  String get actionOpeningBalances;
+
+  /// No description provided for @pettyLowLead.
+  ///
+  /// In en, this message translates to:
+  /// **'{account} holds'**
+  String pettyLowLead(String account);
+
+  /// No description provided for @pettyLowFloat.
+  ///
+  /// In en, this message translates to:
+  /// **', below its float of'**
+  String get pettyLowFloat;
+
+  /// No description provided for @pettyLowSuggest.
+  ///
+  /// In en, this message translates to:
+  /// **'. Top up by'**
+  String get pettyLowSuggest;
+
+  /// No description provided for @actionTopUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Top up'**
+  String get actionTopUp;
+
+  /// No description provided for @owedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Owed to people'**
+  String get owedTitle;
+
+  /// No description provided for @owedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Company costs people paid with their own money, not yet paid back.'**
+  String get owedHint;
+
+  /// No description provided for @owedNobody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody is owed money.'**
+  String get owedNobody;
+
+  /// No description provided for @reverseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reverse this entry'**
+  String get reverseTitle;
+
+  /// No description provided for @fieldReverseReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Why'**
+  String get fieldReverseReason;
+
+  /// No description provided for @hintReverseReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Say what was wrong, such as \"Entered twice\" or \"Wrong account\". It shows in the ledger beside the reversal.'**
+  String get hintReverseReason;
+
+  /// No description provided for @reverseDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Reversed. The correction is {number}.'**
+  String reverseDone(String number);
+
+  /// No description provided for @openingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening balances'**
+  String get openingTitle;
+
+  /// No description provided for @openingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What the company had and owed at the end of {date}, the day before the books started.'**
+  String openingSubtitle(String date);
+
+  /// No description provided for @openingOwnerOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the owner posts the opening balances.'**
+  String get openingOwnerOnly;
+
+  /// No description provided for @openingPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted as {number} on {date}. It cannot be changed. A wrong balance is corrected with a journal entry.'**
+  String openingPosted(String number, String date);
+
+  /// No description provided for @openingMerged.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted as {number}, and reversed when history was merged.'**
+  String openingMerged(String number);
+
+  /// No description provided for @openingHowTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Type each balance as a plain figure, the way the bank statement or the record shows it. Leave an account empty if it held nothing. If an account was overdrawn, ask the accountant before posting.'**
+  String get openingHowTo;
+
+  /// No description provided for @openingAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'What the company had'**
+  String get openingAssets;
+
+  /// No description provided for @openingAssetsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank and cash, money clients owed, advance tax paid.'**
+  String get openingAssetsHint;
+
+  /// No description provided for @openingLiabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'What the company owed'**
+  String get openingLiabilities;
+
+  /// No description provided for @openingLiabilitiesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Loans, unpaid bills, tax kept back and not yet paid to FBR, money owed to people.'**
+  String get openingLiabilitiesHint;
+
+  /// No description provided for @openingEquity.
+  ///
+  /// In en, this message translates to:
+  /// **'Owners\' money'**
+  String get openingEquity;
+
+  /// No description provided for @openingEquityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share capital. The rest is worked out for you.'**
+  String get openingEquityHint;
+
+  /// No description provided for @fieldBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get fieldBalance;
+
+  /// No description provided for @actionReviewOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and post'**
+  String get actionReviewOpening;
+
+  /// No description provided for @openingReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Post these opening balances?'**
+  String get openingReviewTitle;
+
+  /// No description provided for @openingReviewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Whatever is left over goes to 3400 Opening balance equity, worked out by the server. Once posted, this cannot be changed.'**
+  String get openingReviewNote;
+
+  /// No description provided for @actionPostOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Post opening balances'**
+  String get actionPostOpening;
+
+  /// No description provided for @openingDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening balances posted as {number}.'**
+  String openingDone(String number);
 }
 
 class _AppLocalizationsDelegate

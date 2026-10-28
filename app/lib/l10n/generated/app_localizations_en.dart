@@ -1461,9 +1461,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldChargeAccount => 'Ledger account';
 
   @override
-  String get chargeUsualAccount => 'Usual account for this charge';
-
-  @override
   String get hintChargeAccount =>
       'Leave it on the usual account unless the accountant says otherwise.';
 
@@ -1480,4 +1477,196 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldPkrPaid => 'Rupees actually paid';
+
+  @override
+  String chargeGoesTo(String account) {
+    return 'Goes to $account';
+  }
+
+  @override
+  String get actionUseAnotherAccount => 'Use another account';
+
+  @override
+  String actionBackToUsualAccount(String account) {
+    return 'Back to $account';
+  }
+
+  @override
+  String get actionMoveMoney => 'Move money';
+
+  @override
+  String get moveMoneyTitle => 'Move money between accounts';
+
+  @override
+  String get moveMoneyHint =>
+      'For money that stays in the company: cash drawn from the bank, petty cash topped up. Both sides are recorded together.';
+
+  @override
+  String get fieldMoveFrom => 'From';
+
+  @override
+  String get fieldMoveTo => 'To';
+
+  @override
+  String get moveMoneySameAccount => 'Choose two different accounts.';
+
+  @override
+  String get fieldTransferFee => 'Bank fee, if any';
+
+  @override
+  String get hintTransferFee =>
+      'Only if the bank took a fee for the transfer. It is recorded as a bank charge.';
+
+  @override
+  String get fieldDescriptionOptional => 'Note (optional)';
+
+  @override
+  String moveMoneyDone(String numbers) {
+    return 'Moved. Recorded as $numbers.';
+  }
+
+  @override
+  String get actionPaySomeoneBack => 'Pay someone back';
+
+  @override
+  String get actionPayBack => 'Pay back';
+
+  @override
+  String get payBackTitle => 'Pay someone back';
+
+  @override
+  String get payBackHint =>
+      'For someone who paid company costs with their own money. Tick the costs being paid back now.';
+
+  @override
+  String get fieldPayBackPerson => 'Who';
+
+  @override
+  String get payBackCostsTitle => 'Costs they paid';
+
+  @override
+  String get payBackNothingOwed => 'Nothing is owed to them.';
+
+  @override
+  String get fieldPayingBack => 'Paying back';
+
+  @override
+  String get hintPayingBack => 'The full amount, unless only part is paid now.';
+
+  @override
+  String get fieldPaidFrom => 'Paid from';
+
+  @override
+  String payBackDone(String number, String owed) {
+    return 'Paid back. Recorded as $number. Still owed to them: $owed.';
+  }
+
+  @override
+  String get actionOpeningBalances => 'Opening balances';
+
+  @override
+  String pettyLowLead(String account) {
+    return '$account holds';
+  }
+
+  @override
+  String get pettyLowFloat => ', below its float of';
+
+  @override
+  String get pettyLowSuggest => '. Top up by';
+
+  @override
+  String get actionTopUp => 'Top up';
+
+  @override
+  String get owedTitle => 'Owed to people';
+
+  @override
+  String get owedHint =>
+      'Company costs people paid with their own money, not yet paid back.';
+
+  @override
+  String get owedNobody => 'Nobody is owed money.';
+
+  @override
+  String get reverseTitle => 'Reverse this entry';
+
+  @override
+  String get fieldReverseReason => 'Why';
+
+  @override
+  String get hintReverseReason =>
+      'Say what was wrong, such as \"Entered twice\" or \"Wrong account\". It shows in the ledger beside the reversal.';
+
+  @override
+  String reverseDone(String number) {
+    return 'Reversed. The correction is $number.';
+  }
+
+  @override
+  String get openingTitle => 'Opening balances';
+
+  @override
+  String openingSubtitle(String date) {
+    return 'What the company had and owed at the end of $date, the day before the books started.';
+  }
+
+  @override
+  String get openingOwnerOnly => 'Only the owner posts the opening balances.';
+
+  @override
+  String openingPosted(String number, String date) {
+    return 'Posted as $number on $date. It cannot be changed. A wrong balance is corrected with a journal entry.';
+  }
+
+  @override
+  String openingMerged(String number) {
+    return 'Posted as $number, and reversed when history was merged.';
+  }
+
+  @override
+  String get openingHowTo =>
+      'Type each balance as a plain figure, the way the bank statement or the record shows it. Leave an account empty if it held nothing. If an account was overdrawn, ask the accountant before posting.';
+
+  @override
+  String get openingAssets => 'What the company had';
+
+  @override
+  String get openingAssetsHint =>
+      'Bank and cash, money clients owed, advance tax paid.';
+
+  @override
+  String get openingLiabilities => 'What the company owed';
+
+  @override
+  String get openingLiabilitiesHint =>
+      'Loans, unpaid bills, tax kept back and not yet paid to FBR, money owed to people.';
+
+  @override
+  String get openingEquity => 'Owners\' money';
+
+  @override
+  String get openingEquityHint =>
+      'Share capital. The rest is worked out for you.';
+
+  @override
+  String get fieldBalance => 'Balance';
+
+  @override
+  String get actionReviewOpening => 'Review and post';
+
+  @override
+  String get openingReviewTitle => 'Post these opening balances?';
+
+  @override
+  String get openingReviewNote =>
+      'Whatever is left over goes to 3400 Opening balance equity, worked out by the server. Once posted, this cannot be changed.';
+
+  @override
+  String get actionPostOpening => 'Post opening balances';
+
+  @override
+  String openingDone(String number) {
+    return 'Opening balances posted as $number.';
+  }
 }

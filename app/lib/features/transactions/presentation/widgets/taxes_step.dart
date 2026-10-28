@@ -307,20 +307,29 @@ class _TaxLineCard extends StatelessWidget {
   }
 }
 
-class _ChargeLineCard extends ConsumerWidget {
+class _ChargeLineCard extends ConsumerStatefulWidget {
   const _ChargeLineCard({super.key, required this.charge, required this.onChanged, required this.onRemove});
 
   final DraftCharge charge;
   final ValueChanged<DraftCharge> onChanged;
   final VoidCallback onRemove;
 
-  /// The "usual account" choice in a menu of account ids.
-  static const _usual = -1;
+  @override
+  ConsumerState<_ChargeLineCard> createState() => _ChargeLineCardState();
+}
+
+/// A charge line says where it goes: "Goes to 8200 Forex and card fees". The
+/// account picker stays out of the way behind "Use another account", for the
+/// rare charge the accountant wants somewhere else. Decision 065.
+class _ChargeLineCardState extends ConsumerState<_ChargeLineCard> {
+  late bool _picking = widget.charge.coaId != null;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
+    final text = Theme.of(context).textTheme;
+    final charge = widget.charge;
     final accounts = ref.watch(chargeAccountsProvider).value ?? const <ChargeAccount>[];
 
     final types = {
@@ -330,6 +339,10 @@ class _ChargeLineCard extends ConsumerWidget {
       'platform_fee': l10n.chargeTypePlatform,
       'other': l10n.chargeTypeOther,
     };
+
+    final usualCode = usualChargeLedger[charge.type] ?? usualChargeLedger['other']!;
+    final usualName = accounts.where((account) => account.code == usualCode).firstOrNull?.name;
+    final usualLabel = usualName == null ? usualCode : '$usualCode  $usualName';
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -350,13 +363,13 @@ class _ChargeLineCard extends ConsumerWidget {
                   dropdownMenuEntries: [
                     for (final entry in types.entries) DropdownMenuEntry(value: entry.key, label: entry.value),
                   ],
-                  onSelected: (type) => type == null ? null : onChanged(charge.copyWith(type: type)),
+                  onSelected: (type) => type == null ? null : widget.onChanged(charge.copyWith(type: type)),
                 ),
               ),
               IconButton(
                 tooltip: l10n.actionRemove,
                 icon: const Icon(Icons.close, size: AppSizes.iconMedium),
-                onPressed: onRemove,
+                onPressed: widget.onRemove,
               ),
             ],
           ),
@@ -365,25 +378,46 @@ class _ChargeLineCard extends ConsumerWidget {
             label: l10n.fieldChargeAmount,
             value: charge.amount,
             currency: 'PKR',
-            onChanged: (amount) => onChanged(charge.copyWith(amount: amount)),
+            onChanged: (amount) => widget.onChanged(charge.copyWith(amount: amount)),
           ),
-          const SizedBox(height: AppSpacing.md),
-          DropdownMenu<int>(
-            initialSelection: charge.coaId ?? _usual,
-            expandedInsets: EdgeInsets.zero,
-            menuHeight: AppSizes.menuMaxHeight,
-            label: Text(l10n.fieldChargeAccount),
-            helperText: l10n.hintChargeAccount,
-            dropdownMenuEntries: [
-              DropdownMenuEntry(value: _usual, label: l10n.chargeUsualAccount),
-              for (final account in accounts)
-                DropdownMenuEntry(value: account.id, label: '${account.code}  ${account.name}'),
-            ],
-            onSelected: (id) {
-              if (id == null) return;
-              onChanged(id == _usual ? charge.copyWith(usualAccount: true) : charge.copyWith(coaId: id));
-            },
-          ),
+          const SizedBox(height: AppSpacing.sm),
+          if (!_picking)
+            Row(
+              children: [
+                Icon(Icons.subdirectory_arrow_right, size: AppSizes.iconSmall, color: colors.textMuted),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(child: Text(l10n.chargeGoesTo(usualLabel), style: text.bodySmall)),
+                TextButton(
+                  onPressed: () => setState(() => _picking = true),
+                  child: Text(l10n.actionUseAnotherAccount),
+                ),
+              ],
+            )
+          else ...[
+            const SizedBox(height: AppSpacing.xs),
+            DropdownMenu<int>(
+              initialSelection: charge.coaId,
+              expandedInsets: EdgeInsets.zero,
+              menuHeight: AppSizes.menuMaxHeight,
+              label: Text(l10n.fieldChargeAccount),
+              helperText: l10n.hintChargeAccount,
+              dropdownMenuEntries: [
+                for (final account in accounts)
+                  DropdownMenuEntry(value: account.id, label: '${account.code}  ${account.name}'),
+              ],
+              onSelected: (id) => id == null ? null : widget.onChanged(charge.copyWith(coaId: id)),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: () {
+                  setState(() => _picking = false);
+                  widget.onChanged(charge.copyWith(usualAccount: true));
+                },
+                child: Text(l10n.actionBackToUsualAccount(usualLabel)),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -11,6 +11,7 @@ import '../../features/auth/presentation/change_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/flags/presentation/flags_screen.dart';
+import '../../features/money/presentation/opening_entry_screen.dart';
 import '../../features/people/presentation/people_screen.dart';
 import '../../features/transactions/presentation/approvals_screen.dart';
 import '../../features/transactions/presentation/entry_screen.dart';
@@ -27,6 +28,7 @@ abstract final class Routes {
   static const changePassword = '/change-password';
   static const dashboard = '/';
   static const accounts = '/accounts';
+  static const openingEntry = '/accounts/opening';
   static const transactions = '/transactions';
   static const newEntry = '/transactions/new';
   static const approvals = '/approvals';
@@ -109,9 +111,14 @@ GoRouter appRouter(Ref ref) {
             path: Routes.dashboard,
             builder: (context, state) => const DashboardScreen(),
           ),
+          // Declared before /accounts, so the longer path wins.
+          GoRoute(
+            path: Routes.openingEntry,
+            builder: (context, state) => const _OpeningEntry(),
+          ),
           GoRoute(
             path: Routes.accounts,
-            builder: (context, state) => const AccountsScreen(),
+            builder: (context, state) => const _Accounts(),
           ),
           // Declared before /transactions, so the longer path wins.
           GoRoute(
@@ -120,7 +127,7 @@ GoRouter appRouter(Ref ref) {
           ),
           GoRoute(
             path: Routes.transactions,
-            builder: (context, state) => const LedgerScreen(),
+            builder: (context, state) => const _Ledger(),
           ),
           GoRoute(
             path: Routes.approvals,
@@ -178,6 +185,42 @@ class _NewEntry extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).value;
     return EntryScreen(canPost: user?.canPostOwnEntries ?? false);
+  }
+}
+
+/// Moving money and paying people back are for the owner and admins; the
+/// opening balances are the owner's. The server checks again. Decision 065.
+class _Accounts extends ConsumerWidget {
+  const _Accounts();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).value;
+    return AccountsScreen(
+      canMoveMoney: user?.canApprove ?? false,
+      onOpeningBalances: (user?.isOwner ?? false) ? () => context.go(Routes.openingEntry) : null,
+    );
+  }
+}
+
+class _OpeningEntry extends ConsumerWidget {
+  const _OpeningEntry();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).value;
+    return OpeningEntryScreen(isOwner: user?.isOwner ?? false);
+  }
+}
+
+/// Only the owner and admins may reverse an entry. Decision 065.
+class _Ledger extends ConsumerWidget {
+  const _Ledger();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).value;
+    return LedgerScreen(canReverse: user?.canApprove ?? false);
   }
 }
 

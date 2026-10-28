@@ -38,6 +38,47 @@ function dayBefore(date) {
 }
 
 /**
+ * What the opening entry screen shows. Before the entry exists: the accounts
+ * a balance can be given for. After: the entry itself, read only.
+ */
+export async function openingInfo() {
+  const pool = getPool();
+  const { booksLiveFrom, historyMerged } = await settings(pool);
+  const existing = await repo.findOpeningEntry(pool);
+
+  const accounts = (await repo.openingAccounts(pool)).map((row) => ({
+    code: row.code,
+    name: row.name,
+    type: row.type,
+    normalBalance: row.normal_balance,
+  }));
+
+  let entry = null;
+  if (existing) {
+    const lines = await repo.openingLines(pool, existing.id);
+    entry = {
+      transactionId: Number(existing.id),
+      journalNumber: existing.journal_number,
+      status: existing.status,
+      lines: lines.map((line) => ({
+        code: line.code,
+        name: line.name,
+        debit: money(Number(line.debit), BASE_CURRENCY),
+        credit: money(Number(line.credit), BASE_CURRENCY),
+      })),
+    };
+  }
+
+  return {
+    booksLiveFrom,
+    balancesAt: dayBefore(booksLiveFrom),
+    historyMerged,
+    entry,
+    accounts,
+  };
+}
+
+/**
  * Post the opening entry.
  *
  * input.balances: [{ code, amount }] where amount is the real balance at
@@ -259,8 +300,9 @@ export async function merge({ user, ip = null }) {
     throw badRequest(ErrorCode.VALIDATION_FAILED, 'There is no opening entry to reverse.');
   }
 
+  // The one place the opening entry may be reversed. Decision 065.
   const reversal = await transactions.reverse({
-    user, id: Number(opening.id), reason: 'history merged', ip,
+    user, id: Number(opening.id), reason: 'history merged', ip, allowOpening: true,
   });
 
   await withTransaction(async (connection) => {

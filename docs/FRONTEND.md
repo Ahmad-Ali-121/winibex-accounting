@@ -151,6 +151,18 @@ added by hand and a payee change both go back to the server
 `entry_screen.dart`. The six currencies are `entryCurrencies` in
 `domain/entry_options.dart`. Decision 064.
 
+## Moving money
+
+`features/money/`: transfers, paying back, reversing and the opening
+balances, all through `MoneyRepository`. Each dialog makes one idempotency key
+when it opens and keeps it across a retry. `sendConfirming` shows the server's
+warnings and sends the same request again with them acknowledged.
+`refreshAfterMoneyMoved` invalidates every provider whose figures could have
+changed. The Accounts screen, ledger and journal panel take `canMoveMoney`,
+`onOpeningBalances` and `canReverse` from the router, which reads the signed-in
+role, so their tests need no session. `core/widgets/date_field.dart` is the
+shared date box. Decision 065.
+
 ## The root widget and the splash
 
 `app.dart` builds one `MaterialApp.router` from the first frame. While the
@@ -223,4 +235,5 @@ retry, the form resetting, the review list, and who may post. 79 with F7: a
 changed entry after a refusal edits and posts the same draft. 86 with the app
 fixes: the sign-in error inside the real app, the date picker, the three kinds
 of error, and the reason dialog. 95 with the People screen, 99 with its
-redesign, 108 with the tax and charges step and six currencies.
+redesign, 108 with the tax and charges step and six currencies, 123 with
+moving money, paying back, reversing and the opening balances.

@@ -284,6 +284,9 @@ abstract final class AppSizes {
 
   /// Each role's column in the "who can do what" table.
   static const double roleColumnWidth = 88;
+
+  /// An amount box beside a label, as on the opening balances screen.
+  static const double amountFieldWidth = 220;
 }
 
 // ---------------------------------------------------------------------------

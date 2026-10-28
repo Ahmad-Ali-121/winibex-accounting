@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/error_message.dart';
 import '../../../core/money/money.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/date_field.dart';
 import '../../../core/widgets/money_text.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../accounts/application/accounts_providers.dart';
@@ -166,7 +167,7 @@ class _DirectionStep extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         _Question(l10n.stepDateQuestion),
-        _DateField(
+        DateField(
           value: draft.date,
           onChanged: controller.setDate,
           label: l10n.fieldDate,
@@ -612,99 +613,6 @@ class _Question extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Text(text, style: Theme.of(context).textTheme.titleMedium),
-    );
-  }
-}
-
-/// The date the money moved. Typed, or picked from a calendar.
-///
-/// It was a text box only, so every date had to be typed by hand. F3. Typing
-/// still works, which is how a date the calendar does not offer, such as one
-/// in the future, can still be tried and refused by the server.
-class _DateField extends StatefulWidget {
-  const _DateField({
-    required this.value,
-    required this.onChanged,
-    required this.label,
-    required this.hint,
-    required this.pickTooltip,
-  });
-
-  final String value;
-  final ValueChanged<String> onChanged;
-  final String label;
-  final String hint;
-  final String pickTooltip;
-
-  /// The calendar starts at go-live: everything earlier is history, which
-  /// this form does not record. The server's books_live_from setting is the
-  /// rule; this only bounds what the calendar offers.
-  static final DateTime firstPickable = DateTime(2026, 7, 1);
-
-  @override
-  State<_DateField> createState() => _DateFieldState();
-}
-
-class _DateFieldState extends State<_DateField> {
-  late final TextEditingController _text = TextEditingController(text: widget.value);
-
-  @override
-  void didUpdateWidget(covariant _DateField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // A new form after a save starts with today's date. Without this the box
-    // would keep showing the last entry's date while the draft held today's.
-    if (widget.value != _text.text) _text.text = widget.value;
-  }
-
-  @override
-  void dispose() {
-    _text.dispose();
-    super.dispose();
-  }
-
-  static String _format(DateTime date) =>
-      '${date.year.toString().padLeft(4, '0')}-'
-      '${date.month.toString().padLeft(2, '0')}-'
-      '${date.day.toString().padLeft(2, '0')}';
-
-  Future<void> _pick() async {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final first = _DateField.firstPickable.isAfter(today) ? today : _DateField.firstPickable;
-
-    var initial = DateTime.tryParse(_text.text) ?? today;
-    if (initial.isBefore(first)) initial = first;
-    if (initial.isAfter(today)) initial = today;
-
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: first,
-      lastDate: today,
-    );
-    if (picked == null || !mounted) return;
-
-    final value = _format(picked);
-    _text.text = value;
-    widget.onChanged(value);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: _text,
-      decoration: InputDecoration(
-        labelText: widget.label,
-        hintText: widget.hint,
-        suffixIcon: IconButton(
-          tooltip: widget.pickTooltip,
-          icon: const Icon(Icons.calendar_today_outlined),
-          onPressed: _pick,
-        ),
-      ),
-      keyboardType: TextInputType.datetime,
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9-]'))],
-      onChanged: widget.onChanged,
     );
   }
 }

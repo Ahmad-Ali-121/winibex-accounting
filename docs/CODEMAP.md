@@ -223,8 +223,8 @@ Numbered SQL files, run in order. The database remembers which have run.
 
 Every `.js` file here tests one area. They run against a real database, never a
 fake one, because the guarantees being tested live in the database. `npm test`
-runs them all. 411 tests after the tax and charge step: 408 pass, 3 argon2
-tests skip until that package is installed.
+runs them all. 416 tests after batch C: 413 pass, 3 argon2 tests skip until
+that package is installed.
 
 Test files:
 
@@ -258,6 +258,8 @@ Test files:
 - **`defect-fixes.test.js`**: one or more tests per defect found while
   writing the Phase 1 test (D1, D2, D5 to D9, D11, D12, D14), and for the
   decision 062 rules. If any of them comes back, this file fails.
+- **`money-moves.test.js`**: the opening balances screen's data, a transfer
+  reversed whole, and the two reversals that are refused.
 - **`entry-form.test.js`**: what the tax and charge step needs: the tax list
   by direction, a tax added by hand worked out by the server, a charge with
   no account going to the usual one, and a charge refused on a non-cost
@@ -384,6 +386,9 @@ Current features:
 - **`flags/`**: the flags review list: entries with confirmed warnings or
   raised flags. The owner and admins see a Mark reviewed button on each, which
   asks for a short note.
+- **`money/`**: moving money between accounts, paying people back, reversing
+  an entry, and the opening balances screen. Its actions appear on the
+  Accounts screen and on the journal panel, not in the menu.
 - **`people/`**: the owner's People screen under Settings: everyone who can
   sign in, grouped by role, what each role can do in plain words and as a
   table, add a person, change what they can do, reset a password, switch
@@ -398,8 +403,7 @@ Current features:
 
 ### `app/test/`
 
-108 Flutter widget tests after the tax and charge step, 2026-10-28. Flutter
-analyze clean.
+123 Flutter widget tests after batch C, 2026-10-28. Flutter analyze clean.
 
 - **`foundation_test.dart`**: checks the theme and glossary hold together.
 - **`login_test.dart`**: checks the login screen behaves on success, wrong
@@ -422,6 +426,8 @@ analyze clean.
   told apart and each gets its own message.
 - **`auth_user_test.dart`**: who may post their own entries: the owner, and
   an admin with auto-approve. Nobody else.
+- **`money_moves_test.dart`**: moving money, the top-up, warnings sent again
+  under the same key, paying back, reversing, and the opening balances.
 - **`people_screen_test.dart`**: the People screen: the office login has no
   buttons, rupees become paisa, short passwords and refusals.
 

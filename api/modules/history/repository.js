@@ -23,6 +23,35 @@ export async function findOpeningEntry(runner = getPool()) {
   return rows[0] ?? null;
 }
 
+// The ledger accounts a 30 June balance can be given for: what the company
+// had (assets), owed (liabilities) and its share capital (equity). Leaves
+// out headings, 3400, which takes the balancing figure, and 1118, which is
+// only ever in use for the moment a transfer is moving.
+export async function openingAccounts(runner = getPool()) {
+  const [rows] = await runner.query(
+    `SELECT code, name, type, normal_balance
+       FROM chart_of_accounts
+      WHERE type IN ('asset', 'liability', 'equity')
+        AND is_header = 0 AND is_active = 1
+        AND code NOT IN ('3400', '1118')
+      ORDER BY code`,
+  );
+  return rows;
+}
+
+// The opening entry's lines, with each account's code and name.
+export async function openingLines(runner = getPool(), transactionId) {
+  const [rows] = await runner.query(
+    `SELECT a.code, a.name, j.debit, j.credit
+       FROM journal_lines j
+       JOIN chart_of_accounts a ON a.id = j.coa_id
+      WHERE j.transaction_id = ?
+      ORDER BY j.line_no`,
+    [transactionId],
+  );
+  return rows;
+}
+
 export async function coaByCode(runner = getPool(), code) {
   const [rows] = await runner.query(
     `SELECT id, code, name, type, normal_balance, is_header

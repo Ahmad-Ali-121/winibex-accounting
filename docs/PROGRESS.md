@@ -13,9 +13,10 @@ empty and ready for the real opening entry. What remains before real entries
 is in "Pending before Phase 2" below; D15 is the main piece of work. Batch A
 of D15 (people and permissions, decisions 062 and 063) is written and waits
 passed and deployed on 2026-10-28, with migration 007 on production. Batch B
-(tax and charge lines, six currencies, decision 064) is written and waits for
-Ahmad's test run: 411 API tests, 108 Flutter tests expected. It needs no
-migration.
+(tax and charge lines, six currencies, decision 064) passed: 411 API tests,
+108 Flutter tests, and a 10-step check in the app. Batch C (decision 065) is
+written and waits for Ahmad's test run: 416 API tests, 123 Flutter tests
+expected. No migration.
 
 The API runs on
 Hostinger at api-accounting.winibex.com; the web app is at
@@ -251,9 +252,11 @@ Defect fixes, 2026-10-26, deployed to production the same day:
   - [x] Batch A, deployed 2026-10-28: People screen (owner adds people, sets
         roles and limits, resets passwords, switches people off), decision 062
         rules, migration 007, "Client will pay this back"
-  - [ ] Batch B, written 2026-10-28: tax and charge lines on the form, the
+  - [x] Batch B, passed 2026-10-28: tax and charge lines on the form, the
         payee for tax kept back, PKR, USD, GBP, AED, QAR, EUR. Decision 064
-  - [ ] Batch C: transfers, reversal, paying someone back, opening entry
+  - [ ] Batch C, written 2026-10-28: moving money, paying someone back and
+        who is owed, reversing, the opening balances screen, the petty cash
+        top-up, charge lines that say where they go. Decision 065
   - [ ] Batch D: vendors, cheque register
   - [ ] Batch E: edit a draft, resubmit a rejected entry, taxes screen
 
@@ -366,6 +369,15 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-28 (D15 batch C written)
+Batch B passed (411 API, 108 Flutter, 10 steps in the app). Batch C:
+transfers, paying back and the owed list, the petty cash top-up and the
+opening balances, all from the Accounts screen; reversing from the journal
+panel. Server: `GET /opening-entry`; a transfer reverses whole; a reversal and
+the opening entry cannot be reversed by hand. Charge lines now say where they
+go. The date box became a shared widget. 5 new API tests (416), 15 new
+Flutter tests (123). Decision 065.
 
 ### 2026-10-28 (D15 batch B written: taxes, charges, currencies)
 Batch A and the People redesign passed (403 API, 99 Flutter), migration 007

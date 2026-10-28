@@ -7,6 +7,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_panel.dart';
 import '../../../core/widgets/money_text.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../money/presentation/widgets/money_actions_panel.dart';
 import '../application/accounts_providers.dart';
 import '../domain/account.dart';
 
@@ -16,7 +17,14 @@ import '../domain/account.dart';
 /// including the total: two places that both know how to total a set of
 /// balances will eventually disagree, and only one of them would be right.
 class AccountsScreen extends ConsumerWidget {
-  const AccountsScreen({super.key});
+  const AccountsScreen({super.key, this.canMoveMoney = false, this.onOpeningBalances});
+
+  /// The owner and admins: moving money, paying people back, topping up
+  /// petty cash. The server checks again. Decision 065.
+  final bool canMoveMoney;
+
+  /// The owner only. Opens the opening balances screen.
+  final VoidCallback? onOpeningBalances;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,7 +34,11 @@ class AccountsScreen extends ConsumerWidget {
     return switch (summary) {
       AsyncData(:final value) when value.accounts.isEmpty =>
         EmptyState(title: l10n.emptyAccountsTitle, detail: l10n.emptyAccountsDetail),
-      AsyncData(:final value) => _AccountsBody(summary: value),
+      AsyncData(:final value) => _AccountsBody(
+          summary: value,
+          canMoveMoney: canMoveMoney,
+          onOpeningBalances: onOpeningBalances,
+        ),
       AsyncError(:final error) => ErrorPanel.from(
           error,
           networkMessage: l10n.errNetwork,
@@ -40,9 +52,11 @@ class AccountsScreen extends ConsumerWidget {
 }
 
 class _AccountsBody extends StatelessWidget {
-  const _AccountsBody({required this.summary});
+  const _AccountsBody({required this.summary, required this.canMoveMoney, this.onOpeningBalances});
 
   final AccountsSummary summary;
+  final bool canMoveMoney;
+  final VoidCallback? onOpeningBalances;
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +78,11 @@ class _AccountsBody extends StatelessWidget {
             if (!summary.historyMerged) ...[
               const SizedBox(height: AppSpacing.lg),
               _Notice(text: l10n.accountsHistoryNotMerged),
+            ],
+
+            if (canMoveMoney) ...[
+              const SizedBox(height: AppSpacing.lg),
+              MoneyActionsPanel(onOpeningBalances: onOpeningBalances),
             ],
 
             const SizedBox(height: AppSpacing.xl),

@@ -254,6 +254,25 @@ saying only the owner can add people. Decision 063.
   for me", show and copy). Generated passwords avoid 0, O, 1, l and I
 - Nobody is deleted, so every entry keeps the name of who made it
 
+## Moving money and the opening balances
+
+On the Accounts screen, for the owner and admins (decision 065):
+
+- **Move money**: from, to, amount, an optional bank fee, the date. Both
+  sides are recorded together
+- **Pay someone back**: who, the costs they paid (ticked, each in full unless
+  changed), which account it is paid from
+- **Petty cash below its float**: says what it holds, the float, and the
+  server's suggested top-up, with a Top up button that opens Move money
+  filled in
+- **Owed to people**: each person the company owes, with Pay back beside them
+- **Opening balances**, owner only: a screen of balance sheet accounts, each
+  balance typed as a plain figure; once posted it is shown read only
+
+A posted entry's journal panel has **Reverse entry** for the owner and admins.
+It asks why. A transfer is reversed whole. A reversal and the opening entry
+are not offered.
+
 ## Posting and corrections
 
 - Draft is editable. Posted is not, for anyone, including admin

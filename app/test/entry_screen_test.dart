@@ -173,7 +173,7 @@ class _FakeTransactionsRepository extends TransactionsRepository {
                   rateApplied: tax.rateApplied,
                   atlStatusUsed: 'atl',
                   atlParty: tax.atlParty,
-                  amount: Money.pkr(22400),
+                  amount: const Money.pkr(22400),
                   deductedBy: tax.deductedBy,
                 ),
     ];
@@ -847,7 +847,10 @@ void main() {
     expect(charge['type'], 'bank_charge');
     expect(charge['amount'], {'minor': 4500, 'currency': 'PKR'});
     expect(charge.containsKey('coaId'), isFalse, reason: 'the server picks the usual account');
+    expect(find.text('Goes to 8100'), findsOneWidget, reason: 'the line says where it goes');
 
+    await tester.tap(find.text('Use another account'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byType(DropdownMenu<int>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('6400  Software subscriptions').last);
@@ -879,5 +882,28 @@ void main() {
       await tester.pumpAndSettle();
     }
     expect(repository.taxRequests, [null, null], reason: 'suggested again for the new amount');
+  });
+
+  testWidgets('a charge can go back to its usual account', (tester) async {
+    await _pump(tester, transactions: _FakeTransactionsRepository());
+    await _toTaxes(tester);
+
+    await tester.tap(find.text('Add charge'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'Amount').last, '45');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Use another account'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownMenu<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('6400  Software subscriptions').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Back to 8100'));
+    await tester.pumpAndSettle();
+
+    final charge = (draftOf(tester).toRequest()['charges'] as List).single as Map;
+    expect(charge.containsKey('coaId'), isFalse);
+    expect(find.text('Goes to 8100'), findsOneWidget);
   });
 }
