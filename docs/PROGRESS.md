@@ -14,9 +14,11 @@ is in "Pending before Phase 2" below; D15 is the main piece of work. Batch A
 of D15 (people and permissions, decisions 062 and 063) is written and waits
 passed and deployed on 2026-10-28, with migration 007 on production. Batch B
 (tax and charge lines, six currencies, decision 064) passed: 411 API tests,
-108 Flutter tests, and a 10-step check in the app. Batch C (decision 065) is
-written and waits for Ahmad's test run: 416 API tests, 123 Flutter tests
-expected. No migration.
+108 Flutter tests, and a 10-step check in the app. Batch C (decision 065)
+passed: 416 API tests, 123 Flutter tests, and a 10-step check in the app.
+Batch D (vendors and cheques, decision 066) is written and waits for
+Ahmad's test run: 416 API tests unchanged, 136 Flutter tests expected. No
+server change, no migration.
 
 The API runs on
 Hostinger at api-accounting.winibex.com; the web app is at
@@ -254,10 +256,11 @@ Defect fixes, 2026-10-26, deployed to production the same day:
         rules, migration 007, "Client will pay this back"
   - [x] Batch B, passed 2026-10-28: tax and charge lines on the form, the
         payee for tax kept back, PKR, USD, GBP, AED, QAR, EUR. Decision 064
-  - [ ] Batch C, written 2026-10-28: moving money, paying someone back and
+  - [x] Batch C, passed 2026-10-28: moving money, paying someone back and
         who is owed, reversing, the opening balances screen, the petty cash
         top-up, charge lines that say where they go. Decision 065
-  - [ ] Batch D: vendors, cheque register
+  - [ ] Batch D, written 2026-10-28: Vendors and Cheques menu items and
+        screens. Decision 066
   - [ ] Batch E: edit a draft, resubmit a rejected entry, taxes screen
 
 373 API tests (370 pass, 3 argon2 skips). 78 Flutter tests. Flutter analyze
@@ -369,6 +372,15 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-28 (D15 batch D written)
+Batch C passed (416 API, 123 Flutter, 10 steps in the app) and was pushed.
+Ahmad chose a menu item each for Vendors and Cheques. Built on the Phase 1
+endpoints with no server change: vendor cards that say filer status, when it
+was checked and a missing NTN; the vendor form; the cheque register with the
+outstanding total, status filter, the allowed moves, the cleared date,
+linking a payment and recording a cheque. 13 new Flutter tests (136).
+Decision 066.
 
 ### 2026-10-28 (D15 batch C written)
 Batch B passed (411 API, 108 Flutter, 10 steps in the app). Batch C:

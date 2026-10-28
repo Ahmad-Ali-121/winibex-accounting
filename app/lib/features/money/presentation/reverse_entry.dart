@@ -38,7 +38,7 @@ Future<bool> reverseEntry(BuildContext context, WidgetRef ref, {required int tra
   } catch (error) {
     messenger.showSnackBar(SnackBar(
       content: Text(errorMessageFor(error, network: l10n.errNetwork, server: l10n.errServer)),
-    ));
+    ),);
     return false;
   }
 }

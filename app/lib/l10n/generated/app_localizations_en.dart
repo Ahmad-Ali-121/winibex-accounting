@@ -1669,4 +1669,264 @@ class AppLocalizationsEn extends AppLocalizations {
   String openingDone(String number) {
     return 'Opening balances posted as $number.';
   }
+
+  @override
+  String get navVendors => 'Vendors';
+
+  @override
+  String get navCheques => 'Cheques';
+
+  @override
+  String get vendorsTitle => 'Vendors';
+
+  @override
+  String get vendorsIntro =>
+      'Everyone the company pays who is not staff: contractors, suppliers, platforms.';
+
+  @override
+  String get actionAddVendor => 'Add vendor';
+
+  @override
+  String get vendorsFilerHelp =>
+      'Tax kept back from a vendor needs their NTN or CNIC, and the rate depends on whether they are a filer, that is on FBR\'s Active Taxpayers List. A non-filer, or one never checked, gets the higher rate. Check the list every month or so and note the date.';
+
+  @override
+  String get hintVendorSearch => 'Search by name, NTN or CNIC';
+
+  @override
+  String get vendorsEmpty => 'No vendors yet.';
+
+  @override
+  String vendorAdded(String name) {
+    return '$name is added.';
+  }
+
+  @override
+  String get vendorSaved => 'Saved.';
+
+  @override
+  String get vendorKindCompany => 'Company';
+
+  @override
+  String get vendorKindAop => 'Partnership (AOP)';
+
+  @override
+  String get vendorKindIndividual => 'Individual';
+
+  @override
+  String get vendorKindForeign => 'Outside Pakistan';
+
+  @override
+  String get fieldNtn => 'NTN';
+
+  @override
+  String get fieldCnic => 'CNIC';
+
+  @override
+  String get filerYes => 'Filer';
+
+  @override
+  String get filerNo => 'Non-filer';
+
+  @override
+  String get filerUnknown => 'Not checked';
+
+  @override
+  String filerCheckAgain(String date) {
+    return 'Check again, last checked $date';
+  }
+
+  @override
+  String get vendorNoTaxId => 'No NTN or CNIC';
+
+  @override
+  String get vendorSwitchedOff => 'Switched off';
+
+  @override
+  String get addVendorTitle => 'Add a vendor';
+
+  @override
+  String get editVendorTitle => 'Change vendor';
+
+  @override
+  String get fieldVendorName => 'Name';
+
+  @override
+  String get fieldVendorKind => 'Type';
+
+  @override
+  String get fieldCountry => 'Country';
+
+  @override
+  String get hintForeignVendor =>
+      'No Pakistani tax is kept back from a vendor outside Pakistan, so no NTN is needed.';
+
+  @override
+  String get hintNoTaxId =>
+      'Without an NTN or CNIC, tax cannot be kept back from them.';
+
+  @override
+  String get fieldFilerStatus => 'Filer status';
+
+  @override
+  String get hintFilerUnknown =>
+      'Until it is checked, the higher non-filer rate is used.';
+
+  @override
+  String get hintFilerChecked =>
+      'The date you checked FBR\'s Active Taxpayers List.';
+
+  @override
+  String get fieldCheckedOn => 'Checked on';
+
+  @override
+  String get fieldEmailOptional => 'Email (optional)';
+
+  @override
+  String get fieldPhoneOptional => 'Phone (optional)';
+
+  @override
+  String get fieldNotesOptional => 'Notes (optional)';
+
+  @override
+  String get chequesTitle => 'Cheques';
+
+  @override
+  String get chequesIntro =>
+      'Every cheque written, and where it stands. The payment itself is recorded as a normal entry and linked here.';
+
+  @override
+  String get actionIssueCheque => 'Record a cheque';
+
+  @override
+  String get chequeStatusesHelp =>
+      'Issued: written and handed over. Presented: the payee has deposited it. Cleared: the money has left the bank. Bounced: the bank refused it. Cancelled: never used.';
+
+  @override
+  String get chequeFilterAll => 'All';
+
+  @override
+  String get chequeIssued => 'Issued';
+
+  @override
+  String get chequePresented => 'Presented';
+
+  @override
+  String get chequeCleared => 'Cleared';
+
+  @override
+  String get chequeBounced => 'Bounced';
+
+  @override
+  String get chequeCancelled => 'Cancelled';
+
+  @override
+  String get chequesOutstanding => 'Written but not yet cleared';
+
+  @override
+  String get chequesEmpty => 'No cheques here.';
+
+  @override
+  String chequeNumberShort(String number) {
+    return 'No. $number';
+  }
+
+  @override
+  String chequeClearedOn(String date) {
+    return 'Cleared on $date';
+  }
+
+  @override
+  String get chequeNotLinked => 'Not linked to a payment yet';
+
+  @override
+  String chequeLinkedTo(String number) {
+    return 'Payment $number';
+  }
+
+  @override
+  String get actionMarkPresented => 'Mark presented';
+
+  @override
+  String get actionMarkCleared => 'Mark cleared';
+
+  @override
+  String get actionMarkBounced => 'Mark bounced';
+
+  @override
+  String get actionCancelCheque => 'Cancel cheque';
+
+  @override
+  String get actionLinkPayment => 'Link to payment';
+
+  @override
+  String get chequeBounceTitle => 'Mark this cheque as bounced?';
+
+  @override
+  String get chequeBounceBody =>
+      'The bank refused it, so the payee was not paid. If the payment was already recorded, reverse it from Transactions.';
+
+  @override
+  String get chequeCancelTitle => 'Cancel this cheque?';
+
+  @override
+  String get chequeCancelBody =>
+      'For a cheque that was never used. It stays in the register, marked cancelled.';
+
+  @override
+  String chequeNowStatus(String number, String status) {
+    return 'Cheque $number is now $status.';
+  }
+
+  @override
+  String chequeLinked(String number) {
+    return 'Linked to $number.';
+  }
+
+  @override
+  String get chequeClearedTitle => 'When did it clear?';
+
+  @override
+  String get chequeClearedBody =>
+      'The date the money left the bank, from the bank statement.';
+
+  @override
+  String get fieldClearedOn => 'Cleared on';
+
+  @override
+  String get linkPaymentTitle => 'Link to a payment';
+
+  @override
+  String get linkPaymentHint =>
+      'Payments recorded from this cheque\'s bank account, newest first.';
+
+  @override
+  String get hintPaymentSearch => 'Search, then press Enter';
+
+  @override
+  String get linkPaymentNone => 'No payments found from this account.';
+
+  @override
+  String get issueChequeTitle => 'Record a cheque';
+
+  @override
+  String get issueChequeHint =>
+      'Record the cheque here, and the payment itself as a normal entry. Then link the two.';
+
+  @override
+  String get fieldChequeAccount => 'Bank account';
+
+  @override
+  String get fieldChequeNumber => 'Cheque number';
+
+  @override
+  String get fieldPayableTo => 'Payable to';
+
+  @override
+  String get fieldChequeDate => 'Date on the cheque';
+
+  @override
+  String chequeIssuedDone(String number) {
+    return 'Cheque $number recorded.';
+  }
 }

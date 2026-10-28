@@ -163,6 +163,14 @@ changed. The Accounts screen, ledger and journal panel take `canMoveMoney`,
 role, so their tests need no session. `core/widgets/date_field.dart` is the
 shared date box. Decision 065.
 
+## Vendors and cheques
+
+`features/vendors/` and `features/cheques/`, each with its own repository and
+a keep-alive action provider that returns `ApiException?`. Both screens take
+`canManage` from the router. `Cheque.nextSteps` mirrors the server's order
+only to choose which buttons to show. Adding or changing a vendor invalidates
+the entry form's `vendorOptionsProvider`. Decision 066.
+
 ## The root widget and the splash
 
 `app.dart` builds one `MaterialApp.router` from the first frame. While the
@@ -236,4 +244,5 @@ changed entry after a refusal edits and posts the same draft. 86 with the app
 fixes: the sign-in error inside the real app, the date picker, the three kinds
 of error, and the reason dialog. 95 with the People screen, 99 with its
 redesign, 108 with the tax and charges step and six currencies, 123 with
-moving money, paying back, reversing and the opening balances.
+moving money, paying back, reversing and the opening balances, 136 with
+vendors and cheques.

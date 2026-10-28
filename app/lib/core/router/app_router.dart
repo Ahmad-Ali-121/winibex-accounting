@@ -10,6 +10,7 @@ import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/change_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/cheques/presentation/cheques_screen.dart';
 import '../../features/flags/presentation/flags_screen.dart';
 import '../../features/money/presentation/opening_entry_screen.dart';
 import '../../features/people/presentation/people_screen.dart';
@@ -17,6 +18,7 @@ import '../../features/transactions/presentation/approvals_screen.dart';
 import '../../features/transactions/presentation/entry_screen.dart';
 import '../../features/transactions/presentation/ledger_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
+import '../../features/vendors/presentation/vendors_screen.dart';
 import '../../l10n/generated/app_localizations.dart';
 
 part 'app_router.g.dart';
@@ -34,6 +36,8 @@ abstract final class Routes {
   static const approvals = '/approvals';
   static const flags = '/flags';
   static const clients = '/clients';
+  static const vendors = '/vendors';
+  static const cheques = '/cheques';
   static const invoices = '/invoices';
   static const payroll = '/payroll';
   static const recurring = '/recurring';
@@ -138,6 +142,14 @@ GoRouter appRouter(Ref ref) {
             builder: (context, state) => const _Flags(),
           ),
           GoRoute(
+            path: Routes.vendors,
+            builder: (context, state) => const _Vendors(),
+          ),
+          GoRoute(
+            path: Routes.cheques,
+            builder: (context, state) => const _Cheques(),
+          ),
+          GoRoute(
             path: Routes.clients,
             builder: (context, state) => const _ComingSoon(module: 'clients'),
           ),
@@ -210,6 +222,28 @@ class _OpeningEntry extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).value;
     return OpeningEntryScreen(isOwner: user?.isOwner ?? false);
+  }
+}
+
+/// Anyone signed in sees vendors and the cheque register; the owner and
+/// admins change them. The server checks again. Decision 066.
+class _Vendors extends ConsumerWidget {
+  const _Vendors();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).value;
+    return VendorsScreen(canManage: user?.canApprove ?? false);
+  }
+}
+
+class _Cheques extends ConsumerWidget {
+  const _Cheques();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).value;
+    return ChequesScreen(canManage: user?.canApprove ?? false);
   }
 }
 

@@ -1340,6 +1340,37 @@ with the account picker behind "Use another account". Ahmad had no
 preference between the options; this was the recommended one. Refines
 decision 064.
 
+### 066 — Vendors and the cheque register on screen
+2026-10-28
+
+D15 batch D. Ahmad chose where they live; the rest is Claude's, open to
+correction. No server change: the endpoints from Phase 1 are used as built.
+
+**Vendors and Cheques each get a menu item,** after Clients. Ahmad's choice
+for both. Everyone signed in can read them; the owner and admins add and
+change, as the server already enforces.
+
+**A vendor card says what matters for tax, in plain words:** filer,
+non-filer or not checked; "check again" when the check is over 30 days old
+or never done (the server's flag); and "No NTN or CNIC" for a local vendor,
+since tax cannot be kept back from them. A vendor outside Pakistan needs no
+NTN and shows no filer status. Empty fields are not sent, so nothing is stored
+as an empty string. Clearing an NTN once saved is not possible from the form
+yet; the API takes no empty value.
+
+**A vendor is switched off, never deleted,** as decision 053 already says.
+Adding or changing one refreshes the payee picker on the entry form.
+
+**The cheque register shows what is outstanding** (the server's sum), filters
+by status, and offers only the moves a cheque can make next: issued to
+presented, bounced or cancelled; presented to cleared or bounced; bounced to
+cancelled. Clearing asks the date from the bank statement. Bouncing and
+cancelling ask first. The server enforces the same order.
+
+**A cheque is linked to a payment by picking it** from the posted money out on
+the same bank account, searchable. Recording a cheque offers only bank and
+cheque accounts.
+
 ---
 
 ## Open, not yet decided

@@ -872,5 +872,141 @@
         "type": "String"
       }
     }
+  },
+  "navVendors": "Vendors",
+  "navCheques": "Cheques",
+  "vendorsTitle": "Vendors",
+  "vendorsIntro": "Everyone the company pays who is not staff: contractors, suppliers, platforms.",
+  "actionAddVendor": "Add vendor",
+  "vendorsFilerHelp": "Tax kept back from a vendor needs their NTN or CNIC, and the rate depends on whether they are a filer, that is on FBR's Active Taxpayers List. A non-filer, or one never checked, gets the higher rate. Check the list every month or so and note the date.",
+  "hintVendorSearch": "Search by name, NTN or CNIC",
+  "vendorsEmpty": "No vendors yet.",
+  "vendorAdded": "{name} is added.",
+  "@vendorAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "vendorSaved": "Saved.",
+  "vendorKindCompany": "Company",
+  "vendorKindAop": "Partnership (AOP)",
+  "vendorKindIndividual": "Individual",
+  "vendorKindForeign": "Outside Pakistan",
+  "fieldNtn": "NTN",
+  "fieldCnic": "CNIC",
+  "filerYes": "Filer",
+  "filerNo": "Non-filer",
+  "filerUnknown": "Not checked",
+  "filerCheckAgain": "Check again, last checked {date}",
+  "@filerCheckAgain": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "vendorNoTaxId": "No NTN or CNIC",
+  "vendorSwitchedOff": "Switched off",
+  "addVendorTitle": "Add a vendor",
+  "editVendorTitle": "Change vendor",
+  "fieldVendorName": "Name",
+  "fieldVendorKind": "Type",
+  "fieldCountry": "Country",
+  "hintForeignVendor": "No Pakistani tax is kept back from a vendor outside Pakistan, so no NTN is needed.",
+  "hintNoTaxId": "Without an NTN or CNIC, tax cannot be kept back from them.",
+  "fieldFilerStatus": "Filer status",
+  "hintFilerUnknown": "Until it is checked, the higher non-filer rate is used.",
+  "hintFilerChecked": "The date you checked FBR's Active Taxpayers List.",
+  "fieldCheckedOn": "Checked on",
+  "fieldEmailOptional": "Email (optional)",
+  "fieldPhoneOptional": "Phone (optional)",
+  "fieldNotesOptional": "Notes (optional)",
+  "chequesTitle": "Cheques",
+  "chequesIntro": "Every cheque written, and where it stands. The payment itself is recorded as a normal entry and linked here.",
+  "actionIssueCheque": "Record a cheque",
+  "chequeStatusesHelp": "Issued: written and handed over. Presented: the payee has deposited it. Cleared: the money has left the bank. Bounced: the bank refused it. Cancelled: never used.",
+  "chequeFilterAll": "All",
+  "chequeIssued": "Issued",
+  "chequePresented": "Presented",
+  "chequeCleared": "Cleared",
+  "chequeBounced": "Bounced",
+  "chequeCancelled": "Cancelled",
+  "chequesOutstanding": "Written but not yet cleared",
+  "chequesEmpty": "No cheques here.",
+  "chequeNumberShort": "No. {number}",
+  "@chequeNumberShort": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "chequeClearedOn": "Cleared on {date}",
+  "@chequeClearedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "chequeNotLinked": "Not linked to a payment yet",
+  "chequeLinkedTo": "Payment {number}",
+  "@chequeLinkedTo": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "actionMarkPresented": "Mark presented",
+  "actionMarkCleared": "Mark cleared",
+  "actionMarkBounced": "Mark bounced",
+  "actionCancelCheque": "Cancel cheque",
+  "actionLinkPayment": "Link to payment",
+  "chequeBounceTitle": "Mark this cheque as bounced?",
+  "chequeBounceBody": "The bank refused it, so the payee was not paid. If the payment was already recorded, reverse it from Transactions.",
+  "chequeCancelTitle": "Cancel this cheque?",
+  "chequeCancelBody": "For a cheque that was never used. It stays in the register, marked cancelled.",
+  "chequeNowStatus": "Cheque {number} is now {status}.",
+  "@chequeNowStatus": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "chequeLinked": "Linked to {number}.",
+  "@chequeLinked": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "chequeClearedTitle": "When did it clear?",
+  "chequeClearedBody": "The date the money left the bank, from the bank statement.",
+  "fieldClearedOn": "Cleared on",
+  "linkPaymentTitle": "Link to a payment",
+  "linkPaymentHint": "Payments recorded from this cheque's bank account, newest first.",
+  "hintPaymentSearch": "Search, then press Enter",
+  "linkPaymentNone": "No payments found from this account.",
+  "issueChequeTitle": "Record a cheque",
+  "issueChequeHint": "Record the cheque here, and the payment itself as a normal entry. Then link the two.",
+  "fieldChequeAccount": "Bank account",
+  "fieldChequeNumber": "Cheque number",
+  "fieldPayableTo": "Payable to",
+  "fieldChequeDate": "Date on the cheque",
+  "chequeIssuedDone": "Cheque {number} recorded.",
+  "@chequeIssuedDone": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -57,7 +57,7 @@ class EntryDraftController extends _$EntryDraftController {
       accountId: accountId,
       paidByType: PaidByType.company,
       clearPaidBy: true,
-    ));
+    ),);
   }
 
   /// A cost someone paid on their own card. No company account moves, and the
@@ -68,7 +68,7 @@ class EntryDraftController extends _$EntryDraftController {
       paidByType: PaidByType.person,
       paidByUserId: userId,
       clearAccount: true,
-    ));
+    ),);
   }
 
   void setCategory(int categoryId) {
@@ -98,7 +98,7 @@ class EntryDraftController extends _$EntryDraftController {
     state = _taxesStale(state.copyWith(
       currency: currency,
       foreignAmount: typed == null ? null : Money(minorUnits: typed.minorUnits, currency: currency),
-    ));
+    ),);
   }
 
   /// A foreign entry carries the original amount and the rate, or the books
@@ -124,7 +124,7 @@ class EntryDraftController extends _$EntryDraftController {
     state = state.copyWith(taxes: [
       for (final tax in state.taxes)
         tax.taxId == taxId ? tax.copyWith(amount: amount, isOverride: true) : tax,
-    ]);
+    ],);
   }
 
   String get _direction => state.direction == EntryDirection.moneyIn ? 'in' : 'out';
@@ -200,13 +200,13 @@ class EntryDraftController extends _$EntryDraftController {
     state = state.copyWith(charges: [
       ...state.charges,
       DraftCharge(id: _nextChargeId++, type: type, amount: Money.zero),
-    ]);
+    ],);
   }
 
   void updateCharge(DraftCharge charge) {
     state = state.copyWith(charges: [
       for (final line in state.charges) line.id == charge.id ? charge : line,
-    ]);
+    ],);
   }
 
   void removeCharge(int id) =>

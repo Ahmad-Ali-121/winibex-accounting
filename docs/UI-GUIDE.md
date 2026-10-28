@@ -273,6 +273,21 @@ A posted entry's journal panel has **Reverse entry** for the owner and admins.
 It asks why. A transfer is reversed whole. A reversal and the opening entry
 are not offered.
 
+## Vendors and cheques
+
+Each has its own menu item (decision 066).
+
+- **Vendors**: a card per vendor with type, NTN or CNIC, and chips: Filer,
+  Non-filer or Not checked; "Check again" when the check is stale; "No NTN or
+  CNIC" for a local vendor without one; Switched off. A short note explains
+  why filer status matters. Search by name, NTN or CNIC. Add and Edit ask for
+  name, type, NTN, CNIC, filer status and the date it was checked, and
+  optional email, phone and notes
+- **Cheques**: what is written but not yet cleared, a filter by status, and a
+  card per cheque with its number, bank, date, status and the payment it is
+  linked to. Buttons offer only the next allowed move. Record a cheque asks
+  for the bank account, number, payee, amount and date
+
 ## Posting and corrections
 
 - Draft is editable. Posted is not, for anyone, including admin

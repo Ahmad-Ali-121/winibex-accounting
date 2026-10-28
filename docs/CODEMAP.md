@@ -386,6 +386,10 @@ Current features:
 - **`flags/`**: the flags review list: entries with confirmed warnings or
   raised flags. The owner and admins see a Mark reviewed button on each, which
   asks for a short note.
+- **`vendors/`**: the Vendors screen: who the company pays, their NTN or
+  CNIC, filer status and when it was checked.
+- **`cheques/`**: the cheque register: record a cheque, move it from issued
+  to cleared, link it to the payment it stands for.
 - **`money/`**: moving money between accounts, paying people back, reversing
   an entry, and the opening balances screen. Its actions appear on the
   Accounts screen and on the journal panel, not in the menu.
@@ -403,7 +407,7 @@ Current features:
 
 ### `app/test/`
 
-123 Flutter widget tests after batch C, 2026-10-28. Flutter analyze clean.
+136 Flutter widget tests after batch D, 2026-10-28. Flutter analyze clean.
 
 - **`foundation_test.dart`**: checks the theme and glossary hold together.
 - **`login_test.dart`**: checks the login screen behaves on success, wrong
@@ -426,6 +430,8 @@ Current features:
   told apart and each gets its own message.
 - **`auth_user_test.dart`**: who may post their own entries: the owner, and
   an admin with auto-approve. Nobody else.
+- **`vendors_cheques_test.dart`**: vendor cards and the vendor form, the
+  cheque register, its moves, linking and recording a cheque.
 - **`money_moves_test.dart`**: moving money, the top-up, warnings sent again
   under the same key, paying back, reversing, and the opening balances.
 - **`people_screen_test.dart`**: the People screen: the office login has no

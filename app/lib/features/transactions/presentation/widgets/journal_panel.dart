@@ -64,7 +64,7 @@ class _JournalPanel extends ConsumerWidget {
               if (entry.isReversed) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Text(l10n.ledgerReversedNotice,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colors.reversed)),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colors.reversed),),
               ],
             ],
           ),

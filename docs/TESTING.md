@@ -14,7 +14,8 @@ cd api && npm run test
 ```
 
 416 API tests after batch C, 2026-10-28: 413 pass, 3 skip (the argon2
-tests, until that package is installed). 123 Flutter widget tests.
+tests, until that package is installed). 136 Flutter widget tests after
+batch D, which changed no server code.
 Flutter analyze clean.
 
 ### Must always pass
@@ -111,6 +112,8 @@ cd app && flutter analyze
   by the server, the payee required for tax kept back, a charge on the usual
   account or a picked one, and taxes thrown away when the amount changes
 - Widget tests for the six currencies
+- Widget tests for vendors and cheques: what each card says, the forms, the
+  allowed cheque moves, cancelling asks first, linking a payment
 - Widget tests for batch C: moving money and its warnings, the petty cash
   top-up, paying back, reversing from the journal panel, and the opening
   balances, owner and admin

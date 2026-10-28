@@ -3027,6 +3027,468 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Opening balances posted as {number}.'**
   String openingDone(String number);
+
+  /// No description provided for @navVendors.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendors'**
+  String get navVendors;
+
+  /// No description provided for @navCheques.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheques'**
+  String get navCheques;
+
+  /// No description provided for @vendorsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Vendors'**
+  String get vendorsTitle;
+
+  /// No description provided for @vendorsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone the company pays who is not staff: contractors, suppliers, platforms.'**
+  String get vendorsIntro;
+
+  /// No description provided for @actionAddVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'Add vendor'**
+  String get actionAddVendor;
+
+  /// No description provided for @vendorsFilerHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax kept back from a vendor needs their NTN or CNIC, and the rate depends on whether they are a filer, that is on FBR\'s Active Taxpayers List. A non-filer, or one never checked, gets the higher rate. Check the list every month or so and note the date.'**
+  String get vendorsFilerHelp;
+
+  /// No description provided for @hintVendorSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name, NTN or CNIC'**
+  String get hintVendorSearch;
+
+  /// No description provided for @vendorsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No vendors yet.'**
+  String get vendorsEmpty;
+
+  /// No description provided for @vendorAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is added.'**
+  String vendorAdded(String name);
+
+  /// No description provided for @vendorSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get vendorSaved;
+
+  /// No description provided for @vendorKindCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get vendorKindCompany;
+
+  /// No description provided for @vendorKindAop.
+  ///
+  /// In en, this message translates to:
+  /// **'Partnership (AOP)'**
+  String get vendorKindAop;
+
+  /// No description provided for @vendorKindIndividual.
+  ///
+  /// In en, this message translates to:
+  /// **'Individual'**
+  String get vendorKindIndividual;
+
+  /// No description provided for @vendorKindForeign.
+  ///
+  /// In en, this message translates to:
+  /// **'Outside Pakistan'**
+  String get vendorKindForeign;
+
+  /// No description provided for @fieldNtn.
+  ///
+  /// In en, this message translates to:
+  /// **'NTN'**
+  String get fieldNtn;
+
+  /// No description provided for @fieldCnic.
+  ///
+  /// In en, this message translates to:
+  /// **'CNIC'**
+  String get fieldCnic;
+
+  /// No description provided for @filerYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Filer'**
+  String get filerYes;
+
+  /// No description provided for @filerNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-filer'**
+  String get filerNo;
+
+  /// No description provided for @filerUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked'**
+  String get filerUnknown;
+
+  /// No description provided for @filerCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again, last checked {date}'**
+  String filerCheckAgain(String date);
+
+  /// No description provided for @vendorNoTaxId.
+  ///
+  /// In en, this message translates to:
+  /// **'No NTN or CNIC'**
+  String get vendorNoTaxId;
+
+  /// No description provided for @vendorSwitchedOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched off'**
+  String get vendorSwitchedOff;
+
+  /// No description provided for @addVendorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a vendor'**
+  String get addVendorTitle;
+
+  /// No description provided for @editVendorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change vendor'**
+  String get editVendorTitle;
+
+  /// No description provided for @fieldVendorName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get fieldVendorName;
+
+  /// No description provided for @fieldVendorKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get fieldVendorKind;
+
+  /// No description provided for @fieldCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get fieldCountry;
+
+  /// No description provided for @hintForeignVendor.
+  ///
+  /// In en, this message translates to:
+  /// **'No Pakistani tax is kept back from a vendor outside Pakistan, so no NTN is needed.'**
+  String get hintForeignVendor;
+
+  /// No description provided for @hintNoTaxId.
+  ///
+  /// In en, this message translates to:
+  /// **'Without an NTN or CNIC, tax cannot be kept back from them.'**
+  String get hintNoTaxId;
+
+  /// No description provided for @fieldFilerStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Filer status'**
+  String get fieldFilerStatus;
+
+  /// No description provided for @hintFilerUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Until it is checked, the higher non-filer rate is used.'**
+  String get hintFilerUnknown;
+
+  /// No description provided for @hintFilerChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'The date you checked FBR\'s Active Taxpayers List.'**
+  String get hintFilerChecked;
+
+  /// No description provided for @fieldCheckedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked on'**
+  String get fieldCheckedOn;
+
+  /// No description provided for @fieldEmailOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Email (optional)'**
+  String get fieldEmailOptional;
+
+  /// No description provided for @fieldPhoneOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone (optional)'**
+  String get fieldPhoneOptional;
+
+  /// No description provided for @fieldNotesOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get fieldNotesOptional;
+
+  /// No description provided for @chequesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheques'**
+  String get chequesTitle;
+
+  /// No description provided for @chequesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Every cheque written, and where it stands. The payment itself is recorded as a normal entry and linked here.'**
+  String get chequesIntro;
+
+  /// No description provided for @actionIssueCheque.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a cheque'**
+  String get actionIssueCheque;
+
+  /// No description provided for @chequeStatusesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued: written and handed over. Presented: the payee has deposited it. Cleared: the money has left the bank. Bounced: the bank refused it. Cancelled: never used.'**
+  String get chequeStatusesHelp;
+
+  /// No description provided for @chequeFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get chequeFilterAll;
+
+  /// No description provided for @chequeIssued.
+  ///
+  /// In en, this message translates to:
+  /// **'Issued'**
+  String get chequeIssued;
+
+  /// No description provided for @chequePresented.
+  ///
+  /// In en, this message translates to:
+  /// **'Presented'**
+  String get chequePresented;
+
+  /// No description provided for @chequeCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleared'**
+  String get chequeCleared;
+
+  /// No description provided for @chequeBounced.
+  ///
+  /// In en, this message translates to:
+  /// **'Bounced'**
+  String get chequeBounced;
+
+  /// No description provided for @chequeCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get chequeCancelled;
+
+  /// No description provided for @chequesOutstanding.
+  ///
+  /// In en, this message translates to:
+  /// **'Written but not yet cleared'**
+  String get chequesOutstanding;
+
+  /// No description provided for @chequesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No cheques here.'**
+  String get chequesEmpty;
+
+  /// No description provided for @chequeNumberShort.
+  ///
+  /// In en, this message translates to:
+  /// **'No. {number}'**
+  String chequeNumberShort(String number);
+
+  /// No description provided for @chequeClearedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleared on {date}'**
+  String chequeClearedOn(String date);
+
+  /// No description provided for @chequeNotLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not linked to a payment yet'**
+  String get chequeNotLinked;
+
+  /// No description provided for @chequeLinkedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment {number}'**
+  String chequeLinkedTo(String number);
+
+  /// No description provided for @actionMarkPresented.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark presented'**
+  String get actionMarkPresented;
+
+  /// No description provided for @actionMarkCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark cleared'**
+  String get actionMarkCleared;
+
+  /// No description provided for @actionMarkBounced.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark bounced'**
+  String get actionMarkBounced;
+
+  /// No description provided for @actionCancelCheque.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel cheque'**
+  String get actionCancelCheque;
+
+  /// No description provided for @actionLinkPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to payment'**
+  String get actionLinkPayment;
+
+  /// No description provided for @chequeBounceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark this cheque as bounced?'**
+  String get chequeBounceTitle;
+
+  /// No description provided for @chequeBounceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The bank refused it, so the payee was not paid. If the payment was already recorded, reverse it from Transactions.'**
+  String get chequeBounceBody;
+
+  /// No description provided for @chequeCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this cheque?'**
+  String get chequeCancelTitle;
+
+  /// No description provided for @chequeCancelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For a cheque that was never used. It stays in the register, marked cancelled.'**
+  String get chequeCancelBody;
+
+  /// No description provided for @chequeNowStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheque {number} is now {status}.'**
+  String chequeNowStatus(String number, String status);
+
+  /// No description provided for @chequeLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked to {number}.'**
+  String chequeLinked(String number);
+
+  /// No description provided for @chequeClearedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When did it clear?'**
+  String get chequeClearedTitle;
+
+  /// No description provided for @chequeClearedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The date the money left the bank, from the bank statement.'**
+  String get chequeClearedBody;
+
+  /// No description provided for @fieldClearedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleared on'**
+  String get fieldClearedOn;
+
+  /// No description provided for @linkPaymentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to a payment'**
+  String get linkPaymentTitle;
+
+  /// No description provided for @linkPaymentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments recorded from this cheque\'s bank account, newest first.'**
+  String get linkPaymentHint;
+
+  /// No description provided for @hintPaymentSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search, then press Enter'**
+  String get hintPaymentSearch;
+
+  /// No description provided for @linkPaymentNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No payments found from this account.'**
+  String get linkPaymentNone;
+
+  /// No description provided for @issueChequeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a cheque'**
+  String get issueChequeTitle;
+
+  /// No description provided for @issueChequeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Record the cheque here, and the payment itself as a normal entry. Then link the two.'**
+  String get issueChequeHint;
+
+  /// No description provided for @fieldChequeAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank account'**
+  String get fieldChequeAccount;
+
+  /// No description provided for @fieldChequeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheque number'**
+  String get fieldChequeNumber;
+
+  /// No description provided for @fieldPayableTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Payable to'**
+  String get fieldPayableTo;
+
+  /// No description provided for @fieldChequeDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date on the cheque'**
+  String get fieldChequeDate;
+
+  /// No description provided for @chequeIssuedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheque {number} recorded.'**
+  String chequeIssuedDone(String number);
 }
 
 class _AppLocalizationsDelegate
