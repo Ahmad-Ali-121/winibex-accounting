@@ -11,6 +11,8 @@ class Category {
     required this.direction,
     required this.ledgerCode,
     required this.ledgerName,
+    this.ledgerId,
+    this.ledgerType,
   });
 
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,8 @@ class Category {
       direction: json['direction'] as String,
       ledgerCode: ledger['code'] as String,
       ledgerName: ledger['name'] as String,
+      ledgerId: ledger['id'] as int?,
+      ledgerType: ledger['type'] as String?,
     );
   }
 
@@ -34,6 +38,11 @@ class Category {
   final String direction;
   final String ledgerCode;
   final String ledgerName;
+
+  /// The ledger account's id and type (expense, asset and so on). The charge
+  /// lines use them to offer the cost accounts a fee may go to. Decision 064.
+  final int? ledgerId;
+  final String? ledgerType;
 }
 
 class CategoryGroup {

@@ -66,6 +66,17 @@ Guided and step by step. Each step shows only what applies to the choices
 already made. Nothing is hidden that the user needs, nothing is shown that
 does not apply.
 
+### As built
+
+Seven steps, decision 064: direction and date; amount and currency (PKR, USD,
+GBP, AED, QAR, EUR, with the rate and rupees for a foreign one); paid from
+(an account, or a person); category, description and "Client will pay this
+back"; taxes and charges; receipt; review with the journal preview. The tax
+step suggests lines from the server, lets a figure be changed to what was
+actually taken, removes or adds lines, asks for the payee when tax is kept
+back, and shows what leaves or reaches the account. A charge goes to the
+usual account for its type unless another cost account is picked.
+
 ### Example: paying a $20 Claude subscription
 
 1. **Direction.** Money Out

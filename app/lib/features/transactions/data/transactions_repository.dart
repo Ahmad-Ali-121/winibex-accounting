@@ -7,6 +7,7 @@ import '../../../core/api/api_client.dart';
 import '../../../core/api/api_exception.dart';
 import '../domain/category.dart';
 import '../domain/entry_draft.dart';
+import '../domain/entry_options.dart';
 import '../domain/journal_preview.dart';
 import '../domain/ledger.dart';
 import '../domain/person.dart';
@@ -50,6 +51,9 @@ class TransactionsRepository {
 
   /// What tax the form should offer for this situation. A suggestion: the
   /// person may edit or remove any line, and what the bank actually took wins.
+  ///
+  /// With [taxIds], the server works out exactly those taxes instead, which
+  /// is how a tax added by hand gets its amount. Decision 064.
   Future<List<DraftTax>> suggestTaxes({
     required String direction,
     required int baseMinorUnits,
@@ -58,6 +62,7 @@ class TransactionsRepository {
     int? categoryId,
     int? vendorId,
     String? accountType,
+    List<int>? taxIds,
   }) async {
     try {
       final response = await dio.get<Map<String, dynamic>>(
@@ -70,10 +75,39 @@ class TransactionsRepository {
           if (categoryId != null) 'categoryId': categoryId,
           if (vendorId != null) 'vendorId': vendorId,
           if (accountType != null) 'accountType': accountType,
+          if (taxIds != null && taxIds.isNotEmpty) 'taxIds': taxIds.join(','),
         },
       );
       return (response.data!['suggestions'] as List<dynamic>)
           .map((item) => DraftTax.fromSuggestion(item as Map<String, dynamic>))
+          .toList(growable: false);
+    } catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+
+  /// The taxes that can be added by hand to an entry on [date] going in
+  /// [direction]: in force then, and for that direction.
+  Future<List<TaxOption>> taxesInForce({required String date, required String direction}) async {
+    try {
+      final response = await dio.get<Map<String, dynamic>>(
+        '/taxes',
+        queryParameters: {'date': date, 'direction': direction},
+      );
+      return (response.data!['taxes'] as List<dynamic>)
+          .map((item) => TaxOption.fromJson(item as Map<String, dynamic>))
+          .toList(growable: false);
+    } catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+
+  /// Everyone Winibex pays who is not switched off, for the payee picker.
+  Future<List<VendorOption>> vendors() async {
+    try {
+      final response = await dio.get<Map<String, dynamic>>('/vendors');
+      return (response.data!['vendors'] as List<dynamic>)
+          .map((item) => VendorOption.fromJson(item as Map<String, dynamic>))
           .toList(growable: false);
     } catch (error) {
       throw ApiException.from(error);

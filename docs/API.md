@@ -2,9 +2,9 @@
 
 Node, Express, MariaDB. REST over JSON. Base path `/api/v1`.
 
-Status: Phase 0 and Phase 1 endpoints built and tested. 403 API tests: 400
+Status: Phase 0 and Phase 1 endpoints built and tested. 411 API tests: 408
 pass and 3 skip, the argon2 tests, until that package is installed. Updated
-2026-10-27 for people and permissions (decision 063).
+2026-10-28 for tax and charge lines on the form (decision 064).
 
 ## Conventions
 
@@ -132,6 +132,12 @@ Built. Every path below exists and is covered by tests.
 | GET | /accounts/:id | |
 | POST | /transactions | create a draft. Needs `Idempotency-Key` |
 | PATCH | /transactions/:id | edit a draft. Tax and charge lines are replaced, not patched |
+
+A charge line's `coaId` is optional. Left out, the server uses the usual
+account for its `type`: bank_charge 8100, forex_fee and card_fee 8200,
+platform_fee 5400, other 8100. A given `coaId` must be an active expense
+account, or the request is refused with `field: "charges"`. The same applies
+to `POST /transactions` and `/transactions/preview`. Decision 064.
 | POST | /transactions/:id/submit | draft to pending |
 | POST | /transactions/:id/approve | posts it: allocates the journal number, writes the lines |
 | POST | /transactions/:id/reject | reason required |
@@ -141,8 +147,8 @@ Built. Every path below exists and is covered by tests.
 | GET | /transactions/:id/history | edit history from the audit log: what changed, by whom, when |
 | POST | /transfers | both legs, created and posted together or not at all |
 | GET | /transfers/:groupId | both legs of one transfer |
-| GET | /taxes | taxes in force on a date |
-| GET | /taxes/suggest | what to suggest for a draft situation, with the ATL status used |
+| GET | /taxes | taxes in force on a date. `?direction=in` or `out` keeps only taxes that fit that kind of entry. Each carries `appliesTo` and `computation`. Decision 064 |
+| GET | /taxes/suggest | what to suggest for a draft situation, with the ATL status used. With `?taxIds=6` or `6,9`, works out exactly those taxes instead: the line for a tax added by hand. 400 if one is not in force on the date or is for the other direction. Decision 064 |
 | GET | /vendors, /vendors/:id | |
 | POST, PATCH | /vendors | owner or admin only: ATL status decides a tax rate |
 | GET | /cheques, /cheques/:id | the register, with what is still outstanding |

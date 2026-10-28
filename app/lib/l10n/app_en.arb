@@ -439,7 +439,7 @@
   "fieldPkrReceived": "Rupees actually received",
   "fieldHoldsNow": "Holds",
   "hintDateIsPaymentDate": "The date the money moved, not the date you are entering it.",
-  "hintAmountIsGross": "Before any tax or bank charges. Those come next.",
+  "hintAmountIsGross": "Before any tax or bank charges. Those are added after the category.",
   "hintRateOrPkr": "Enter the rate, or leave it and type the rupees the bank gave.",
   "hintDescription": "Enough that you will recognise it in a year.",
   "hintRebillable": "Spent for a client who will repay it. It is not counted as our cost. It waits as money the client owes until they pay.",
@@ -692,5 +692,56 @@
         "type": "String"
       }
     }
-  }
+  },
+  "stepTaxesQuestion": "Any tax or charges on this?",
+  "hintTaxesStep": "Suggested from the amount, the account and the category. Change a figure to what was actually taken, remove a line, or add one.",
+  "sectionTaxes": "Taxes",
+  "sectionCharges": "Charges",
+  "sectionPayee": "Who is being paid",
+  "taxesNoneSuggested": "Nothing suggested for this kind of entry. Add a tax if one was taken.",
+  "taxKeptBack": "Kept back from the payee. We owe it to FBR.",
+  "taxTakenFromUs": "Taken from us by the bank or the client.",
+  "taxRateLine": "{rate}% at the {status} rate, on",
+  "@taxRateLine": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "taxStatusFiler": "filer",
+  "taxStatusNonFiler": "non-filer",
+  "taxChanged": "Changed from the suggested figure",
+  "fieldTaxAmount": "Amount taken",
+  "addTaxTitle": "Add a tax",
+  "addTaxNone": "No other tax is in force for this date and this kind of entry.",
+  "fieldPayee": "Payee",
+  "hintPayee": "The tax kept back is reported under their NTN or CNIC, and their filer status sets the rate.",
+  "payeeNoTaxId": "No NTN or CNIC on record for them. Tax cannot be kept back until one is added.",
+  "payeeNoTaxIdShort": "no NTN or CNIC",
+  "payeeNoneYet": "No payees added yet. Tax kept back needs one. Payees are added on the Vendors screen.",
+  "chargeTypeBank": "Bank charge",
+  "chargeTypeForex": "Forex fee",
+  "chargeTypeCard": "Card fee",
+  "chargeTypePlatform": "Platform fee",
+  "chargeTypeOther": "Other charge",
+  "fieldChargeType": "Charge",
+  "fieldChargeAmount": "Amount",
+  "fieldChargeAccount": "Ledger account",
+  "chargeUsualAccount": "Usual account for this charge",
+  "hintChargeAccount": "Leave it on the usual account unless the accountant says otherwise.",
+  "totalLeaves": "Leaves the account",
+  "totalArrives": "Reaches the account",
+  "hintRateFor": "Rupees for 1 {currency}. The rupees below must equal the amount times the rate, within one rupee.",
+  "@hintRateFor": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldPkrPaid": "Rupees actually paid"
 }

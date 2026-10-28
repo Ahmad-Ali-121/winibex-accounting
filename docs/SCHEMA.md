@@ -388,7 +388,7 @@ Non-tax deductions.
 | id, transaction_id | | |
 | type | ENUM | `bank_charge`, `forex_fee`, `platform_fee`, `card_fee`, `other` |
 | amount | BIGINT | PKR |
-| coa_id | BIGINT FK | |
+| coa_id | BIGINT FK | always set when stored. The request may leave it out, and the server fills in the usual account for the type. Decision 064 |
 | note | VARCHAR(255) | |
 
 ### reimbursements

@@ -17,9 +17,11 @@ import 'package:winibex_accounting/core/money/money.dart';
 import 'package:winibex_accounting/core/theme/app_theme.dart';
 import 'package:winibex_accounting/features/accounts/data/accounts_repository.dart';
 import 'package:winibex_accounting/features/accounts/domain/account.dart';
+import 'package:winibex_accounting/features/transactions/application/entry_draft_controller.dart';
 import 'package:winibex_accounting/features/transactions/data/transactions_repository.dart';
 import 'package:winibex_accounting/features/transactions/domain/category.dart';
 import 'package:winibex_accounting/features/transactions/domain/entry_draft.dart';
+import 'package:winibex_accounting/features/transactions/domain/entry_options.dart';
 import 'package:winibex_accounting/features/transactions/domain/journal_preview.dart';
 import 'package:winibex_accounting/features/transactions/domain/person.dart';
 import 'package:winibex_accounting/features/transactions/presentation/entry_screen.dart';
@@ -47,8 +49,43 @@ class _FakeAccountsRepository extends AccountsRepository {
   }
 }
 
+const _withheld = DraftTax(
+  taxId: 5,
+  name: 'Test withholding',
+  shortCode: 'T-153',
+  baseAmount: Money.pkr(560000),
+  rateApplied: '4.0000',
+  atlStatusUsed: 'non_atl',
+  atlParty: 'vendor',
+  amount: Money.pkr(44800),
+  deductedBy: 'us',
+);
+
+const _cardTax = DraftTax(
+  taxId: 6,
+  name: 'Card advance tax',
+  shortCode: '236Y',
+  baseAmount: Money.pkr(560000),
+  rateApplied: '0.5000',
+  atlStatusUsed: 'atl',
+  atlParty: 'company',
+  amount: Money.pkr(2800),
+  deductedBy: 'bank',
+);
+
 class _FakeTransactionsRepository extends TransactionsRepository {
-  _FakeTransactionsRepository({this.createFails, this.approveFails}) : super(dio: Dio());
+  _FakeTransactionsRepository({this.createFails, this.approveFails, this.suggested = const []})
+      : super(dio: Dio());
+
+  /// What the server suggests on the tax step. Empty unless a test sets it.
+  final List<DraftTax> suggested;
+
+  /// The taxIds of every "work these out" call, in order. Null for a plain
+  /// suggestion.
+  final List<List<int>?> taxRequests = [];
+
+  /// The vendor sent with each tax request.
+  final List<int?> taxVendors = [];
 
   /// Thrown on the first create only, so the second call can succeed and the
   /// test can check what the retry actually sent.
@@ -84,6 +121,8 @@ class _FakeTransactionsRepository extends TransactionsRepository {
             direction: 'out',
             ledgerCode: '6400',
             ledgerName: 'Software subscriptions',
+            ledgerId: 64,
+            ledgerType: 'expense',
           ),
           Category(
             id: 21,
@@ -105,6 +144,49 @@ class _FakeTransactionsRepository extends TransactionsRepository {
       ),
     ];
   }
+
+  @override
+  Future<List<DraftTax>> suggestTaxes({
+    required String direction,
+    required int baseMinorUnits,
+    String currency = 'PKR',
+    String? date,
+    int? categoryId,
+    int? vendorId,
+    String? accountType,
+    List<int>? taxIds,
+  }) async {
+    taxRequests.add(taxIds);
+    taxVendors.add(vendorId);
+    if (taxIds == null) return suggested;
+    const all = [_withheld, _cardTax];
+    return [
+      for (final tax in all)
+        if (taxIds.contains(tax.taxId))
+          vendorId == null
+              ? tax
+              : DraftTax(
+                  taxId: tax.taxId,
+                  name: tax.name,
+                  shortCode: tax.shortCode,
+                  baseAmount: tax.baseAmount,
+                  rateApplied: tax.rateApplied,
+                  atlStatusUsed: 'atl',
+                  atlParty: tax.atlParty,
+                  amount: Money.pkr(22400),
+                  deductedBy: tax.deductedBy,
+                ),
+    ];
+  }
+
+  @override
+  Future<List<TaxOption>> taxesInForce({required String date, required String direction}) async =>
+      const [TaxOption(id: 6, name: 'Card advance tax', shortCode: '236Y')];
+
+  @override
+  Future<List<VendorOption>> vendors() async => const [
+        VendorOption(id: 9, name: 'Acme Ltd', canBeWithheldFrom: true, atlStatus: 'atl'),
+      ];
 
   @override
   Future<List<Person>> people() async =>
@@ -178,6 +260,11 @@ Future<void> _pump(
   required _FakeTransactionsRepository transactions,
   bool canPost = true,
 }) async {
+  // Tall enough that the tax step, with its lines, fits without scrolling.
+  tester.view.physicalSize = const Size(1000, 2400);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -200,8 +287,8 @@ Future<void> _pump(
   await tester.pumpAndSettle();
 }
 
-/// Walks the form to the review step with a 5,600 subscription.
-Future<void> _fillIn(WidgetTester tester) async {
+/// Walks the form to the tax step with a 5,600 subscription.
+Future<void> _toTaxes(WidgetTester tester) async {
   // Step 1: direction and date. Money out is the default.
   await tester.tap(find.text('Next'));
   await tester.pumpAndSettle();
@@ -228,8 +315,17 @@ Future<void> _fillIn(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(find.text('Next'));
   await tester.pumpAndSettle();
+}
 
-  // Step 5: the receipt. Walked past without attaching one, which the step
+/// Walks the form to the review step with a 5,600 subscription.
+Future<void> _fillIn(WidgetTester tester) async {
+  await _toTaxes(tester);
+
+  // Step 5: taxes and charges. Nothing suggested by default.
+  await tester.tap(find.text('Next'));
+  await tester.pumpAndSettle();
+
+  // Step 6: the receipt. Walked past without attaching one, which the step
   // allows on purpose: the photo is often taken later, and the server refuses
   // the posting if the payment is above the threshold without it.
   await tester.tap(find.text('Next'));
@@ -299,7 +395,7 @@ void main() {
 
     expect(find.text('Did money come in, or go out?'), findsOneWidget);
     expect(find.text('How much?'), findsNothing);
-    expect(find.text('Step 1 of 6'), findsOneWidget);
+    expect(find.text('Step 1 of 7'), findsOneWidget);
   });
 
   testWidgets('an exchange rate box only appears for a foreign entry', (tester) async {
@@ -310,11 +406,11 @@ void main() {
 
     expect(find.text('Exchange rate'), findsNothing);
 
-    await tester.tap(find.text('Foreign currency'));
+    await tester.tap(find.text('USD'));
     await tester.pumpAndSettle();
 
     expect(find.text('Exchange rate'), findsOneWidget);
-    expect(find.text('Rupees actually received'), findsOneWidget);
+    expect(find.text('Rupees actually paid'), findsOneWidget, reason: 'money out is the default');
   });
 
   testWidgets('the next step is refused until the step is answered', (tester) async {
@@ -543,15 +639,15 @@ void main() {
     expect(find.text(reason), findsOneWidget);
 
     // Back from the review step to the amount, the way a person would.
-    for (var step = 0; step < 4; step += 1) {
+    for (var step = 0; step < 5; step += 1) {
       await tester.tap(find.text('Back'));
       await tester.pumpAndSettle();
     }
-    expect(find.text('Step 2 of 6'), findsOneWidget);
+    expect(find.text('Step 2 of 7'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField).first, '6500');
     await tester.pumpAndSettle();
-    for (var step = 0; step < 4; step += 1) {
+    for (var step = 0; step < 5; step += 1) {
       await tester.tap(find.text('Next'));
       await tester.pumpAndSettle();
     }
@@ -597,7 +693,7 @@ void main() {
     await tester.tap(find.text('Save and post'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Step 1 of 6'), findsOneWidget);
+    expect(find.text('Step 1 of 7'), findsOneWidget);
     expect(find.text('Did money come in, or go out?'), findsOneWidget);
 
     await _fillIn(tester);
@@ -610,5 +706,178 @@ void main() {
       isNot(repository.createdKeys[0]),
       reason: 'a new entry needs a new key, or the server refuses it as a reused one',
     );
+  });
+
+  // -------------------------------------------------------------------------
+  // Batch B: six currencies, tax and charge lines. Decision 064.
+  // -------------------------------------------------------------------------
+
+  EntryDraft draftOf(WidgetTester tester) =>
+      ProviderScope.containerOf(tester.element(find.byType(EntryScreen))).read(entryDraftControllerProvider);
+
+  testWidgets('all six currencies are offered, PKR first', (tester) async {
+    await _pump(tester, transactions: _FakeTransactionsRepository());
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+
+    for (final code in ['PKR', 'USD', 'GBP', 'AED', 'QAR', 'EUR']) {
+      expect(find.text(code), findsOneWidget, reason: '$code is offered');
+    }
+    final pkr = tester.getTopLeft(find.text('PKR'));
+    final eur = tester.getTopLeft(find.text('EUR'));
+    expect(pkr.dx < eur.dx, isTrue, reason: 'PKR comes first');
+  });
+
+  testWidgets('a pound amount is sent in pounds, and switching to euros keeps the figure', (tester) async {
+    await _pump(tester, transactions: _FakeTransactionsRepository());
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('GBP'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Rupees for 1 GBP'), findsOneWidget);
+
+    // One box at a time, as a person types, so each sees the one before.
+    await tester.enterText(find.byType(TextFormField).at(0), '100');
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(1), '350');
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(2), '35000');
+    await tester.pumpAndSettle();
+
+    var body = draftOf(tester).toRequest();
+    expect(body['foreign'], {'minor': 10000, 'currency': 'GBP'});
+    expect(body['fxRate'], '350');
+    expect(body['gross'], {'minor': 3500000, 'currency': 'PKR'});
+
+    await tester.tap(find.text('EUR'));
+    await tester.pumpAndSettle();
+    body = draftOf(tester).toRequest();
+    expect(body['foreign'], {'minor': 10000, 'currency': 'EUR'}, reason: 'the figure stays, the currency changes');
+  });
+
+  testWidgets('the tax step shows what the server suggests, and it is sent with the entry', (tester) async {
+    final repository = _FakeTransactionsRepository(suggested: const [_cardTax]);
+    await _pump(tester, transactions: repository);
+    await _toTaxes(tester);
+
+    expect(find.text('Any tax or charges on this?'), findsOneWidget);
+    expect(find.text('236Y  Card advance tax'), findsOneWidget);
+    expect(find.text('Taken from us by the bank or the client.'), findsOneWidget);
+    expect(repository.taxRequests, [null], reason: 'one suggestion, asked once');
+
+    final taxes = draftOf(tester).toRequest()['taxes'] as List;
+    expect(taxes.single['taxId'], 6);
+    expect(taxes.single['amount'], {'minor': 2800, 'currency': 'PKR'});
+  });
+
+  testWidgets('a tax figure changed to what the bank took is sent, marked as changed', (tester) async {
+    await _pump(tester, transactions: _FakeTransactionsRepository(suggested: const [_cardTax]));
+    await _toTaxes(tester);
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Amount taken'), '30');
+    await tester.pumpAndSettle();
+
+    final tax = (draftOf(tester).toRequest()['taxes'] as List).single;
+    expect(tax['amount'], {'minor': 3000, 'currency': 'PKR'});
+    expect(tax['isOverride'], isTrue);
+    expect(find.text('Changed from the suggested figure'), findsOneWidget);
+  });
+
+  testWidgets('a tax line can be removed', (tester) async {
+    await _pump(tester, transactions: _FakeTransactionsRepository(suggested: const [_cardTax]));
+    await _toTaxes(tester);
+
+    await tester.tap(find.byTooltip('Remove'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('236Y  Card advance tax'), findsNothing);
+    expect(draftOf(tester).taxes, isEmpty);
+  });
+
+  testWidgets('a tax added by hand is worked out by the server', (tester) async {
+    final repository = _FakeTransactionsRepository();
+    await _pump(tester, transactions: repository);
+    await _toTaxes(tester);
+
+    await tester.tap(find.text('Add tax line'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('236Y  Card advance tax'));
+    await tester.pumpAndSettle();
+
+    expect(repository.taxRequests.last, [6], reason: 'the app asked the server for the line');
+    expect(draftOf(tester).taxes.single.amount, const Money.pkr(2800));
+  });
+
+  testWidgets('tax kept back needs the payee before the form moves on', (tester) async {
+    final repository = _FakeTransactionsRepository(suggested: const [_withheld]);
+    await _pump(tester, transactions: repository);
+    await _toTaxes(tester);
+
+    expect(find.text('Who is being paid'), findsOneWidget);
+    final next = tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Next'));
+    expect(next.onPressed, isNull, reason: 'no payee yet');
+
+    await tester.tap(find.byType(DropdownMenu<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Acme Ltd').last);
+    await tester.pumpAndSettle();
+
+    expect(repository.taxVendors.last, 9, reason: 'the tax was worked out again for this payee');
+    expect(draftOf(tester).vendorId, 9);
+    expect(draftOf(tester).taxes.single.amount, const Money.pkr(22400), reason: 'the filer rate now applies');
+    final ready = tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Next'));
+    expect(ready.onPressed, isNotNull);
+  });
+
+  testWidgets('a charge goes to the usual account unless one is picked', (tester) async {
+    await _pump(tester, transactions: _FakeTransactionsRepository());
+    await _toTaxes(tester);
+
+    await tester.tap(find.text('Add charge'));
+    await tester.pumpAndSettle();
+
+    final waiting = tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Next'));
+    expect(waiting.onPressed, isNull, reason: 'a charge with no amount');
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Amount').last, '45');
+    await tester.pumpAndSettle();
+
+    var charge = (draftOf(tester).toRequest()['charges'] as List).single as Map;
+    expect(charge['type'], 'bank_charge');
+    expect(charge['amount'], {'minor': 4500, 'currency': 'PKR'});
+    expect(charge.containsKey('coaId'), isFalse, reason: 'the server picks the usual account');
+
+    await tester.tap(find.byType(DropdownMenu<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('6400  Software subscriptions').last);
+    await tester.pumpAndSettle();
+
+    charge = (draftOf(tester).toRequest()['charges'] as List).single as Map;
+    expect(charge['coaId'], 64);
+  });
+
+  testWidgets('changing the amount throws away taxes worked out on the old one', (tester) async {
+    final repository = _FakeTransactionsRepository(suggested: const [_cardTax]);
+    await _pump(tester, transactions: repository);
+    await _toTaxes(tester);
+    expect(draftOf(tester).taxes, isNotEmpty);
+
+    for (var step = 0; step < 3; step += 1) {
+      await tester.tap(find.text('Back'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Step 2 of 7'), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField).first, '6000');
+    await tester.pumpAndSettle();
+
+    expect(draftOf(tester).taxes, isEmpty);
+    expect(draftOf(tester).taxesChecked, isFalse);
+
+    for (var step = 0; step < 3; step += 1) {
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
+    }
+    expect(repository.taxRequests, [null, null], reason: 'suggested again for the new amount');
   });
 }

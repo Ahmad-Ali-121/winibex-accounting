@@ -1501,7 +1501,7 @@ abstract class AppLocalizations {
   /// No description provided for @hintAmountIsGross.
   ///
   /// In en, this message translates to:
-  /// **'Before any tax or bank charges. Those come next.'**
+  /// **'Before any tax or bank charges. Those are added after the category.'**
   String get hintAmountIsGross;
 
   /// No description provided for @hintRateOrPkr.
@@ -2505,6 +2505,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} can sign in again.'**
   String personSwitchedOn(String name);
+
+  /// No description provided for @stepTaxesQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Any tax or charges on this?'**
+  String get stepTaxesQuestion;
+
+  /// No description provided for @hintTaxesStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested from the amount, the account and the category. Change a figure to what was actually taken, remove a line, or add one.'**
+  String get hintTaxesStep;
+
+  /// No description provided for @sectionTaxes.
+  ///
+  /// In en, this message translates to:
+  /// **'Taxes'**
+  String get sectionTaxes;
+
+  /// No description provided for @sectionCharges.
+  ///
+  /// In en, this message translates to:
+  /// **'Charges'**
+  String get sectionCharges;
+
+  /// No description provided for @sectionPayee.
+  ///
+  /// In en, this message translates to:
+  /// **'Who is being paid'**
+  String get sectionPayee;
+
+  /// No description provided for @taxesNoneSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing suggested for this kind of entry. Add a tax if one was taken.'**
+  String get taxesNoneSuggested;
+
+  /// No description provided for @taxKeptBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept back from the payee. We owe it to FBR.'**
+  String get taxKeptBack;
+
+  /// No description provided for @taxTakenFromUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken from us by the bank or the client.'**
+  String get taxTakenFromUs;
+
+  /// No description provided for @taxRateLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate}% at the {status} rate, on'**
+  String taxRateLine(String rate, String status);
+
+  /// No description provided for @taxStatusFiler.
+  ///
+  /// In en, this message translates to:
+  /// **'filer'**
+  String get taxStatusFiler;
+
+  /// No description provided for @taxStatusNonFiler.
+  ///
+  /// In en, this message translates to:
+  /// **'non-filer'**
+  String get taxStatusNonFiler;
+
+  /// No description provided for @taxChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed from the suggested figure'**
+  String get taxChanged;
+
+  /// No description provided for @fieldTaxAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount taken'**
+  String get fieldTaxAmount;
+
+  /// No description provided for @addTaxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a tax'**
+  String get addTaxTitle;
+
+  /// No description provided for @addTaxNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No other tax is in force for this date and this kind of entry.'**
+  String get addTaxNone;
+
+  /// No description provided for @fieldPayee.
+  ///
+  /// In en, this message translates to:
+  /// **'Payee'**
+  String get fieldPayee;
+
+  /// No description provided for @hintPayee.
+  ///
+  /// In en, this message translates to:
+  /// **'The tax kept back is reported under their NTN or CNIC, and their filer status sets the rate.'**
+  String get hintPayee;
+
+  /// No description provided for @payeeNoTaxId.
+  ///
+  /// In en, this message translates to:
+  /// **'No NTN or CNIC on record for them. Tax cannot be kept back until one is added.'**
+  String get payeeNoTaxId;
+
+  /// No description provided for @payeeNoTaxIdShort.
+  ///
+  /// In en, this message translates to:
+  /// **'no NTN or CNIC'**
+  String get payeeNoTaxIdShort;
+
+  /// No description provided for @payeeNoneYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No payees added yet. Tax kept back needs one. Payees are added on the Vendors screen.'**
+  String get payeeNoneYet;
+
+  /// No description provided for @chargeTypeBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank charge'**
+  String get chargeTypeBank;
+
+  /// No description provided for @chargeTypeForex.
+  ///
+  /// In en, this message translates to:
+  /// **'Forex fee'**
+  String get chargeTypeForex;
+
+  /// No description provided for @chargeTypeCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card fee'**
+  String get chargeTypeCard;
+
+  /// No description provided for @chargeTypePlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform fee'**
+  String get chargeTypePlatform;
+
+  /// No description provided for @chargeTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other charge'**
+  String get chargeTypeOther;
+
+  /// No description provided for @fieldChargeType.
+  ///
+  /// In en, this message translates to:
+  /// **'Charge'**
+  String get fieldChargeType;
+
+  /// No description provided for @fieldChargeAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get fieldChargeAmount;
+
+  /// No description provided for @fieldChargeAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger account'**
+  String get fieldChargeAccount;
+
+  /// No description provided for @chargeUsualAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Usual account for this charge'**
+  String get chargeUsualAccount;
+
+  /// No description provided for @hintChargeAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave it on the usual account unless the accountant says otherwise.'**
+  String get hintChargeAccount;
+
+  /// No description provided for @totalLeaves.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaves the account'**
+  String get totalLeaves;
+
+  /// No description provided for @totalArrives.
+  ///
+  /// In en, this message translates to:
+  /// **'Reaches the account'**
+  String get totalArrives;
+
+  /// No description provided for @hintRateFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Rupees for 1 {currency}. The rupees below must equal the amount times the rate, within one rupee.'**
+  String hintRateFor(String currency);
+
+  /// No description provided for @fieldPkrPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Rupees actually paid'**
+  String get fieldPkrPaid;
 }
 
 class _AppLocalizationsDelegate

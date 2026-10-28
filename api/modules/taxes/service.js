@@ -15,7 +15,8 @@
 // filer rate and leave Winibex owing FBR the difference. Decision 030.
 
 import { getPool } from '../../core/db.js';
-import { notFound } from '../../core/errors.js';
+import { businessToday } from '../../core/dates.js';
+import { ErrorCode, badRequest, notFound } from '../../core/errors.js';
 import { money, percentOf } from '../../core/money.js';
 import * as repo from './repository.js';
 
@@ -29,6 +30,8 @@ function present(tax) {
     authority: tax.authority,
     lawReference: tax.law_reference,
     kind: tax.kind,
+    appliesTo: tax.applies_to,
+    computation: tax.computation,
     rateAtl: String(tax.rate_atl),
     rateNonAtl: String(tax.rate_non_atl),
     statusBasis: tax.status_basis,
@@ -40,9 +43,43 @@ function present(tax) {
   };
 }
 
-export async function listTaxes({ date = today() } = {}) {
+// sales is money in, purchases is money out, both is either. The same rule
+// the entry's own tax check applies (decision 061).
+function fitsDirection(appliesTo, direction) {
+  if (appliesTo === 'both') return true;
+  return direction === 'in' ? appliesTo === 'sales' : appliesTo === 'purchases';
+}
+
+export async function listTaxes({ date = today(), direction = null } = {}) {
   const rows = await repo.listInEffect(getPool(), date);
-  return { taxes: rows.map(present), asAt: date };
+  const fitting = direction ? rows.filter((tax) => fitsDirection(tax.applies_to, direction)) : rows;
+  return { taxes: fitting.map(present), asAt: date };
+}
+
+// The taxes the person picked by hand, each checked the way a saved tax line
+// is checked, so a line the form shows is one the server will accept.
+async function chosenTaxes(runner, { taxIds, date, direction }) {
+  const inForce = await repo.listInEffect(runner, date);
+  return taxIds.map((id) => {
+    const tax = inForce.find((row) => Number(row.id) === Number(id));
+    if (!tax) {
+      throw badRequest(
+        ErrorCode.VALIDATION_FAILED,
+        `That tax is not in force on ${date}. Check the date, or choose another tax.`,
+        { field: 'taxIds' },
+      );
+    }
+    if (!fitsDirection(tax.applies_to, direction)) {
+      const its = tax.applies_to === 'sales' ? 'coming in' : 'going out';
+      const ours = direction === 'in' ? 'coming in' : 'going out';
+      throw badRequest(
+        ErrorCode.VALIDATION_FAILED,
+        `${tax.short_code} is for money ${its}, and this entry is money ${ours}.`,
+        { field: 'taxIds' },
+      );
+    }
+    return { ...tax, tax_id: tax.id };
+  });
 }
 
 export async function getTax(id) {
@@ -114,13 +151,18 @@ export async function suggestFor({
   categoryId = null,
   clientCountry = null,
   vendorId = null,
+  taxIds = null,
 }) {
   const pool = getPool();
   const currencyIsForeign = currency !== BASE_CURRENCY;
 
-  const rules = await repo.matchingRules(pool, {
-    date, direction, currencyIsForeign, accountType, categoryId, clientCountry,
-  });
+  // Either the taxes the rules suggest, or exactly the ones the person picked.
+  // Both go through the same rate and status logic below.
+  const rules = taxIds && taxIds.length > 0
+    ? await chosenTaxes(pool, { taxIds, date, direction })
+    : await repo.matchingRules(pool, {
+      date, direction, currencyIsForeign, accountType, categoryId, clientCountry,
+    });
 
   const suggestions = [];
   const seen = new Set();
@@ -157,6 +199,8 @@ export async function suggestFor({
   return { date, suggestions };
 }
 
+// Pakistan's date, not UTC's. Between midnight and 05:00 the UTC date is
+// still yesterday, which would offer yesterday's rates. Decision 057, D9.
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return businessToday();
 }

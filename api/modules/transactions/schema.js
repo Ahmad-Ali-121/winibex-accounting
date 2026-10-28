@@ -49,7 +49,9 @@ export const taxLineSchema = z.object({
 export const chargeLineSchema = z.object({
   type: z.enum(['bank_charge', 'forex_fee', 'platform_fee', 'card_fee', 'other']),
   amount: positiveMoney,
-  coaId: z.number().int().positive(),
+  // Optional. Left out, the server uses the usual account for the type: bank
+  // charge 8100, forex and card fees 8200, platform fee 5400. Decision 064.
+  coaId: z.number().int().positive().nullable().optional(),
   note: z.string().trim().max(255).optional(),
 });
 
@@ -168,7 +170,7 @@ export function toServiceInput(body) {
     charges: (body.charges ?? []).map((charge) => ({
       type: charge.type,
       amount: charge.amount.minor,
-      coaId: charge.coaId,
+      coaId: charge.coaId ?? null,
       note: charge.note ?? null,
     })),
   };

@@ -24,6 +24,53 @@ import * as repo from './repository.js';
 
 const POSTABLE_BY = new Set(['owner', 'admin']);
 
+// The usual ledger account for each kind of charge, from the chart of
+// accounts. Used when the person leaves the account to the app; they may pick
+// another cost account instead. Decision 064.
+const CHARGE_LEDGER = Object.freeze({
+  bank_charge: '8100',   // Bank charges and FED
+  forex_fee: '8200',     // Forex and card fees
+  card_fee: '8200',
+  platform_fee: '5400',  // Platform fees
+  other: '8100',
+});
+
+// Fills in the account of every charge that has none, and checks any the
+// person chose: a charge is a cost, so it goes to an active expense account
+// that can be posted to. Anything else would put a fee on the balance sheet.
+async function withChargeAccounts(runner, input) {
+  const charges = input.charges ?? [];
+  if (charges.length === 0) return input;
+
+  const resolved = [];
+  for (const charge of charges) {
+    if (charge.coaId) {
+      const [rows] = await runner.query(
+        'SELECT type, is_header, is_active FROM chart_of_accounts WHERE id = ?',
+        [charge.coaId],
+      );
+      const account = rows[0];
+      if (!account || account.type !== 'expense' || Number(account.is_header) === 1 || Number(account.is_active) !== 1) {
+        throw badRequest(
+          ErrorCode.VALIDATION_FAILED,
+          'A charge is a cost, so it goes to a cost account. Pick one from the list, or leave it to the usual account.',
+          { field: 'charges' },
+        );
+      }
+      resolved.push(charge);
+      continue;
+    }
+
+    const code = CHARGE_LEDGER[charge.type] ?? CHARGE_LEDGER.other;
+    const coaId = await repo.coaIdByCode(runner, code);
+    if (!coaId) {
+      throw badRequest(ErrorCode.VALIDATION_FAILED, `Ledger account ${code} is missing.`);
+    }
+    resolved.push({ ...charge, coaId: Number(coaId) });
+  }
+  return { ...input, charges: resolved };
+}
+
 function asMoneyError(error) {
   if (error instanceof MoneyError) {
     return badRequest(ErrorCode.NOT_RECONCILED, error.message);
@@ -132,7 +179,9 @@ async function assertWithholdingPayee(connection, input) {
 // failure in its second half leaves no orphan payment behind. This is the
 // cross-feature interface decision 016 asks for: no other module reaches into
 // this one's repository.
-export async function createDraftWithin(connection, { user, input, ip = null }) {
+export async function createDraftWithin(connection, { user, input: given, ip = null }) {
+  const input = await withChargeAccounts(connection, given);
+
   let totals;
   try {
     totals = computeTotals(input);
@@ -203,9 +252,10 @@ export async function createDraft({ user, input, ip = null }) {
 // A draft may be changed freely. Posted is another matter: the trigger in
 // migration 004 refuses it, and so does repo.updateDraft's WHERE clause, so a
 // race that slipped past the status check below still cannot write.
-export async function updateDraft({ user, id, input, ip = null }) {
+export async function updateDraft({ user, id, input: given, ip = null }) {
   const result = await withTransaction(async (connection) => {
     const row = await requireEditableDraft(connection, id, user);
+    const input = await withChargeAccounts(connection, given);
 
     let totals;
     try {
@@ -741,8 +791,9 @@ export async function getTransfer(groupId) {
 // has to come from the server, and it comes from the same buildJournalLines
 // the real posting uses. A preview built by a second code path would be a
 // second opinion, and the one on screen would be the one nobody checked.
-export async function previewJournal({ input }) {
+export async function previewJournal({ input: given }) {
   const pool = getPool();
+  const input = await withChargeAccounts(pool, given);
 
   let totals;
   try {

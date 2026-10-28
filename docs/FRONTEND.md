@@ -138,6 +138,19 @@ Whether the button reads "Save and post" or "Submit for approval" comes from
 Every other admin, and all staff, submit. It used to be "owner or admin",
 which offered posting to admins the server refuses. Defect D4.
 
+## The tax and charges step
+
+`presentation/widgets/taxes_step.dart`, step 5 of 7. It asks for suggestions
+once, when `EntryDraft.taxesChecked` is false. The controller clears the tax
+lines and sets that flag back whenever the date, direction, amount, account
+or category changes, so a tax worked out on old figures is never sent. A tax
+added by hand and a payee change both go back to the server
+(`suggestTaxes(taxIds:)`); the app never multiplies a rate. A charge with no
+`coaId` goes to the usual account, chosen by the server. The money field and
+`parseMinorUnits` now live in `widgets/money_field.dart`, re-exported from
+`entry_screen.dart`. The six currencies are `entryCurrencies` in
+`domain/entry_options.dart`. Decision 064.
+
 ## The root widget and the splash
 
 `app.dart` builds one `MaterialApp.router` from the first frame. While the
@@ -210,4 +223,4 @@ retry, the form resetting, the review list, and who may post. 79 with F7: a
 changed entry after a refusal edits and posts the same draft. 86 with the app
 fixes: the sign-in error inside the real app, the date picker, the three kinds
 of error, and the reason dialog. 95 with the People screen, 99 with its
-redesign.
+redesign, 108 with the tax and charges step and six currencies.

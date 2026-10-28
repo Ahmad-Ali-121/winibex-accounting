@@ -15,10 +15,10 @@ part 'entry_draft_controller.g.dart';
 
 /// The entry form's state, and the actions that change it.
 ///
-/// Every setter rebuilds the draft and nothing else. Asking the server for a
-/// preview, or for tax suggestions, is an explicit step rather than something
-/// that happens on every keystroke: the form would otherwise send a request
-/// per character typed into the amount field.
+/// Every setter rebuilds the draft and nothing else. Asking the server for
+/// tax suggestions is an explicit step rather than something that happens on
+/// every keystroke: the form would otherwise send a request per character
+/// typed into the amount field.
 @Riverpod(retry: noRetry)
 class EntryDraftController extends _$EntryDraftController {
   @override
@@ -29,48 +29,80 @@ class EntryDraftController extends _$EntryDraftController {
     );
   }
 
+  /// The form's own numbering for charge lines. Never sent to the server.
+  int _nextChargeId = 1;
+
+  /// Anything a tax depends on has changed: the lines are thrown away and the
+  /// tax step suggests them again from the new figures. A tax worked out on
+  /// the old amount must never be saved with the new one. Decision 064.
+  EntryDraft _taxesStale(EntryDraft draft) => draft.copyWith(taxes: const [], taxesChecked: false);
+
   void setDirection(EntryDirection direction) {
+    if (direction == state.direction) return;
     // Categories do not cross between money in and money out, so the chosen
     // one cannot survive the switch. Clearing it beats posting revenue to an
     // expense account because the field looked filled in.
-    state = state.copyWith(direction: direction, categoryId: null, taxes: const []);
+    state = _taxesStale(state.copyWith(direction: direction, clearCategory: true));
   }
 
-  void setDate(String date) => state = state.copyWith(date: date);
+  void setDate(String date) {
+    if (date == state.date) return;
+    // A rate in force on one date may not be on another.
+    state = _taxesStale(state.copyWith(date: date));
+  }
 
-  void setAccount(int accountId) => state = state.copyWith(
-        accountId: accountId,
-        paidByType: PaidByType.company,
-        clearPaidBy: true,
-      );
+  void setAccount(int accountId) {
+    if (!state.paidPersonally && accountId == state.accountId) return;
+    state = _taxesStale(state.copyWith(
+      accountId: accountId,
+      paidByType: PaidByType.company,
+      clearPaidBy: true,
+    ));
+  }
 
   /// A cost someone paid on their own card. No company account moves, and the
   /// company owes them instead. Decision 020.
-  void setPaidByPerson(int userId) => state = state.copyWith(
-        paidByType: PaidByType.person,
-        paidByUserId: userId,
-        clearAccount: true,
-      );
+  void setPaidByPerson(int userId) {
+    if (state.paidPersonally && userId == state.paidByUserId) return;
+    state = _taxesStale(state.copyWith(
+      paidByType: PaidByType.person,
+      paidByUserId: userId,
+      clearAccount: true,
+    ));
+  }
 
-  void setCategory(int categoryId) => state = state.copyWith(categoryId: categoryId);
+  void setCategory(int categoryId) {
+    if (categoryId == state.categoryId) return;
+    state = _taxesStale(state.copyWith(categoryId: categoryId));
+  }
+
   void setDescription(String description) => state = state.copyWith(description: description);
   void setMethod(String method) => state = state.copyWith(method: method);
-  void setVendor(int? vendorId) => state = state.copyWith(vendorId: vendorId);
   void setRebillable(bool value) => state = state.copyWith(isRebillable: value);
 
-  void setPkrAmount(Money amount) => state = state.copyWith(pkrAmount: amount);
+  void setPkrAmount(Money amount) {
+    if (amount == state.pkrAmount) return;
+    state = _taxesStale(state.copyWith(pkrAmount: amount));
+  }
 
+  /// Any of the six. Switching between two foreign currencies keeps the
+  /// figure typed and changes only its currency, so the box and the request
+  /// never disagree about what the number is in.
   void setCurrency(String currency) {
+    if (currency == state.currency) return;
     if (currency == 'PKR') {
-      state = state.copyWith(currency: 'PKR', clearForeign: true);
+      state = _taxesStale(state.copyWith(currency: 'PKR', clearForeign: true));
       return;
     }
-    state = state.copyWith(currency: currency);
+    final typed = state.foreignAmount;
+    state = _taxesStale(state.copyWith(
+      currency: currency,
+      foreignAmount: typed == null ? null : Money(minorUnits: typed.minorUnits, currency: currency),
+    ));
   }
 
   /// A foreign entry carries the original amount and the rate, or the books
-  /// cannot show what the bank actually did. Decision 017: the person may
-  /// enter the PKR the bank gave instead, and the rate is derived from it.
+  /// cannot show what the bank actually did. Decision 017.
   void setForeign({required Money amount, String? rate, Money? pkr}) {
     state = state.copyWith(
       foreignAmount: amount,
@@ -79,36 +111,114 @@ class EntryDraftController extends _$EntryDraftController {
     );
   }
 
+  // --- taxes ------------------------------------------------------------------
+
   void setTaxes(List<DraftTax> taxes) => state = state.copyWith(taxes: taxes);
+
   void removeTax(int taxId) =>
       state = state.copyWith(taxes: state.taxes.where((tax) => tax.taxId != taxId).toList());
-  void setCharges(List<DraftCharge> charges) => state = state.copyWith(charges: charges);
 
-  void setReceipt(DraftAttachment receipt) => state = state.copyWith(receipt: receipt);
-  void clearReceipt() => state = state.copyWith(clearReceipt: true);
+  /// The person typed what was actually taken. What the bank took wins over
+  /// the suggestion, and the line is marked as changed. TAXES.md, principle 4.
+  void setTaxAmount(int taxId, Money amount) {
+    state = state.copyWith(taxes: [
+      for (final tax in state.taxes)
+        tax.taxId == taxId ? tax.copyWith(amount: amount, isOverride: true) : tax,
+    ]);
+  }
 
-  void acknowledge(List<String> codes) =>
-      state = state.copyWith(acknowledgedWarnings: [...state.acknowledgedWarnings, ...codes]);
+  String get _direction => state.direction == EntryDirection.moneyIn ? 'in' : 'out';
 
-  /// Asks the server what tax applies. A suggestion only: every line it
-  /// returns can be edited or removed, and what the bank actually took wins.
-  Future<void> suggestTaxes({String? accountType}) async {
+  Future<List<DraftTax>> _workOut({List<int>? taxIds, String? accountType}) {
     final draft = state;
-    if ((draft.pkrAmount?.minorUnits ?? 0) <= 0) return;
-
-    final suggestions = await ref.read(transactionsRepositoryProvider).suggestTaxes(
-          direction: draft.direction == EntryDirection.moneyIn ? 'in' : 'out',
+    return ref.read(transactionsRepositoryProvider).suggestTaxes(
+          direction: _direction,
           baseMinorUnits: draft.pkrAmount!.minorUnits,
           currency: draft.currency,
           date: draft.date,
           categoryId: draft.categoryId,
           vendorId: draft.vendorId,
           accountType: accountType,
+          taxIds: taxIds,
         );
-
-    if (!ref.mounted) return;
-    state = state.copyWith(taxes: suggestions);
   }
+
+  /// Asks the server what tax applies. A suggestion only: every line it
+  /// returns can be changed or removed, and what the bank actually took wins.
+  /// Returns the refusal, or null when it worked.
+  Future<ApiException?> suggestTaxes({String? accountType}) async {
+    if ((state.pkrAmount?.minorUnits ?? 0) <= 0) return null;
+    try {
+      final suggestions = await _workOut(accountType: accountType);
+      if (!ref.mounted) return null;
+      state = state.copyWith(taxes: suggestions, taxesChecked: true);
+      return null;
+    } catch (error) {
+      if (!ref.mounted) return null;
+      // Nothing to suggest is still an answer: the person can add lines by
+      // hand. Marked checked so the step does not ask again on every visit.
+      state = state.copyWith(taxesChecked: true);
+      return ApiException.from(error);
+    }
+  }
+
+  /// A tax the person adds by hand. The server works out its line; the app
+  /// never multiplies a rate. Decision 064.
+  Future<ApiException?> addTax(int taxId) async {
+    if ((state.pkrAmount?.minorUnits ?? 0) <= 0) return null;
+    if (state.taxes.any((tax) => tax.taxId == taxId)) return null;
+    try {
+      final lines = await _workOut(taxIds: [taxId]);
+      if (!ref.mounted) return null;
+      state = state.copyWith(taxes: [...state.taxes, ...lines], taxesChecked: true);
+      return null;
+    } catch (error) {
+      return ApiException.from(error);
+    }
+  }
+
+  /// The payee decides the rate of any tax kept back from them, so choosing
+  /// one works the same taxes out again at that payee's rate. A figure typed
+  /// over a line is replaced by the new one.
+  Future<ApiException?> setVendor(int? vendorId) async {
+    state = vendorId == null ? state.copyWith(clearVendor: true) : state.copyWith(vendorId: vendorId);
+    final ids = state.taxes.map((tax) => tax.taxId).toList();
+    if (ids.isEmpty || (state.pkrAmount?.minorUnits ?? 0) <= 0) return null;
+    try {
+      final lines = await _workOut(taxIds: ids);
+      if (!ref.mounted) return null;
+      state = state.copyWith(taxes: lines);
+      return null;
+    } catch (error) {
+      return ApiException.from(error);
+    }
+  }
+
+  // --- charges ----------------------------------------------------------------
+
+  void addCharge({String type = 'bank_charge'}) {
+    state = state.copyWith(charges: [
+      ...state.charges,
+      DraftCharge(id: _nextChargeId++, type: type, amount: Money.zero),
+    ]);
+  }
+
+  void updateCharge(DraftCharge charge) {
+    state = state.copyWith(charges: [
+      for (final line in state.charges) line.id == charge.id ? charge : line,
+    ]);
+  }
+
+  void removeCharge(int id) =>
+      state = state.copyWith(charges: state.charges.where((line) => line.id != id).toList());
+
+  // --- receipt and warnings ---------------------------------------------------
+
+  void setReceipt(DraftAttachment receipt) => state = state.copyWith(receipt: receipt);
+  void clearReceipt() => state = state.copyWith(clearReceipt: true);
+
+  void acknowledge(List<String> codes) =>
+      state = state.copyWith(acknowledgedWarnings: [...state.acknowledgedWarnings, ...codes]);
 }
 
 /// The journal entry the current draft would post.

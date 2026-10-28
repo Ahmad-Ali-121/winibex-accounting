@@ -12,10 +12,10 @@ tests, analyze clean. Production was then wiped and rebuilt with migrations
 empty and ready for the real opening entry. What remains before real entries
 is in "Pending before Phase 2" below; D15 is the main piece of work. Batch A
 of D15 (people and permissions, decisions 062 and 063) is written and waits
-and passed locally on 2026-10-28: 403 API tests (400 pass, 3 skip), 95
-Flutter tests. The People screen was then redesigned for clarity (99 Flutter
-tests expected). Migration 007 must be applied in phpMyAdmin before that code
-is pushed.
+passed and deployed on 2026-10-28, with migration 007 on production. Batch B
+(tax and charge lines, six currencies, decision 064) is written and waits for
+Ahmad's test run: 411 API tests, 108 Flutter tests expected. It needs no
+migration.
 
 The API runs on
 Hostinger at api-accounting.winibex.com; the web app is at
@@ -248,10 +248,11 @@ Defect fixes, 2026-10-26, deployed to production the same day:
 - [x] D13 decision 055 kept, UI-GUIDE corrected
 - [x] D14 unusual-amount warning with a fractional average
 - [ ] D15 screens for the API-only features
-  - [x] Batch A, written 2026-10-27: People screen (owner adds people, sets
+  - [x] Batch A, deployed 2026-10-28: People screen (owner adds people, sets
         roles and limits, resets passwords, switches people off), decision 062
         rules, migration 007, "Client will pay this back"
-  - [ ] Batch B: tax and charge lines on the form, PKR, USD, GBP, AED, QAR, EUR
+  - [ ] Batch B, written 2026-10-28: tax and charge lines on the form, the
+        payee for tax kept back, PKR, USD, GBP, AED, QAR, EUR. Decision 064
   - [ ] Batch C: transfers, reversal, paying someone back, opening entry
   - [ ] Batch D: vendors, cheque register
   - [ ] Batch E: edit a draft, resubmit a rejected entry, taxes screen
@@ -365,6 +366,17 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-28 (D15 batch B written: taxes, charges, currencies)
+Batch A and the People redesign passed (403 API, 99 Flutter), migration 007
+applied on production, pushed. Ahmad chose a separate tax step after the
+category, both a usual account and a picked one for charges, and the payee
+asked in the tax step (decision 064). Server: `/taxes?direction=`,
+`/taxes/suggest?taxIds=`, charge `coaId` optional with the usual account by
+type and only cost accounts accepted, the tax module on Pakistan's date. App:
+the seven-step form with the tax and charges step, six currencies, a shared
+money field. 8 new API tests (411), 9 new Flutter tests (108). Taxes are not
+on production yet, so suggestions show only locally with the test seed.
 
 ### 2026-10-28 (People screen redesign)
 Batch A passed locally: 403 API tests, 95 Flutter tests, and the screen

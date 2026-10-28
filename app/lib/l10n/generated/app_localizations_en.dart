@@ -787,7 +787,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hintAmountIsGross =>
-      'Before any tax or bank charges. Those come next.';
+      'Before any tax or bank charges. Those are added after the category.';
 
   @override
   String get hintRateOrPkr =>
@@ -1367,4 +1367,117 @@ class AppLocalizationsEn extends AppLocalizations {
   String personSwitchedOn(String name) {
     return '$name can sign in again.';
   }
+
+  @override
+  String get stepTaxesQuestion => 'Any tax or charges on this?';
+
+  @override
+  String get hintTaxesStep =>
+      'Suggested from the amount, the account and the category. Change a figure to what was actually taken, remove a line, or add one.';
+
+  @override
+  String get sectionTaxes => 'Taxes';
+
+  @override
+  String get sectionCharges => 'Charges';
+
+  @override
+  String get sectionPayee => 'Who is being paid';
+
+  @override
+  String get taxesNoneSuggested =>
+      'Nothing suggested for this kind of entry. Add a tax if one was taken.';
+
+  @override
+  String get taxKeptBack => 'Kept back from the payee. We owe it to FBR.';
+
+  @override
+  String get taxTakenFromUs => 'Taken from us by the bank or the client.';
+
+  @override
+  String taxRateLine(String rate, String status) {
+    return '$rate% at the $status rate, on';
+  }
+
+  @override
+  String get taxStatusFiler => 'filer';
+
+  @override
+  String get taxStatusNonFiler => 'non-filer';
+
+  @override
+  String get taxChanged => 'Changed from the suggested figure';
+
+  @override
+  String get fieldTaxAmount => 'Amount taken';
+
+  @override
+  String get addTaxTitle => 'Add a tax';
+
+  @override
+  String get addTaxNone =>
+      'No other tax is in force for this date and this kind of entry.';
+
+  @override
+  String get fieldPayee => 'Payee';
+
+  @override
+  String get hintPayee =>
+      'The tax kept back is reported under their NTN or CNIC, and their filer status sets the rate.';
+
+  @override
+  String get payeeNoTaxId =>
+      'No NTN or CNIC on record for them. Tax cannot be kept back until one is added.';
+
+  @override
+  String get payeeNoTaxIdShort => 'no NTN or CNIC';
+
+  @override
+  String get payeeNoneYet =>
+      'No payees added yet. Tax kept back needs one. Payees are added on the Vendors screen.';
+
+  @override
+  String get chargeTypeBank => 'Bank charge';
+
+  @override
+  String get chargeTypeForex => 'Forex fee';
+
+  @override
+  String get chargeTypeCard => 'Card fee';
+
+  @override
+  String get chargeTypePlatform => 'Platform fee';
+
+  @override
+  String get chargeTypeOther => 'Other charge';
+
+  @override
+  String get fieldChargeType => 'Charge';
+
+  @override
+  String get fieldChargeAmount => 'Amount';
+
+  @override
+  String get fieldChargeAccount => 'Ledger account';
+
+  @override
+  String get chargeUsualAccount => 'Usual account for this charge';
+
+  @override
+  String get hintChargeAccount =>
+      'Leave it on the usual account unless the accountant says otherwise.';
+
+  @override
+  String get totalLeaves => 'Leaves the account';
+
+  @override
+  String get totalArrives => 'Reaches the account';
+
+  @override
+  String hintRateFor(String currency) {
+    return 'Rupees for 1 $currency. The rupees below must equal the amount times the rate, within one rupee.';
+  }
+
+  @override
+  String get fieldPkrPaid => 'Rupees actually paid';
 }

@@ -1257,6 +1257,52 @@ settings join it later. The wording for each role is in `app_en.arb`.
 what it does in plain words: not counted as our cost, waits as money the client
 owes until they pay. Goes with decision 062.
 
+### 064 — Tax and charge lines on the entry form, and six currencies
+2026-10-28
+
+D15 batch B. Ahmad chose where the step goes, how charge accounts are picked
+and when the payee is asked; the rest is Claude's, open to correction.
+
+**A tax and charges step after Category.** The form is now seven steps:
+direction and date, amount and currency, paid from, category, taxes and
+charges, receipt, review. By the tax step the server knows the amount, the
+account and the category, so its suggestion fits. Ahmad's choice.
+
+**Suggested once, thrown away when the figures change.** The step asks the
+server for suggestions when it first opens. Changing the date, direction,
+amount, account or category clears the tax lines, and coming back suggests
+them again. A tax worked out on an old amount can never be saved with a new
+one.
+
+**The app never works out a tax.** A tax added by hand is worked out by the
+server (`GET /taxes/suggest?taxIds=`), with the same rate and filer-status
+rules as a suggestion. The person may type what was actually taken over a
+line; it is sent marked as changed. TAXES.md, principle 4.
+
+**Charges: the usual account, or one the person picks.** Ahmad asked for
+both. Left alone, the server uses bank charge 8100, forex fee and card fee
+8200, platform fee 5400, other 8100. The person may pick any other cost
+account instead; anything that is not an active expense account is refused,
+so a fee can never land on the balance sheet.
+
+**The payee is asked in the tax step,** only when a line is kept back from
+the payee, from the vendors already added. Choosing one works the taxes out
+again at that payee's filer rate. The Vendors screen itself is batch D.
+Ahmad's choice.
+
+**Six currencies: PKR, USD, GBP, AED, QAR, EUR.** Switching between two
+foreign currencies keeps the figure typed and changes its currency. The rate
+box says "Rupees for 1 GBP", and the rupees must still match within PKR 1
+(decision 061). The old hint, which said the rate could be left empty, was
+wrong: the server needs it.
+
+**The tax module uses Pakistan's date.** Its "today" was still UTC, the D9
+mistake in one more place. Fixed with `businessToday()`.
+
+Production holds no taxes yet, so suggestions appear there only once the
+accountant's rates are entered (open item P, batch E). Charges and currencies
+work everywhere.
+
 ---
 
 ## Open, not yet decided

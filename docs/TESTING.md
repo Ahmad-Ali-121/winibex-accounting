@@ -13,8 +13,8 @@ transactions, triggers, constraints.
 cd api && npm run test
 ```
 
-403 API tests after people and permissions, 2026-10-27: 400 pass, 3 skip
-(the argon2 tests, until that package is installed). 99 Flutter widget tests.
+411 API tests after the tax and charge step, 2026-10-28: 408 pass, 3 skip
+(the argon2 tests, until that package is installed). 108 Flutter widget tests.
 Flutter analyze clean.
 
 ### Must always pass
@@ -106,6 +106,11 @@ cd app && flutter analyze
 - Widget tests for the entry form: every step, every conditional field, journal
   preview, warnings dialog, a refused save shown on screen, a retry that reuses
   the idempotency key, the form starting again after a save
+- Widget tests for the tax and charges step: suggestions sent with the
+  entry, a changed figure marked as changed, a tax added by hand worked out
+  by the server, the payee required for tax kept back, a charge on the usual
+  account or a picked one, and taxes thrown away when the amount changes
+- Widget tests for the six currencies
 - Widget tests for the approval inbox, including a refused approval
 - Widget tests for the review list and Mark reviewed
 - Widget tests for the People screen: the owner row has no actions, a limit

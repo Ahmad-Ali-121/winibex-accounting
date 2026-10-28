@@ -10,28 +10,28 @@ part of 'entry_draft_controller.dart';
 // ignore_for_file: type=lint, type=warning
 /// The entry form's state, and the actions that change it.
 ///
-/// Every setter rebuilds the draft and nothing else. Asking the server for a
-/// preview, or for tax suggestions, is an explicit step rather than something
-/// that happens on every keystroke: the form would otherwise send a request
-/// per character typed into the amount field.
+/// Every setter rebuilds the draft and nothing else. Asking the server for
+/// tax suggestions is an explicit step rather than something that happens on
+/// every keystroke: the form would otherwise send a request per character
+/// typed into the amount field.
 
 @ProviderFor(EntryDraftController)
 final entryDraftControllerProvider = EntryDraftControllerProvider._();
 
 /// The entry form's state, and the actions that change it.
 ///
-/// Every setter rebuilds the draft and nothing else. Asking the server for a
-/// preview, or for tax suggestions, is an explicit step rather than something
-/// that happens on every keystroke: the form would otherwise send a request
-/// per character typed into the amount field.
+/// Every setter rebuilds the draft and nothing else. Asking the server for
+/// tax suggestions is an explicit step rather than something that happens on
+/// every keystroke: the form would otherwise send a request per character
+/// typed into the amount field.
 final class EntryDraftControllerProvider
     extends $NotifierProvider<EntryDraftController, EntryDraft> {
   /// The entry form's state, and the actions that change it.
   ///
-  /// Every setter rebuilds the draft and nothing else. Asking the server for a
-  /// preview, or for tax suggestions, is an explicit step rather than something
-  /// that happens on every keystroke: the form would otherwise send a request
-  /// per character typed into the amount field.
+  /// Every setter rebuilds the draft and nothing else. Asking the server for
+  /// tax suggestions is an explicit step rather than something that happens on
+  /// every keystroke: the form would otherwise send a request per character
+  /// typed into the amount field.
   EntryDraftControllerProvider._()
       : super(
           from: null,
@@ -60,14 +60,14 @@ final class EntryDraftControllerProvider
 }
 
 String _$entryDraftControllerHash() =>
-    r'c1ea54a537d386b26deb9ec36aad36b65c19d5bd';
+    r'4743de3257ee100f1248c10cebee5d755e6ee193';
 
 /// The entry form's state, and the actions that change it.
 ///
-/// Every setter rebuilds the draft and nothing else. Asking the server for a
-/// preview, or for tax suggestions, is an explicit step rather than something
-/// that happens on every keystroke: the form would otherwise send a request
-/// per character typed into the amount field.
+/// Every setter rebuilds the draft and nothing else. Asking the server for
+/// tax suggestions is an explicit step rather than something that happens on
+/// every keystroke: the form would otherwise send a request per character
+/// typed into the amount field.
 
 abstract class _$EntryDraftController extends $Notifier<EntryDraft> {
   EntryDraft build();

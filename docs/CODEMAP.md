@@ -223,7 +223,7 @@ Numbered SQL files, run in order. The database remembers which have run.
 
 Every `.js` file here tests one area. They run against a real database, never a
 fake one, because the guarantees being tested live in the database. `npm test`
-runs them all. 403 tests after people and permissions: 400 pass, 3 argon2
+runs them all. 411 tests after the tax and charge step: 408 pass, 3 argon2
 tests skip until that package is installed.
 
 Test files:
@@ -258,6 +258,10 @@ Test files:
 - **`defect-fixes.test.js`**: one or more tests per defect found while
   writing the Phase 1 test (D1, D2, D5 to D9, D11, D12, D14), and for the
   decision 062 rules. If any of them comes back, this file fails.
+- **`entry-form.test.js`**: what the tax and charge step needs: the tax list
+  by direction, a tax added by hand worked out by the server, a charge with
+  no account going to the usual one, and a charge refused on a non-cost
+  account.
 - **`users.test.js`**: only the owner manages people, staff get no limit, no
   second owner, the owner row cannot be changed, switching off and resetting
   a password end every session.
@@ -370,6 +374,13 @@ Current features:
   - The edit history panel showing what changed on a transaction, from the
     audit log
   - Receipt upload with file_picker (camera or file)
+  - The tax and charges step (`widgets/taxes_step.dart`): suggested tax
+    lines, adding or removing one, the payee when tax is kept back, and bank
+    or platform charges with their account
+  - `widgets/money_field.dart`: the box every amount is typed into, turning
+    rupees into paisa with no decimal in between
+  - `domain/entry_options.dart`: the six currencies, and the tax, payee and
+    account choices the form offers
 - **`flags/`**: the flags review list: entries with confirmed warnings or
   raised flags. The owner and admins see a Mark reviewed button on each, which
   asks for a short note.
@@ -387,8 +398,8 @@ Current features:
 
 ### `app/test/`
 
-99 Flutter widget tests after the People screen redesign, 2026-10-28.
-Flutter analyze clean.
+108 Flutter widget tests after the tax and charge step, 2026-10-28. Flutter
+analyze clean.
 
 - **`foundation_test.dart`**: checks the theme and glossary hold together.
 - **`login_test.dart`**: checks the login screen behaves on success, wrong
@@ -401,8 +412,8 @@ Flutter analyze clean.
   large amounts.
 - **`entry_screen_test.dart`**: the entry form end to end with a fake
   repository, including a refused save shown on screen, a retry after a
-  refused posting that reuses the key, and the form starting again after a
-  save.
+  refused posting that reuses the key, the form starting again after a save,
+  the six currencies, and the tax and charges step.
 - **`approvals_screen_test.dart`**: the approval inbox, including a refused
   approval that says why and leaves the card in place.
 - **`flags_screen_test.dart`**: the review list, the Mark reviewed button

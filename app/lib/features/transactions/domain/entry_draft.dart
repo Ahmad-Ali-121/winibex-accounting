@@ -29,21 +29,39 @@ enum PaidByType { company, person }
 /// A charge the bank or a platform took on top of, or out of, the amount.
 class DraftCharge {
   const DraftCharge({
+    required this.id,
     required this.type,
     required this.amount,
-    required this.coaId,
+    this.coaId,
     this.note,
   });
 
+  /// The form's own number for the line, so its fields keep their text when
+  /// another line is removed. Never sent.
+  final int id;
+
   final String type; // bank_charge, forex_fee, platform_fee, card_fee, other
   final Money amount;
-  final int coaId;
+
+  /// Null means the usual account for the type, which the server fills in:
+  /// bank charge 8100, forex and card fees 8200, platform fee 5400. Decision 064.
+  final int? coaId;
   final String? note;
+
+  bool get isFilledIn => amount.minorUnits > 0;
+
+  DraftCharge copyWith({String? type, Money? amount, int? coaId, bool usualAccount = false}) => DraftCharge(
+        id: id,
+        type: type ?? this.type,
+        amount: amount ?? this.amount,
+        coaId: usualAccount ? null : (coaId ?? this.coaId),
+        note: note,
+      );
 
   Map<String, dynamic> toJson() => {
         'type': type,
         'amount': amount.toJson(),
-        'coaId': coaId,
+        if (coaId != null) 'coaId': coaId,
         if (note != null) 'note': note,
       };
 }
@@ -154,6 +172,7 @@ class EntryDraft {
     this.charges = const [],
     this.acknowledgedWarnings = const [],
     this.receipt,
+    this.taxesChecked = false,
   });
 
   /// Generated once when the form opens, so a double tap or a retry cannot
@@ -197,6 +216,15 @@ class EntryDraft {
   /// payment above the threshold cannot enter the book without one.
   final DraftAttachment? receipt;
 
+  /// Whether the taxes have been suggested for the figures now on the form.
+  /// Anything the taxes depend on (date, direction, amount, account,
+  /// category) sets this back to false and clears the lines, so a tax worked
+  /// out on an old amount can never be saved with a new one. Decision 064.
+  final bool taxesChecked;
+
+  /// Tax kept back from the payee needs the payee chosen. Decision 062.
+  bool get withholds => taxes.any((tax) => tax.isWithheldByUs);
+
   bool get isForeign => currency != 'PKR';
   bool get paidPersonally => paidByType == PaidByType.person;
 
@@ -207,7 +235,8 @@ class EntryDraft {
       description.trim().isNotEmpty &&
       (pkrAmount?.minorUnits ?? 0) > 0 &&
       (paidPersonally ? paidByUserId != null : accountId != null) &&
-      (!isForeign || (fxRate != null && (foreignAmount?.minorUnits ?? 0) > 0));
+      (!isForeign || (fxRate != null && (foreignAmount?.minorUnits ?? 0) > 0)) &&
+      charges.every((charge) => charge.isFilledIn);
 
   EntryDraft copyWith({
     String? date,
@@ -223,9 +252,11 @@ class EntryDraft {
     bool clearForeign = false,
     Money? pkrAmount,
     int? categoryId,
+    bool clearCategory = false,
     String? description,
     String? method,
     int? vendorId,
+    bool clearVendor = false,
     int? clientId,
     bool? isRebillable,
     List<DraftTax>? taxes,
@@ -233,6 +264,7 @@ class EntryDraft {
     List<String>? acknowledgedWarnings,
     DraftAttachment? receipt,
     bool clearReceipt = false,
+    bool? taxesChecked,
   }) {
     return EntryDraft(
       idempotencyKey: idempotencyKey,
@@ -245,16 +277,17 @@ class EntryDraft {
       foreignAmount: clearForeign ? null : (foreignAmount ?? this.foreignAmount),
       fxRate: clearForeign ? null : (fxRate ?? this.fxRate),
       pkrAmount: pkrAmount ?? this.pkrAmount,
-      categoryId: categoryId ?? this.categoryId,
+      categoryId: clearCategory ? null : (categoryId ?? this.categoryId),
       description: description ?? this.description,
       method: method ?? this.method,
-      vendorId: vendorId ?? this.vendorId,
+      vendorId: clearVendor ? null : (vendorId ?? this.vendorId),
       clientId: clientId ?? this.clientId,
       isRebillable: isRebillable ?? this.isRebillable,
       taxes: taxes ?? this.taxes,
       charges: charges ?? this.charges,
       acknowledgedWarnings: acknowledgedWarnings ?? this.acknowledgedWarnings,
       receipt: clearReceipt ? null : (receipt ?? this.receipt),
+      taxesChecked: taxesChecked ?? this.taxesChecked,
     );
   }
 

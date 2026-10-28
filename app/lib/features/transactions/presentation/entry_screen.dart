@@ -12,9 +12,16 @@ import '../../accounts/domain/account.dart';
 import '../application/categories_providers.dart';
 import '../application/entry_draft_controller.dart';
 import '../domain/entry_draft.dart';
+import '../domain/entry_options.dart';
 import 'widgets/journal_preview_panel.dart';
+import 'widgets/money_field.dart';
 import 'widgets/receipt_field.dart';
+import 'widgets/taxes_step.dart';
 import 'widgets/warnings_dialog.dart';
+
+// The rupee parser moved beside the money field it serves. Exported here so
+// anything that imported it from this file still finds it.
+export 'widgets/money_field.dart' show parseMinorUnits;
 
 /// Recording money, one question at a time.
 ///
@@ -34,7 +41,7 @@ class EntryScreen extends ConsumerStatefulWidget {
 
 class _EntryScreenState extends ConsumerState<EntryScreen> {
   int _step = 0;
-  static const _lastStep = 5;
+  static const _lastStep = 6;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +94,8 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
               1 => const _AmountStep(),
               2 => const _PaidByStep(),
               3 => const _CategoryStep(),
-              4 => const _ReceiptStep(),
+              4 => const TaxesStep(),
+              5 => const _ReceiptStep(),
               _ => _ReviewStep(canPost: widget.canPost),
             },
             const SizedBox(height: AppSpacing.xl),
@@ -120,10 +128,13 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
             (!draft.isForeign || (draft.fxRate != null && (draft.foreignAmount?.minorUnits ?? 0) > 0)),
         2 => draft.paidPersonally ? draft.paidByUserId != null : draft.accountId != null,
         3 => draft.categoryId != null && draft.description.trim().isNotEmpty,
+        // Every charge needs its amount, and tax kept back needs the payee it
+        // was kept back from. Decisions 062 and 064.
+        4 => draft.charges.every((charge) => charge.isFilledIn) && (!draft.withholds || draft.vendorId != null),
         // A receipt is never required to move on. The server refuses the
         // posting if the payment is above the threshold without one, and says
         // so in words, which is better than a step that will not let go.
-        4 => true,
+        5 => true,
         _ => true,
       };
 }
@@ -186,12 +197,13 @@ class _AmountStep extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _Question(l10n.stepAmountQuestion),
+        // The six currencies the books hold, PKR first. UI-GUIDE, step 2.
         SegmentedButton<String>(
+          showSelectedIcon: false,
           segments: [
-            ButtonSegment(value: 'PKR', label: Text(l10n.currencyPkr)),
-            ButtonSegment(value: 'USD', label: Text(l10n.currencyForeign)),
+            for (final code in entryCurrencies) ButtonSegment(value: code, label: Text(code)),
           ],
-          selected: {draft.isForeign ? 'USD' : 'PKR'},
+          selected: {draft.currency},
           onSelectionChanged: (selection) => controller.setCurrency(selection.first),
         ),
         const SizedBox(height: AppSpacing.lg),
@@ -199,7 +211,8 @@ class _AmountStep extends ConsumerWidget {
         // A foreign entry carries the original amount as well as the PKR, or
         // the books cannot show what the bank actually did.
         if (draft.isForeign) ...[
-          _MoneyField(
+          MoneyField(
+            key: ValueKey('foreign-${draft.currency}'),
             label: l10n.fieldForeignAmount,
             value: draft.foreignAmount,
             currency: draft.currency,
@@ -213,7 +226,8 @@ class _AmountStep extends ConsumerWidget {
             initialValue: draft.fxRate,
             decoration: InputDecoration(
               labelText: l10n.fieldRate,
-              helperText: l10n.hintRateOrPkr,
+              helperText: l10n.hintRateFor(draft.currency),
+              helperMaxLines: 2,
             ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
@@ -225,8 +239,12 @@ class _AmountStep extends ConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
         ],
 
-        _MoneyField(
-          label: draft.isForeign ? l10n.fieldPkrReceived : l10n.fieldAmount,
+        MoneyField(
+          label: !draft.isForeign
+              ? l10n.fieldAmount
+              : draft.direction == EntryDirection.moneyIn
+                  ? l10n.fieldPkrReceived
+                  : l10n.fieldPkrPaid,
           value: draft.pkrAmount,
           currency: 'PKR',
           onChanged: controller.setPkrAmount,
@@ -689,50 +707,4 @@ class _DateFieldState extends State<_DateField> {
       onChanged: widget.onChanged,
     );
   }
-}
-
-/// Takes rupees from the person and keeps paisa in the draft.
-///
-/// Parsing is integer only: the text is split on the decimal point and the two
-/// halves are combined, so nothing ever becomes a double on the way in.
-class _MoneyField extends StatelessWidget {
-  const _MoneyField({
-    required this.label,
-    required this.value,
-    required this.currency,
-    required this.onChanged,
-  });
-
-  final String label;
-  final Money? value;
-  final String currency;
-  final ValueChanged<Money> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      initialValue: value == null || value!.isZero ? '' : value!.format(withCurrency: false),
-      decoration: InputDecoration(labelText: label, prefixText: '$currency '),
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-      style: AppText.amount(context),
-      onChanged: (text) => onChanged(
-        Money(minorUnits: parseMinorUnits(text), currency: currency),
-      ),
-    );
-  }
-}
-
-/// "5,953.5" becomes 595350. No double anywhere in the conversion.
-int parseMinorUnits(String text, {int decimals = 2}) {
-  final cleaned = text.replaceAll(',', '').trim();
-  if (cleaned.isEmpty) return 0;
-
-  final parts = cleaned.split('.');
-  final whole = int.tryParse(parts.first.isEmpty ? '0' : parts.first) ?? 0;
-  if (parts.length == 1) return whole * 100;
-
-  final fraction = parts[1].padRight(decimals, '0').substring(0, decimals);
-  final minor = int.tryParse(fraction) ?? 0;
-  return whole * 100 + minor;
 }
