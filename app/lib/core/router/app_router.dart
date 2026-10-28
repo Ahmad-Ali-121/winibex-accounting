@@ -4,12 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../api/api_client.dart';
+import '../theme/app_theme.dart';
 import '../../features/accounts/presentation/accounts_screen.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/change_password_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/flags/presentation/flags_screen.dart';
+import '../../features/people/presentation/people_screen.dart';
 import '../../features/transactions/presentation/approvals_screen.dart';
 import '../../features/transactions/presentation/entry_screen.dart';
 import '../../features/transactions/presentation/ledger_screen.dart';
@@ -150,7 +152,7 @@ GoRouter appRouter(Ref ref) {
           ),
           GoRoute(
             path: Routes.settings,
-            builder: (context, state) => const _ComingSoon(module: 'settings'),
+            builder: (context, state) => const _Settings(),
           ),
         ],
       ),
@@ -188,6 +190,29 @@ class _Flags extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).value;
     return FlagsScreen(canReview: user?.canApprove ?? false);
+  }
+}
+
+/// Settings opens on People for now. Only the owner adds people or changes
+/// what they can do, so everyone else sees one line saying so. The server
+/// refuses them anyway. Decision 063.
+class _Settings extends ConsumerWidget {
+  const _Settings();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authControllerProvider).value;
+    if (user?.isOwner ?? false) return const PeopleScreen();
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Text(
+          AppLocalizations.of(context).peopleOwnerOnly,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ),
+    );
   }
 }
 

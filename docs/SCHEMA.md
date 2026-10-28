@@ -838,7 +838,7 @@ Contributions post as a liability, not income. Hammad Malik's 100,000 and
 
 | Role | Who | Approve | Own entries | Other rights |
 | --- | --- | --- | --- | --- |
-| owner | winibexoffice account, exactly one, shared by Ahmad and Maryam | Any amount | Auto-post | Settings, users, roles, payroll visibility, plus everything an admin can do |
+| owner | winibexoffice account, exactly one, shared among the directors and never with employees | Any amount | Auto-post | Adds people, sets roles and limits, switches people off, resets passwords, settings, payroll visibility, plus everything an admin can do |
 | admin | Named logins the owner adds later, any number | Any amount, or up to `approval_limit` if set | Auto-post if `auto_approve_own` | Everything except users and settings |
 | staff | Personal logins: Maryam, Fazal, and Ahmad once the build is done | None | Need an admin or the owner to approve | Submit, see own submissions |
 
@@ -858,6 +858,11 @@ Rules enforced in the service layer:
    her personal login and approve under the shared one
 5. Every change to a role, limit or auto-approve flag is audit-logged and only
    the owner can make it
+6. People are added by the owner from the People screen, with a temporary
+   password and `must_change_password = 1`. Nobody is deleted: leaving is
+   `is_active = 0`, which blocks sign-in and revokes every session. A password
+   reset also revokes every session. The owner row cannot be changed this
+   way, and there is never a second owner. Decision 063
 
 ## Migrations
 
@@ -875,6 +880,7 @@ before they exist.
 | 004 | Phase 1, thirteen tables: taxes, tax_rules, vendors, cheques, transactions, journal_lines, transaction_taxes, transaction_charges, entry_flags, attachments, reimbursements, reimbursement_items, period_locks, plus four immutability triggers | applied |
 | 005 | flag resolution: `resolved_by`, `resolved_at`, `resolution_note` on entry_flags, the `chk_entry_flags_resolved` CHECK, and a backfill that resolves "No receipt" flags that should never have been raised or whose receipt exists. Decision 056 | applied |
 | 006 | `request_hash` on idempotency_keys, so a key reused with different content is refused rather than replayed. Defect F7, decision 059 | applied |
+| 007 | data only: switches off the money-out categories on 1123 (rebillable spend is now the real category plus the tick), renames "Client advertising spend, absorbed" to "Client advertising spend", and resolves open flags on rejected entries with the note "Entry rejected". Decision 062 | written, not yet applied |
 | Later | one per phase | |
 
 Every migration file is plain SQL, numbered, idempotent where it can be, and

@@ -2,9 +2,9 @@
 
 Node, Express, MariaDB. REST over JSON. Base path `/api/v1`.
 
-Status: Phase 0 and Phase 1 endpoints built and tested. 389 API tests: 386
+Status: Phase 0 and Phase 1 endpoints built and tested. 403 API tests: 400
 pass and 3 skip, the argon2 tests, until that package is installed. Updated
-2026-10-26 for the defect fixes (decisions 056 and 057).
+2026-10-27 for people and permissions (decision 063).
 
 ## Conventions
 
@@ -162,7 +162,11 @@ Built. Every path below exists and is covered by tests.
 | GET | /flags | the review list: confirmed warnings and raised flags. Open ones by default; `?resolved=true` for resolved ones, `?severity=warning` or `flag` to narrow. Each flag carries `resolvedAt`, `resolvedByName`, `resolvedAutomatically` and `resolutionNote` |
 | POST | /flags/:id/resolve | mark a flag reviewed. Owner or admin only. Body `{ "note": "..." }`, 3 to 255 characters. 409 if already resolved. Decision 056 |
 | GET | /categories | grouped by main head, control accounts excluded |
-| GET | /users | thin list for the people picker: id, name, role |
+| GET | /users | thin list for the people picker: id, name, role. Switched-off people are left out |
+| GET | /people | owner only. Everyone who can sign in, with role, approval limit, posts own, uses the office login, switched off, must set a new password. Never a password or hash. Decision 063 |
+| POST | /people | owner only. Body: name, email, role (`admin` or `staff`), temporaryPassword (10 or more), optional approvalLimit (money or null), autoApproveOwn, sharesOwnerLogin. 201 with `person`. The new person must set their own password at first sign-in. A staff member is saved with no limit and no auto-post. 409 `ALREADY_EXISTS` for an email already used |
+| PATCH | /people/:id | owner only. Any of name, role, approvalLimit, autoApproveOwn, sharesOwnerLogin, isActive. Switching off signs them out everywhere. The owner row is refused with 409. Audited as `permission_change` |
+| POST | /people/:id/reset-password | owner only. Body `{ "temporaryPassword": "..." }`. Signs them out everywhere and forces a new password at next sign-in. Not for the owner row |
 | GET | /dashboard | cash held, money in and out this month, pending count, open flag count. In and out count only money that entered or left a company account: a transfer counts only its fee, a reversal cancels its original on the same side, a cost paid personally is left out. Decision 057 |
 | GET | /history/merge-check | difference per account between history and the opening entry |
 | POST | /history/merge | owner only. Refused while any difference remains |
@@ -185,12 +189,12 @@ Stable, and each maps one to one to an `err` key in `app_en.arb`.
 | ALREADY_REVERSED | 409 | an entry is reversed once |
 | APPROVAL_LIMIT_EXCEEDED | 403 | above this admin's limit |
 | REIMBURSEMENT_EXCEEDS_OWED | 400 | more than the company owes that person |
-| MISSING_VENDOR_TAX_ID | 400 | no NTN or CNIC, so a deduction cannot be reported. Checked at create and edit when the entry names a vendor |
+| MISSING_VENDOR_TAX_ID | 400 | a tax Winibex withholds with no vendor chosen, or a vendor with no NTN or CNIC, so the deduction cannot be reported. Checked at create and edit. Decision 062 |
 | TRANSFER_SAME_ACCOUNT | 400 | a transfer needs two different accounts |
 | OPENING_ALREADY_EXISTS | 409 | there is only ever one |
 | HISTORY_DOES_NOT_RECONCILE | 409 | merge refused, differences in `details` |
 | RECEIPT_REQUIRED | 400 | money out at or above `receipt_required_above` has no receipt at posting |
-| ALREADY_EXISTS | 409 | a unique value is already used, such as a cheque number on the same account |
+| ALREADY_EXISTS | 409 | a unique value is already used, such as a cheque number on the same account, or an email on `/people` |
 | IDEMPOTENCY_KEY_REUSED | 409 | that key was already used by another person, on another address, or with different content |
 | UNSUPPORTED_FILE | 400 | a receipt that is not an image or a PDF |
 | FILE_TOO_LARGE | 400 | over the upload size limit |

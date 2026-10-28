@@ -403,7 +403,7 @@ abstract class AppLocalizations {
   /// No description provided for @fieldRebillable.
   ///
   /// In en, this message translates to:
-  /// **'Rebillable to client'**
+  /// **'Client will pay this back'**
   String get fieldRebillable;
 
   /// No description provided for @fieldReference.
@@ -937,7 +937,7 @@ abstract class AppLocalizations {
   /// No description provided for @flagUninvoicedRebillable.
   ///
   /// In en, this message translates to:
-  /// **'Rebillable spend not invoiced after 30 days'**
+  /// **'Spent for a client 30 days ago and not yet billed to them'**
   String get flagUninvoicedRebillable;
 
   /// No description provided for @emptyTransactions.
@@ -1075,13 +1075,13 @@ abstract class AppLocalizations {
   /// No description provided for @termRebillable.
   ///
   /// In en, this message translates to:
-  /// **'Rebillable'**
+  /// **'Client will pay back'**
   String get termRebillable;
 
   /// No description provided for @termRebillableTip.
   ///
   /// In en, this message translates to:
-  /// **'Spent on a client\'s behalf and charged back to them. Appears on their next invoice instead of reducing profit.'**
+  /// **'Spent for a client who will repay it. It is not counted as our cost. It waits as money the client owes until they pay.'**
   String get termRebillableTip;
 
   /// No description provided for @termAbsorbed.
@@ -1519,7 +1519,7 @@ abstract class AppLocalizations {
   /// No description provided for @hintRebillable.
   ///
   /// In en, this message translates to:
-  /// **'It will not count as a cost. It sits as money owed until you invoice it.'**
+  /// **'Spent for a client who will repay it. It is not counted as our cost. It waits as money the client owes until they pay.'**
   String get hintRebillable;
 
   /// No description provided for @hintPaidByPerson.
@@ -2001,6 +2001,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Type a name or a code, such as welfare or 6110'**
   String get hintCategorySearch;
+
+  /// No description provided for @peopleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'People'**
+  String get peopleTitle;
+
+  /// No description provided for @peopleOwnerOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the owner can add people or change what they can do.'**
+  String get peopleOwnerOnly;
+
+  /// No description provided for @actionAddPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Add person'**
+  String get actionAddPerson;
+
+  /// No description provided for @actionResetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get actionResetPassword;
+
+  /// No description provided for @actionSwitchOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch off'**
+  String get actionSwitchOff;
+
+  /// No description provided for @actionSwitchOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch on'**
+  String get actionSwitchOn;
+
+  /// No description provided for @roleOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get roleOwner;
+
+  /// No description provided for @roleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get roleAdmin;
+
+  /// No description provided for @roleStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff'**
+  String get roleStaff;
+
+  /// No description provided for @roleHelpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What each role can do'**
+  String get roleHelpTitle;
+
+  /// No description provided for @roleOwnerHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Can do everything, including adding people and changing what they can do. Their own entries go straight into the books. There is only one owner: the office login.'**
+  String get roleOwnerHelp;
+
+  /// No description provided for @roleAdminHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Approves other people\'s entries, moves money between accounts, reverses entries, pays people back, adds vendors, issues cheques and clears flags. Cannot add people or change settings.'**
+  String get roleAdminHelp;
+
+  /// No description provided for @roleStaffHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Records money in and money out and sends it for approval. Cannot approve anything, including their own entries.'**
+  String get roleStaffHelp;
+
+  /// No description provided for @officeLoginHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn this on for anyone who also knows the office login password. When the office login approves an entry this person made, the app keeps a quiet note, because it may be the same person approving their own work.'**
+  String get officeLoginHelp;
+
+  /// No description provided for @fieldFullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get fieldFullName;
+
+  /// No description provided for @fieldRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get fieldRole;
+
+  /// No description provided for @fieldApprovalLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval limit (PKR)'**
+  String get fieldApprovalLimit;
+
+  /// No description provided for @hintApprovalLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'The biggest entry this person may approve. Leave empty for no limit. Bigger entries wait for the owner.'**
+  String get hintApprovalLimit;
+
+  /// No description provided for @fieldPostsOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'Can post their own entries'**
+  String get fieldPostsOwn;
+
+  /// No description provided for @hintPostsOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'On: their own entries go straight into the books. Off: someone else must approve them.'**
+  String get hintPostsOwn;
+
+  /// No description provided for @fieldSharesOfficeLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Also uses the office login'**
+  String get fieldSharesOfficeLogin;
+
+  /// No description provided for @hintSharesOfficeLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on if this person knows the office login password. Their entries approved by the office login get a quiet note.'**
+  String get hintSharesOfficeLogin;
+
+  /// No description provided for @fieldTemporaryPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary password'**
+  String get fieldTemporaryPassword;
+
+  /// No description provided for @hintTemporaryPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 10 characters. Give it to them in person. They must choose their own password the first time they sign in.'**
+  String get hintTemporaryPassword;
+
+  /// No description provided for @peopleApprovesUpTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Approves up to'**
+  String get peopleApprovesUpTo;
+
+  /// No description provided for @peopleNoLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Approves any amount'**
+  String get peopleNoLimit;
+
+  /// No description provided for @peoplePostsOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts own entries'**
+  String get peoplePostsOwn;
+
+  /// No description provided for @peopleSharesLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Also uses the office login'**
+  String get peopleSharesLogin;
+
+  /// No description provided for @peopleSwitchedOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched off. Cannot sign in.'**
+  String get peopleSwitchedOff;
+
+  /// No description provided for @peopleMustChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Has not set their own password yet'**
+  String get peopleMustChange;
+
+  /// No description provided for @personAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Person added. Give them the temporary password.'**
+  String get personAdded;
+
+  /// No description provided for @personSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get personSaved;
+
+  /// No description provided for @passwordReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset. They are signed out everywhere and must set a new one.'**
+  String get passwordReset;
+
+  /// No description provided for @addPersonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a person'**
+  String get addPersonTitle;
+
+  /// No description provided for @editPersonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change what this person can do'**
+  String get editPersonTitle;
+
+  /// No description provided for @errNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter their name.'**
+  String get errNameRequired;
+
+  /// No description provided for @errEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get errEmailInvalid;
 }
 
 class _AppLocalizationsDelegate

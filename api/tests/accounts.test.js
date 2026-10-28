@@ -52,6 +52,7 @@ before(async () => {
     '000_schema_migrations.sql', '001_phase0_tables.sql',
     '002_seed_reference.sql', '003_bootstrap.sql', '004_phase1_tables.sql',
     '005_flag_resolution.sql', '006_idempotency_request_hash.sql',
+    '007_rebillable_and_rejected_flags.sql',
   ]) {
     const sql = await readFile(new URL(`../migrations/${file}`, import.meta.url), 'utf8');
     for (const statement of splitSqlStatements(sql)) await setup.query(statement);

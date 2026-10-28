@@ -17,6 +17,7 @@
 //   F7   a changed entry under its old key is refused, never posted with the old figures
 //   F5   a tax line is checked against its tax: on, in force, right direction, not above its base
 //   F2   foreign amount x rate must agree with the rupees, within one rupee
+//   062  withholding needs a vendor; rejecting clears the entry's flags
 //
 // Every entry is dated today in Pakistan, except the opening entry, so the
 // whole file sits inside the current month and the dashboard can be checked
@@ -667,7 +668,9 @@ test('F7: a changed draft is saved by editing it, and posts with the new figures
 // Found in the full Phase 1 test: nothing checked a tax line against the tax
 // it named. UI-GUIDE lists every one of these as blocking.
 
-function taxLine(taxId, { base = 1000000, amount = 40000, deductedBy = 'us', party = 'vendor' } = {}) {
+// Taken by the bank, not withheld by Winibex, so these tests are about the tax
+// checks alone and not about the vendor rule of decision 062.
+function taxLine(taxId, { base = 1000000, amount = 40000, deductedBy = 'bank', party = 'company' } = {}) {
   return {
     taxId, baseAmount: pkr(base), rateApplied: '4.0000', atlStatusUsed: 'atl',
     atlParty: party, amount: pkr(amount), deductedBy,
@@ -771,4 +774,45 @@ test('F2: a difference of up to one rupee is accepted, for the bank rounding', a
     acknowledged_warnings: WARNING_CODES,
   });
   assert.equal(response.status, 201, response.raw);
+});
+
+// --- Decision 062 ---------------------------------------------------------------
+
+test('062: withholding with no vendor named is refused', async () => {
+  const response = await create({
+    ...entry({
+      description: 'Withheld with no payee', gross: pkr(1000000),
+      taxes: [taxLine(withholdingTaxId, { deductedBy: 'us', party: 'vendor' })],
+    }),
+    acknowledged_warnings: WARNING_CODES,
+  });
+  assert.equal(response.status, 400, response.raw);
+  assert.equal(response.body.error.code, 'MISSING_VENDOR_TAX_ID');
+  assert.equal(response.body.error.field, 'vendorId');
+});
+
+test('062: rejecting an entry clears its open flags', async () => {
+  const created = await create(
+    entry({ description: 'tea', gross: pkr(25000), acknowledged_warnings: WARNING_CODES }),
+    tokens.staff,
+  );
+  assert.equal(created.status, 201, created.raw);
+  const id = created.body.transaction.id;
+  await api.post(`/transactions/${id}/submit`, { token: tokens.staff });
+
+  const [before] = await connection.query(
+    'SELECT COUNT(*) AS n FROM entry_flags WHERE transaction_id = ? AND resolved = 0', [id],
+  );
+  assert.ok(Number(before[0].n) > 0, 'a thin description and no receipt should raise flags');
+
+  const rejected = await api.post(`/transactions/${id}/reject`, {
+    token: tokens.owner, body: { reason: 'Say what it was for' },
+  });
+  assert.equal(rejected.status, 200, rejected.raw);
+
+  const [after] = await connection.query(
+    `SELECT COUNT(*) AS open_flags, SUM(resolution_note = 'Entry rejected') AS cleared
+       FROM entry_flags WHERE transaction_id = ?`, [id],
+  );
+  assert.equal(Number(after[0].open_flags) - Number(after[0].cleared), 0, 'no flag left open');
 });

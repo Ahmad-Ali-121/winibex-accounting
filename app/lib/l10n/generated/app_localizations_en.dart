@@ -162,7 +162,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldProject => 'Project';
 
   @override
-  String get fieldRebillable => 'Rebillable to client';
+  String get fieldRebillable => 'Client will pay this back';
 
   @override
   String get fieldReference => 'Reference';
@@ -472,7 +472,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flagUninvoicedRebillable =>
-      'Rebillable spend not invoiced after 30 days';
+      'Spent for a client 30 days ago and not yet billed to them';
 
   @override
   String get emptyTransactions =>
@@ -554,11 +554,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Money Winibex owes to suppliers, contractors or people who paid on its behalf.';
 
   @override
-  String get termRebillable => 'Rebillable';
+  String get termRebillable => 'Client will pay back';
 
   @override
   String get termRebillableTip =>
-      'Spent on a client\'s behalf and charged back to them. Appears on their next invoice instead of reducing profit.';
+      'Spent for a client who will repay it. It is not counted as our cost. It waits as money the client owes until they pay.';
 
   @override
   String get termAbsorbed => 'Absorbed';
@@ -798,7 +798,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hintRebillable =>
-      'It will not count as a cost. It sits as money owed until you invoice it.';
+      'Spent for a client who will repay it. It is not counted as our cost. It waits as money the client owes until they pay.';
 
   @override
   String get hintPaidByPerson =>
@@ -1087,4 +1087,125 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get hintCategorySearch =>
       'Type a name or a code, such as welfare or 6110';
+
+  @override
+  String get peopleTitle => 'People';
+
+  @override
+  String get peopleOwnerOnly =>
+      'Only the owner can add people or change what they can do.';
+
+  @override
+  String get actionAddPerson => 'Add person';
+
+  @override
+  String get actionResetPassword => 'Reset password';
+
+  @override
+  String get actionSwitchOff => 'Switch off';
+
+  @override
+  String get actionSwitchOn => 'Switch on';
+
+  @override
+  String get roleOwner => 'Owner';
+
+  @override
+  String get roleAdmin => 'Admin';
+
+  @override
+  String get roleStaff => 'Staff';
+
+  @override
+  String get roleHelpTitle => 'What each role can do';
+
+  @override
+  String get roleOwnerHelp =>
+      'Can do everything, including adding people and changing what they can do. Their own entries go straight into the books. There is only one owner: the office login.';
+
+  @override
+  String get roleAdminHelp =>
+      'Approves other people\'s entries, moves money between accounts, reverses entries, pays people back, adds vendors, issues cheques and clears flags. Cannot add people or change settings.';
+
+  @override
+  String get roleStaffHelp =>
+      'Records money in and money out and sends it for approval. Cannot approve anything, including their own entries.';
+
+  @override
+  String get officeLoginHelp =>
+      'Turn this on for anyone who also knows the office login password. When the office login approves an entry this person made, the app keeps a quiet note, because it may be the same person approving their own work.';
+
+  @override
+  String get fieldFullName => 'Full name';
+
+  @override
+  String get fieldRole => 'Role';
+
+  @override
+  String get fieldApprovalLimit => 'Approval limit (PKR)';
+
+  @override
+  String get hintApprovalLimit =>
+      'The biggest entry this person may approve. Leave empty for no limit. Bigger entries wait for the owner.';
+
+  @override
+  String get fieldPostsOwn => 'Can post their own entries';
+
+  @override
+  String get hintPostsOwn =>
+      'On: their own entries go straight into the books. Off: someone else must approve them.';
+
+  @override
+  String get fieldSharesOfficeLogin => 'Also uses the office login';
+
+  @override
+  String get hintSharesOfficeLogin =>
+      'Turn on if this person knows the office login password. Their entries approved by the office login get a quiet note.';
+
+  @override
+  String get fieldTemporaryPassword => 'Temporary password';
+
+  @override
+  String get hintTemporaryPassword =>
+      'At least 10 characters. Give it to them in person. They must choose their own password the first time they sign in.';
+
+  @override
+  String get peopleApprovesUpTo => 'Approves up to';
+
+  @override
+  String get peopleNoLimit => 'Approves any amount';
+
+  @override
+  String get peoplePostsOwn => 'Posts own entries';
+
+  @override
+  String get peopleSharesLogin => 'Also uses the office login';
+
+  @override
+  String get peopleSwitchedOff => 'Switched off. Cannot sign in.';
+
+  @override
+  String get peopleMustChange => 'Has not set their own password yet';
+
+  @override
+  String get personAdded => 'Person added. Give them the temporary password.';
+
+  @override
+  String get personSaved => 'Saved.';
+
+  @override
+  String get passwordReset =>
+      'Password reset. They are signed out everywhere and must set a new one.';
+
+  @override
+  String get addPersonTitle => 'Add a person';
+
+  @override
+  String get editPersonTitle => 'Change what this person can do';
+
+  @override
+  String get errNameRequired => 'Enter their name.';
+
+  @override
+  String get errEmailInvalid => 'Enter a valid email address.';
 }

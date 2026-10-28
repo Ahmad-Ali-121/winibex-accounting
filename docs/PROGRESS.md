@@ -3,14 +3,17 @@
 Read this first. Update it before ending any session.
 
 **Last updated:** 2026-10-27
-**Current phase:** Phase 1 complete, tested end to end, and production reset.
+**Current phase:** Phase 1 complete and live; D15 screens being added in batches.
 **Where we stopped:** The full Phase 1 test ran locally (50 steps) and a
 12-step re-test ran on production; every figure matched. All findings from it
 are fixed and deployed: 389 API tests (386 pass, 3 argon2 skips), 87 Flutter
 tests, analyze clean. Production was then wiped and rebuilt with migrations
 000 to 006; the owner must set a new password at first sign-in. The books are
 empty and ready for the real opening entry. What remains before real entries
-is in "Pending before Phase 2" below; D15 is the main piece of work.
+is in "Pending before Phase 2" below; D15 is the main piece of work. Batch A
+of D15 (people and permissions, decisions 062 and 063) is written and waits
+for Ahmad's test run: 403 API tests, 95 Flutter tests expected. Migration 007
+must be applied in phpMyAdmin before that code is pushed.
 
 The API runs on
 Hostinger at api-accounting.winibex.com; the web app is at
@@ -51,10 +54,8 @@ These are not Phase 1 features. They are setup tasks and external dependencies.
    `api/scripts/test/`
 4. **Done 2026-10-27. Owner password on production.** Set during the reset,
    with `must_change_password = 1`
-5. **Onest font files.** Ahmad to download the four weights from Google Fonts
-   and place them under `app/assets/fonts/`
-6. **check-docs.js guard script.** Rule 7 in the documentation rules. Not yet
-   written
+5. **Done 2026-10-27. Onest font files** in `app/assets/fonts/`
+6. **Dropped. check-docs.js guard script.** Decision 062
 7. **PSEB certificate expiry date.** For the expiry warning flag. Ahmad to
    supply
 8. **Defects found while writing the test.** D1 to D14 are fixed or
@@ -63,8 +64,11 @@ These are not Phase 1 features. They are setup tasks and external dependencies.
    app yet (opening entry, transfers, reversal, reimbursements, people
    balances, vendors, cheques, tax and charge lines on the form, petty cash
    status, history merge, adding users, editing a draft, resubmitting a
-   rejected entry, currencies other than USD on the form). Next step after the
-   test
+   rejected entry, currencies other than USD on the form). Being built in
+   batches: A people and permissions (written 2026-10-27); B tax and charge
+   lines and all six currencies on the form; C transfers, reversal, paying
+   someone back, the opening entry; D vendors and the cheque register; E
+   editing a draft, resubmitting a rejected entry, and the taxes screen
 9. **Done 2026-10-26.** Roll the fixes out to production, in this order. The API deploys
    itself on push, and the new code reads columns that only migration 005
    creates, so the order matters:
@@ -93,7 +97,7 @@ data; no real entries until F7 is fixed.
 | F1 | Wrong password shows no message on the sign-in screen | Medium | Fix written: sign-in no longer sets loading; the splash shows once only |
 | F4 | Refresh or a typed address lands on the dashboard | Medium | Fix written: one MaterialApp.router from the first frame |
 | F3 | The date picker does not open; dates are typed | Medium | Fix written: calendar button, typing still works |
-| O1 | Two ways to record rebillable spend, one category named "absorbed" | Low | With D15 |
+| O1 | Two ways to record rebillable spend, one category named "absorbed" | Low | Decided, decision 062. Migration 007 and the new wording in batch A |
 | O2 | "A issued cheque" should be "An issued cheque" | Low | Fix written |
 | O3 | Technical messages an accountant cannot read, idempotency first | Low | Done for every message the app shows in normal use. Developer-only messages stay technical. Decision 061 |
 | O4 | "Send it back" and "Mark as reviewed" dialogs too narrow, hints cut off | Low | Fix written: shared reason dialog, `AppSizes.dialogWidth` |
@@ -242,6 +246,13 @@ Defect fixes, 2026-10-26, deployed to production the same day:
 - [x] D13 decision 055 kept, UI-GUIDE corrected
 - [x] D14 unusual-amount warning with a fractional average
 - [ ] D15 screens for the API-only features
+  - [x] Batch A, written 2026-10-27: People screen (owner adds people, sets
+        roles and limits, resets passwords, switches people off), decision 062
+        rules, migration 007, "Client will pay this back"
+  - [ ] Batch B: tax and charge lines on the form, PKR, USD, GBP, AED, QAR, EUR
+  - [ ] Batch C: transfers, reversal, paying someone back, opening entry
+  - [ ] Batch D: vendors, cheque register
+  - [ ] Batch E: edit a draft, resubmit a rejected entry, taxes screen
 
 373 API tests (370 pass, 3 argon2 skips). 78 Flutter tests. Flutter analyze
 clean.
@@ -352,6 +363,18 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-27 (D15 batch A: people and permissions)
+Ahmad decided the order of the D15 work and asked Claude to decide N, O and
+O1 (decision 062) and to build adding people first. API: `/people` for the
+owner (list, add, change, reset password), every change audited, sessions
+revoked on switch off and reset; withholding without a vendor refused;
+rejecting clears the entry's flags; migration 007. App: People screen under
+Settings with the roles explained in plain words, add and edit dialogs, reset
+password, switch off. "Rebillable to client" now reads "Client will pay this
+back". Ahmad confirmed again that the office login keeps every right
+(decision 063). 14 new API tests (403), 8 new Flutter tests (95). To run:
+`migrate:up` locally, the tests, then 007 on production before pushing.
 
 ### 2026-10-27 (production re-test and reset)
 Batch with F5, F2, O3, O7 passed (389 API, 87 Flutter) and was pushed with the

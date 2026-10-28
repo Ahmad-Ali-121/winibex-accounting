@@ -1192,6 +1192,71 @@ Messages that only a developer can trigger, such as a missing Idempotency-Key
 header or a malformed field, stay technical; in the app they would mean a bug,
 and F6b now reports those honestly.
 
+### 062 — Open items N, O and O1 decided; the guard script dropped
+2026-10-27
+
+Ahmad asked Claude to decide these three. Reasons in one or two lines each.
+
+**N: a rejected entry's flags stop counting.** When an entry is rejected, its
+open flags are resolved with the note "Entry rejected". A rejected entry is
+not in the books, so its flags describe nothing that needs review. If it is
+edited and resubmitted, validation runs again and raises fresh flags.
+
+**O: every tax Winibex withholds needs a vendor.** A tax line with
+`deductedBy = us` is refused without a vendor: "Choose who you are paying, so
+the tax kept back can be reported under their NTN or CNIC." The quarterly
+s.165 statement cannot list a deduction with no payee. This extends the D7
+check, which ran only when a vendor was named.
+
+**O1: the tick stays, the separate category goes.** Rebillable spend is
+recorded by picking what it really was (for example 5200 Client advertising)
+and ticking "Client will pay this back". The tick posts it to 1123 either
+way, but the category keeps what kind of cost it was, which the invoice and
+the client profit report need later. The "Rebillable client spend" money-out
+category is switched off, and "Client advertising spend, absorbed" loses
+"absorbed" from its name, since the tick now says which it is. Migration 007.
+
+**The `check-docs.js` guard script is dropped,** at Ahmad's choice: the cost
+outweighs the benefit for a four-person team. Documentation rule 7 no longer
+applies.
+
+### 063 — People and permissions from the app
+2026-10-27
+
+Ahmad asked for people to be added from the app instead of by hand in the
+database, by the owner only, with each permission explained in simple words.
+The choices below are Claude's, open to correction.
+
+**The office login keeps every right.** Ahmad confirmed decision 036 again:
+the shared owner login can create, approve and reverse, because only the
+directors use it, never employees. The claude.ai project instructions still
+say the opposite and need that line changed by Ahmad.
+
+**Only the owner manages people.** Listing, adding and changing people,
+resetting passwords and switching people off are the owner's alone, checked
+on the server. Admins approve and move money but cannot change who can do
+what. There is only ever one owner, and the owner row cannot be changed from
+the screen.
+
+**A new person starts with a temporary password,** at least 10 characters,
+given to them in person. They must choose their own at first sign-in, the
+same rule as the owner's bootstrap (decision 050). A reset does the same.
+
+**Nobody is deleted, only switched off.** Every entry keeps the name of whoever
+made it. Switching someone off blocks sign-in and drops them from the people
+picker. Switching off and resetting a password both end every session, so a
+leaver's open browser stops working at once.
+
+**The approval limit is typed in whole rupees.** Empty means no limit. Staff
+never carry a limit or auto-post; changing an admin to staff clears both.
+
+**The screen lives under Settings.** Settings opens on People for now; other
+settings join it later. The wording for each role is in `app_en.arb`.
+
+**"Rebillable to client" becomes "Client will pay this back".** The hint says
+what it does in plain words: not counted as our cost, waits as money the client
+owes until they pay. Goes with decision 062.
+
 ---
 
 ## Open, not yet decided
@@ -1211,8 +1276,8 @@ and F6b now reports those honestly.
 | K | ~~PRA registration~~ Answered: not registered. Whether it should be is for the accountant | Phase 1 |
 | L | Switch to argon2id at first deploy, or stay on bcryptjs. See decision 042 | Phase 0 close. Still open: decided at the first real Hostinger deploy |
 | M | Android emulator reaches the local API at 10.0.2.2, not localhost. Note for Phase 7 | Phase 7 |
-| N | Should a rejected entry's open flags stop counting in "To review", or stay until marked reviewed | Phase 1 polish |
-| O | Should every tax line Winibex withholds require a vendor, so the s.165 statement always has a payee | Phase 6, the s.165 statement |
+| N | ~~Rejected entry's flags~~ Decided, decision 062 | |
+| O | ~~Vendor on withheld tax~~ Decided, decision 062 | |
 | P | Tax management screen: change a rate by closing the old row and adding a new one, never editing in place. Owner only | Before the first real tax entry |
 
 ---

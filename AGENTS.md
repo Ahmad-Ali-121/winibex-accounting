@@ -139,7 +139,7 @@ a service interface documented in `docs/API.md`. Shared code lives in `core/`.
   guarantees being tested live in the database
 - ESLint 9 flat config, no plugins. `Math.round` and `parseFloat` are blocked
   rules, because money is whole paisa and must never become a decimal
-- 347 API tests, 62 Flutter widget tests as of Phase 1
+- 389 API tests, 87 Flutter widget tests after the Phase 1 test fixes
 - Full rules in `docs/TESTING.md`
 
 ## UI rules

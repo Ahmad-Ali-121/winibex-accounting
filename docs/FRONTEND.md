@@ -60,7 +60,16 @@ transactions is `features/transactions/application/`, and its dio calls are
 
 Features built in Phase 1: `auth`, `accounts`, `transactions` (the posting
 form, the ledger, approvals, the journal and history panels), `dashboard`,
-`flags`, `shell` (the navigation frame).
+`flags`, `people` (adding people and what they may do), `shell` (the
+navigation frame).
+
+## People
+
+`/settings` shows `PeopleScreen` to the owner and one line to anyone else.
+`PeopleActions` is keep-alive like the other action providers and returns
+`ApiException?`. A person is `TeamMember`, not `Person`, which is the thin
+picker entry. The approval limit is typed in whole rupees and sent as
+`Money.pkr(rupees * 100)`; empty sends null, no limit. Decision 063.
 
 ## Rules that do not bend
 
@@ -191,4 +200,4 @@ network is stubbed. Both themes are covered. 62 tests at the end of Phase 1,
 retry, the form resetting, the review list, and who may post. 79 with F7: a
 changed entry after a refusal edits and posts the same draft. 86 with the app
 fixes: the sign-in error inside the real app, the date picker, the three kinds
-of error, and the reason dialog.
+of error, and the reason dialog. 95 with the People screen.

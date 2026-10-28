@@ -13,8 +13,8 @@ transactions, triggers, constraints.
 cd api && npm run test
 ```
 
-389 API tests after the Phase 1 test fixes of 2026-10-27: 386 pass, 3 skip
-(the argon2 tests, until that package is installed). 87 Flutter widget tests.
+403 API tests after people and permissions, 2026-10-27: 400 pass, 3 skip
+(the argon2 tests, until that package is installed). 95 Flutter widget tests.
 Flutter analyze clean.
 
 ### Must always pass
@@ -40,7 +40,10 @@ proving it returns `409` and proceeds once acknowledged.
 **Idempotency.** The same create request twice with one key produces one row.
 
 **Permissions.** Staff cannot approve, cannot see others' submissions, cannot
-read payroll when `payroll_visible_to_all` is false.
+read payroll when `payroll_visible_to_all` is false. Only the owner can list,
+add or change people; there is never a second owner; switching someone off or
+resetting their password ends their sessions and the old password fails
+(`tests/users.test.js`, decision 063).
 
 **Sequences.** Concurrent invoice creation produces no gaps and no duplicates.
 
@@ -105,6 +108,9 @@ cd app && flutter analyze
   the idempotency key, the form starting again after a save
 - Widget tests for the approval inbox, including a refused approval
 - Widget tests for the review list and Mark reviewed
+- Widget tests for the People screen: the owner row has no actions, a limit
+  typed in rupees is sent in paisa, a short temporary password sends nothing,
+  a refusal is shown, switch off and reset password
 - Unit tests for who may post their own entries (`auth_user_test.dart`)
 - Widget tests for the accounts list with balances
 - Money formatting tests, including negatives, foreign amounts and zero

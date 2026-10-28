@@ -109,19 +109,20 @@ async function runValidation(connection, { user, input, amount, acknowledged = [
 }
 
 // Tax Winibex withholds is reported on the quarterly s.165 statement under the
-// payee's NTN or CNIC. A local vendor with neither cannot be reported, so
-// withholding from them is refused before anything is written. UI-GUIDE lists
-// it as a blocking rule; the check existed in the vendors module and was never
-// called. D7.
-//
-// Only checked when a vendor is named. Requiring a vendor on every withheld
-// line is the stricter rule and a separate decision, because existing entries
-// and tests may withhold without one.
+// payee's NTN or CNIC. So withholding needs a payee, and the payee needs one
+// of the two. Both are refused before anything is written. D7, and decision
+// 062 for requiring the vendor at all.
 async function assertWithholdingPayee(connection, input) {
   const withholds = (input.taxes ?? []).some((tax) => tax.deductedBy === 'us');
-  if (withholds && input.vendorId) {
-    await assertCanWithholdFrom(connection, input.vendorId);
+  if (!withholds) return;
+  if (!input.vendorId) {
+    throw badRequest(
+      ErrorCode.MISSING_VENDOR_TAX_ID,
+      'Choose who you are paying, so the tax kept back can be reported under their NTN or CNIC.',
+      { field: 'vendorId' },
+    );
   }
+  await assertCanWithholdFrom(connection, input.vendorId);
 }
 
 // --- create -----------------------------------------------------------------
@@ -310,6 +311,17 @@ export async function reject({ user, id, reason, ip = null }) {
     assertCanApprove(user, row);
 
     await repo.setStatus(connection, id, 'rejected', { rejection_reason: reason });
+
+    // A rejected entry is not in the books, so its flags have nothing left to
+    // review. If it is fixed and sent again, validation raises fresh ones.
+    // Decision 062.
+    await connection.query(
+      `UPDATE entry_flags
+          SET resolved = 1, resolved_at = UTC_TIMESTAMP(), resolution_note = 'Entry rejected'
+        WHERE transaction_id = ? AND resolved = 0`,
+      [id],
+    );
+
     await writeAudit(connection, {
       userId: user.id, ip, table: 'transactions', recordId: id,
       action: AuditAction.STATUS_CHANGE,

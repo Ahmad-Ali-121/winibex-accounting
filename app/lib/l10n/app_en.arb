@@ -51,7 +51,7 @@
   "fieldDescription": "Description",
   "fieldClient": "Client",
   "fieldProject": "Project",
-  "fieldRebillable": "Rebillable to client",
+  "fieldRebillable": "Client will pay this back",
   "fieldReference": "Reference",
   "fieldReceipt": "Receipt",
   "fieldReason": "Reason",
@@ -256,7 +256,7 @@
   "flagThinDescription": "Description too short",
   "flagSelfApproved": "Created and approved by the same person",
   "flagPassThroughAging": "Money held in a pass-through account over 14 days",
-  "flagUninvoicedRebillable": "Rebillable spend not invoiced after 30 days",
+  "flagUninvoicedRebillable": "Spent for a client 30 days ago and not yet billed to them",
   "emptyTransactions": "No transactions yet. Record the first money in or money out to start the ledger.",
   "emptyApprovals": "Nothing waiting for approval.",
   "emptyClients": "No clients yet. Add one to link income and spending to it.",
@@ -286,8 +286,8 @@
   "termAccountsReceivableTip": "Money clients owe Winibex for invoices not yet paid.",
   "termAccountsPayable": "Accounts payable",
   "termAccountsPayableTip": "Money Winibex owes to suppliers, contractors or people who paid on its behalf.",
-  "termRebillable": "Rebillable",
-  "termRebillableTip": "Spent on a client's behalf and charged back to them. Appears on their next invoice instead of reducing profit.",
+  "termRebillable": "Client will pay back",
+  "termRebillableTip": "Spent for a client who will repay it. It is not counted as our cost. It waits as money the client owes until they pay.",
   "termAbsorbed": "Absorbed",
   "termAbsorbedTip": "Spent on a client's behalf and not charged back. Comes out of the profit on that client.",
   "termPassThrough": "Pass-through account",
@@ -378,20 +378,32 @@
     "description": "Shown when a deactivated user tries to sign in"
   },
   "navAccounts": "Accounts",
-  "@navAccounts": { "description": "Navigation label for the accounts screen" },
+  "@navAccounts": {
+    "description": "Navigation label for the accounts screen"
+  },
   "accountsTitle": "Accounts",
-  "@accountsTitle": { "description": "Heading on the accounts screen" },
+  "@accountsTitle": {
+    "description": "Heading on the accounts screen"
+  },
   "accountsSubtitle": "What the company holds today",
-  "@accountsSubtitle": { "description": "Line under the accounts heading" },
+  "@accountsSubtitle": {
+    "description": "Line under the accounts heading"
+  },
   "accountsColumnAccount": "ACCOUNT",
   "accountsColumnLedger": "LEDGER",
   "accountsColumnBalance": "BALANCE",
   "accountsTotal": "Total held",
-  "@accountsTotal": { "description": "Label on the totals row of the accounts table" },
+  "@accountsTotal": {
+    "description": "Label on the totals row of the accounts table"
+  },
   "accountsInactive": "Closed",
-  "@accountsInactive": { "description": "Tag on an account that is no longer in use" },
+  "@accountsInactive": {
+    "description": "Tag on an account that is no longer in use"
+  },
   "accountsHistoryNotMerged": "These balances start from 1 July 2026. Entries before that are excluded until history has been checked against the opening entry.",
-  "@accountsHistoryNotMerged": { "description": "Shown while history_merged is false" },
+  "@accountsHistoryNotMerged": {
+    "description": "Shown while history_merged is false"
+  },
   "accountTypeBank": "Bank",
   "accountTypeCash": "Cash",
   "accountTypePettyCash": "Petty cash",
@@ -403,7 +415,14 @@
   "stepCounter": "Step {current} of {total}",
   "@stepCounter": {
     "description": "Progress above the entry form",
-    "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "stepDirectionQuestion": "Did money come in, or go out?",
   "stepDateQuestion": "When did it move?",
@@ -423,7 +442,7 @@
   "hintAmountIsGross": "Before any tax or bank charges. Those come next.",
   "hintRateOrPkr": "Enter the rate, or leave it and type the rupees the bank gave.",
   "hintDescription": "Enough that you will recognise it in a year.",
-  "hintRebillable": "It will not count as a cost. It sits as money owed until you invoice it.",
+  "hintRebillable": "Spent for a client who will repay it. It is not counted as our cost. It waits as money the client owes until they pay.",
   "hintPaidByPerson": "No company account moves. The company owes them instead.",
   "previewNotReady": "Fill in the amount, the account and the category to see the journal entry.",
   "journalColumnAccount": "ACCOUNT",
@@ -440,7 +459,14 @@
   "ledgerShowing": "Showing {shown} of {total}",
   "@ledgerShowing": {
     "description": "Under the ledger list",
-    "placeholders": { "shown": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "ledgerFlagged": "This entry has something to review",
   "ledgerReversedNotice": "This entry was reversed. Both it and its reversal stay in the book.",
@@ -452,7 +478,11 @@
   "approvalsHasFlags": "{count, plural, =1{1 thing to review} other{{count} things to review}}",
   "@approvalsHasFlags": {
     "description": "Flag count on an approval card",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "rejectTitle": "Send it back",
   "hintRejectReason": "They will see this, so say what needs changing.",
@@ -465,7 +495,11 @@
   "receiptSize": "{kb} KB",
   "@receiptSize": {
     "description": "Under the name of an attached file",
-    "placeholders": { "kb": { "type": "int" } }
+    "placeholders": {
+      "kb": {
+        "type": "int"
+      }
+    }
   },
   "navFlags": "To review",
   "dashboardTitle": "Overview",
@@ -474,13 +508,31 @@
   "dashboardInThisMonth": "In this month",
   "dashboardOutThisMonth": "Out this month",
   "dashboardWaitingApproval": "{count, plural, =1{1 entry waiting for approval} other{{count} entries waiting for approval}}",
-  "@dashboardWaitingApproval": { "placeholders": { "count": { "type": "int" } } },
+  "@dashboardWaitingApproval": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "dashboardOpenFlags": "{count, plural, =1{1 entry to review} other{{count} entries to review}}",
-  "@dashboardOpenFlags": { "placeholders": { "count": { "type": "int" } } },
+  "@dashboardOpenFlags": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "emptyFlagsTitle": "Nothing to review",
   "emptyFlagsDetail": "Warnings people confirmed, and flags like a missing receipt, show up here.",
   "flagsConfirmedBy": "confirmed by {name}",
-  "@flagsConfirmedBy": { "placeholders": { "name": { "type": "String" } } },
+  "@flagsConfirmedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "flagPossibleDuplicate": "Possible duplicate",
   "flagUnusualAmount": "Unusual amount",
   "flagBackdated": "Backdated",
@@ -509,7 +561,9 @@
   "historyUpdated": "Edited",
   "historyStatusChanged": "Status changed",
   "actionMarkReviewed": "Mark reviewed",
-  "@actionMarkReviewed": { "description": "Button on a flag in To review. Owner and admins only" },
+  "@actionMarkReviewed": {
+    "description": "Button on a flag in To review. Owner and admins only"
+  },
   "markReviewedTitle": "Mark as reviewed",
   "fieldReviewNote": "Why it needs nothing more",
   "hintReviewNote": "Kept with the flag, so anyone can see why it was cleared.",
@@ -519,5 +573,42 @@
   "errNoteTooShort": "Write at least 3 characters.",
   "actionPickDate": "Pick a date",
   "hintDateFormat": "YYYY-MM-DD",
-  "hintCategorySearch": "Type a name or a code, such as welfare or 6110"
+  "hintCategorySearch": "Type a name or a code, such as welfare or 6110",
+  "peopleTitle": "People",
+  "peopleOwnerOnly": "Only the owner can add people or change what they can do.",
+  "actionAddPerson": "Add person",
+  "actionResetPassword": "Reset password",
+  "actionSwitchOff": "Switch off",
+  "actionSwitchOn": "Switch on",
+  "roleOwner": "Owner",
+  "roleAdmin": "Admin",
+  "roleStaff": "Staff",
+  "roleHelpTitle": "What each role can do",
+  "roleOwnerHelp": "Can do everything, including adding people and changing what they can do. Their own entries go straight into the books. There is only one owner: the office login.",
+  "roleAdminHelp": "Approves other people's entries, moves money between accounts, reverses entries, pays people back, adds vendors, issues cheques and clears flags. Cannot add people or change settings.",
+  "roleStaffHelp": "Records money in and money out and sends it for approval. Cannot approve anything, including their own entries.",
+  "officeLoginHelp": "Turn this on for anyone who also knows the office login password. When the office login approves an entry this person made, the app keeps a quiet note, because it may be the same person approving their own work.",
+  "fieldFullName": "Full name",
+  "fieldRole": "Role",
+  "fieldApprovalLimit": "Approval limit (PKR)",
+  "hintApprovalLimit": "The biggest entry this person may approve. Leave empty for no limit. Bigger entries wait for the owner.",
+  "fieldPostsOwn": "Can post their own entries",
+  "hintPostsOwn": "On: their own entries go straight into the books. Off: someone else must approve them.",
+  "fieldSharesOfficeLogin": "Also uses the office login",
+  "hintSharesOfficeLogin": "Turn on if this person knows the office login password. Their entries approved by the office login get a quiet note.",
+  "fieldTemporaryPassword": "Temporary password",
+  "hintTemporaryPassword": "At least 10 characters. Give it to them in person. They must choose their own password the first time they sign in.",
+  "peopleApprovesUpTo": "Approves up to",
+  "peopleNoLimit": "Approves any amount",
+  "peoplePostsOwn": "Posts own entries",
+  "peopleSharesLogin": "Also uses the office login",
+  "peopleSwitchedOff": "Switched off. Cannot sign in.",
+  "peopleMustChange": "Has not set their own password yet",
+  "personAdded": "Person added. Give them the temporary password.",
+  "personSaved": "Saved.",
+  "passwordReset": "Password reset. They are signed out everywhere and must set a new one.",
+  "addPersonTitle": "Add a person",
+  "editPersonTitle": "Change what this person can do",
+  "errNameRequired": "Enter their name.",
+  "errEmailInvalid": "Enter a valid email address."
 }

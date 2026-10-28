@@ -28,8 +28,10 @@ tooltip on hover and on long-press for touch.
 - Say what it means here, in this company's terms, not the textbook definition.
   Good: "Money we have spent but not yet recovered from the client."
   Bad: "An asset arising from the delivery of goods or services."
-- Fields that affect posting say so: "Choosing Rebillable means this appears on
-  the client's next invoice instead of reducing profit."
+- Fields that affect posting say so: "Client will pay this back" explains
+  that the spend is not our cost and waits as money the client owes. The tick
+  is the one way to record rebillable spend; the category says what it was.
+  Decision 062
 - Tooltips are content, not decoration. They live in one `lib/core/glossary/`
   map so the same term never gets two different explanations
 - A `?` icon only where hover is not discoverable, never on every label
@@ -214,6 +216,29 @@ wrote it stay with the flag. Decision 056.
 
 Warnings must name the specific record they matched against and link to it. A
 warning the user cannot investigate becomes a warning they dismiss by reflex.
+
+## People and permissions
+
+Settings opens on People. Only the owner sees it; anyone else sees one line
+saying only the owner can add people. Decision 063.
+
+- A card per person: name, email, role, and in plain words what is special
+  about them: "Approves up to 50,000.00", "Posts own entries", "Also uses
+  the office login", "Has not set their own password yet", "Switched off"
+- Edit, Reset password, Switch off or on. None of these on the office login
+- Add person asks for the name, email, role, a temporary password, and for an
+  admin, an approval limit in whole rupees (empty means no limit) and whether
+  their own entries post straight away
+- "What each role can do" opens above the list, written for the owner, not
+  for an accountant:
+  - **Owner.** Everything, including adding people. The office login
+  - **Admin.** Approves others' entries, moves money, reverses, pays people
+    back, adds vendors, issues cheques, clears flags. Cannot add people or
+    change settings
+  - **Staff.** Records money in and out and sends it for approval
+  - **Also uses the office login.** For anyone who knows the office password,
+    so the app can note when that login approves their own work
+- Nobody is deleted, so every entry keeps the name of who made it
 
 ## Posting and corrections
 

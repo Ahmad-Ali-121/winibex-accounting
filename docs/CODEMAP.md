@@ -7,7 +7,7 @@ why it exists.
 Kept current as the project grows. If a file is not here, it was added after
 this was last updated.
 
-Last updated: 2026-10-26 (Phase 1 defect fixes).
+Last updated: 2026-10-27 (People and permissions).
 
 ---
 
@@ -154,8 +154,11 @@ Current modules:
   never from a static folder.
 - **`categories/`**: the category picker, grouped by main head, with control
   accounts excluded.
-- **`users/`**: thin list for the people picker (id, name, role). Not a full
-  user management module yet.
+- **`users/`**: two things. `GET /users` is the thin list for the people
+  picker (id, name, role). `/people` is the owner's: list everyone, add a
+  person with a temporary password, change their role, limit or switches,
+  switch them off, reset a password. Passwords never leave `service.js`, and
+  every change is written to the audit log. Decision 063.
 - **`dashboard/`**: cash held per account, money in and out this month,
   pending count and flag count. The numbers the home screen shows.
 - **`flags/`**: the review list of confirmed warnings and raised flags on
@@ -197,6 +200,10 @@ Numbered SQL files, run in order. The database remembers which have run.
   holding a fingerprint of each request, so the same key sent with different
   content is refused instead of answered with the first result. Defect F7,
   decision 059.
+- **`007_rebillable_and_rejected_flags.sql`**: data only. Switches off the
+  separate rebillable money-out category, drops "absorbed" from the client
+  advertising category's name, and clears flags on rejected entries.
+  Decision 062.
 
 ### `api/scripts/`: tools you run by hand
 
@@ -216,7 +223,7 @@ Numbered SQL files, run in order. The database remembers which have run.
 
 Every `.js` file here tests one area. They run against a real database, never a
 fake one, because the guarantees being tested live in the database. `npm test`
-runs them all. 389 tests after the Phase 1 test fixes: 386 pass, 3 argon2
+runs them all. 403 tests after people and permissions: 400 pass, 3 argon2
 tests skip until that package is installed.
 
 Test files:
@@ -249,8 +256,11 @@ Test files:
 - **`sequences.test.js`**: concurrent allocation produces no gaps and no
   duplicates.
 - **`defect-fixes.test.js`**: one or more tests per defect found while
-  writing the Phase 1 test (D1, D2, D5 to D9, D11, D12, D14). If any of them
-  comes back, this file fails.
+  writing the Phase 1 test (D1, D2, D5 to D9, D11, D12, D14), and for the
+  decision 062 rules. If any of them comes back, this file fails.
+- **`users.test.js`**: only the owner manages people, staff get no limit, no
+  second owner, the owner row cannot be changed, switching off and resetting
+  a password end every session.
 
 ---
 
@@ -363,6 +373,9 @@ Current features:
 - **`flags/`**: the flags review list: entries with confirmed warnings or
   raised flags. The owner and admins see a Mark reviewed button on each, which
   asks for a short note.
+- **`people/`**: the owner's People screen under Settings: everyone who can
+  sign in, what each role can do in plain words, add a person, change what
+  they can do, reset a password, switch someone off.
 - **`change_password/`**: the change password screen, with the forced-change
   guard that redirects here on first login.
 
@@ -373,7 +386,8 @@ Current features:
 
 ### `app/test/`
 
-87 Flutter widget tests after the fixes of 2026-10-27. Flutter analyze clean.
+95 Flutter widget tests after the People screen, 2026-10-27. Flutter analyze
+clean.
 
 - **`foundation_test.dart`**: checks the theme and glossary hold together.
 - **`login_test.dart`**: checks the login screen behaves on success, wrong
@@ -396,5 +410,7 @@ Current features:
   told apart and each gets its own message.
 - **`auth_user_test.dart`**: who may post their own entries: the owner, and
   an admin with auto-approve. Nobody else.
+- **`people_screen_test.dart`**: the People screen: the office login has no
+  buttons, rupees become paisa, short passwords and refusals.
 
 ---
