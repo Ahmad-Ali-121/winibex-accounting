@@ -86,6 +86,26 @@ class TransactionsRepository {
     }
   }
 
+  /// A draft already on the server, as the entry form needs it to open again.
+  Future<EntryDraft> openDraft(int id, {required String idempotencyKey}) async {
+    try {
+      final response = await dio.get<Map<String, dynamic>>('/transactions/$id');
+      return EntryDraft.fromDetail(response.data!, idempotencyKey: idempotencyKey);
+    } catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+
+  /// Back to a draft: a submitted entry taken back by its sender, or a
+  /// rejected one opened to be fixed. Decision 067.
+  Future<void> reopen(int id) async {
+    try {
+      await dio.post<Map<String, dynamic>>('/transactions/$id/reopen');
+    } catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+
   /// The taxes that can be added by hand to an entry on [date] going in
   /// [direction]: in force then, and for that direction.
   Future<List<TaxOption>> taxesInForce({required String date, required String direction}) async {

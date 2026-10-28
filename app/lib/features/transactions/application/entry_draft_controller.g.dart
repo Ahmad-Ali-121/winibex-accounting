@@ -60,7 +60,7 @@ final class EntryDraftControllerProvider
 }
 
 String _$entryDraftControllerHash() =>
-    r'4743de3257ee100f1248c10cebee5d755e6ee193';
+    r'f94503b088a596c3fc422e5ac1279778468c2986';
 
 /// The entry form's state, and the actions that change it.
 ///
@@ -180,7 +180,7 @@ final class EntrySaveProvider
   }
 }
 
-String _$entrySaveHash() => r'0989fead4c536165893a1b8ab79fc7c2bf30d2cb';
+String _$entrySaveHash() => r'f6d511fbed8bc69c84122ac4727030f5d5dacef7';
 
 /// Saving, as its own notifier.
 ///

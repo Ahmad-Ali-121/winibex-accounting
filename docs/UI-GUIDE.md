@@ -288,6 +288,72 @@ Each has its own menu item (decision 066).
   linked to. Buttons offer only the next allowed move. Record a cheque asks
   for the bank account, number, payee, amount and date
 
+## Fixing an entry before it posts
+
+In Transactions, tapping an entry that is not in the books yet (decision 067):
+
+- **Draft**: Edit
+- **Waiting for approval**: Take back to fix, for the person who sent it
+- **Sent back**: Fix and send again
+
+The entry form opens it with a banner: "Changing a saved draft", or "Sent back
+to be fixed" with the approver's reason. Saving edits that draft and sends it
+again.
+
+## Taxes
+
+Settings opens on a home of four cards, People, Taxes, Ledger codes, and
+Import and export, each saying what it is for with a live summary and opening
+its own page, which has "All settings" to go back. Owner only. Decision 069.
+
+On the Taxes page, a box at the top explains filers, rate changes, rules and
+that posted entries keep their tax. Each tax card starts with a plain sentence
+saying who pays it, how much, and whether we can claim it back, then lists the
+rate, kind, where it is recorded and the dates, then when it is suggested. A tax card says its
+rates for a filer and a non-filer, whose filer status counts, what it applies
+to, where it posts, its period, and when it is suggested. Earlier rates are
+hidden unless asked for. The current row offers "New rate from a date", "Add a
+rule" and "End this tax". "Add tax" is for a tax the accountant names.
+
+## Ledger codes
+
+The chart of accounts, grouped by first digit (1000 Assets to 9000 Taxation),
+searchable by code or name. Headings sit on a shaded row with no actions. Each
+code shows chips: "Built in" (its name stays and it stays on), "On the entry
+form", "Switched off". A code the owner may change has a menu with Rename and
+Switch off or Switch on. "Add code" asks for four digits and a name, says
+which group the code goes under as it is typed, and for an income or expense
+code offers "Show it on the entry form", on by default. Switching off asks
+first and says that old entries keep the code. Refusals show in the dialog in
+the server's words. Decision 068.
+
+## Headings
+
+"Add heading" adds a heading; "Add code" a code. Both ask which heading they
+sit under, offering only headings of the same kind that come before the code,
+or the nearest one automatically. Headings show with a folder on a shaded row,
+and codes are indented under them. The menu on a code or heading the owner may
+change has Edit (name and heading) and Switch off or on. A box above the list
+explains the first digit, headings, built-in codes and switching off.
+
+## Import and export
+
+Three numbered steps, then a card each for ledger codes and taxes with
+"Download the template", "Download the current list" and "Import a file".
+Importing opens a preview: counts of new, changed, no change and skipped, then
+each row with what will happen or why it is skipped. Rows with no change are
+hidden until asked for. "Save N changes" saves; nothing is saved before it.
+Decision 069.
+
+## Find on this screen
+
+Ctrl+F (Cmd+F on a Mac), or the find button in the top bar, opens a bar at the
+top right of the page: a box, "2 of 5" or "No matches", up and down arrows and
+a close button, with one line saying it finds what this screen shows and that
+Search on Transactions covers every entry. Every match is highlighted in
+soft amber, the current one stronger. Enter moves to the next, Shift+Enter to
+the previous, Escape closes it. Decision 068.
+
 ## Posting and corrections
 
 - Draft is editable. Posted is not, for anyone, including admin
@@ -330,7 +396,8 @@ gapless number.
 ## Tables
 
 - Server-side search on every table, searching all rows and not just the page
-- `find_in_page` for finding text already on screen
+- Find on this screen (Ctrl+F) for text already on screen, built into the app
+  shell (decision 068)
 - Column sort and visibility saved per user
 - Copy row and export to CSV on every list
 - Row count and total always visible: "118 entries, 1,284,502 PKR"

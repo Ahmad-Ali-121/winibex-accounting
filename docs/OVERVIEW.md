@@ -53,19 +53,20 @@ becomes the book of record.
 
 | Person | Role in the system |
 | --- | --- |
-| Winibex office account | Owner, shared by Ahmad and Maryam. Approves everything, all settings |
-| Admins | Optional named logins the owner can add later |
+| Winibex office account | Owner, shared by the directors. Creates, approves and reverses entries, and is the only login that sees Settings. Decisions 036 and 063 |
+| Admins | Named logins the owner adds under Settings, People |
 | Maryam | Staff login for her own entries. Also approves through the shared owner login |
 | Ahmad | Uses the owner login during the build, then a staff login |
 | Fazal | Staff. Receives some client money into his personal account |
-| The company accountant | Reads reports, reviews the chart of accounts and taxes |
+| The company accountant | Reads reports, reviews the chart of accounts and taxes, and can send changes to both as spreadsheet files that the owner imports |
 
 ## What it does
 
 ### Money
 Accounts with balances calculated from posted entries, never stored. Company
 accounts plus pass-through accounts for the personal accounts where client
-money lands first. Transfers as two linked legs.
+money lands first. Transfers as two linked legs. Paying people back, the
+petty cash top-up and the opening balances are done from the Accounts screen.
 
 ### Entry
 A guided form: direction, currency, amount, who paid, rate or PKR figure, tax
@@ -73,7 +74,8 @@ and charge lines, category, client, receipt, then a review showing the journal
 entry before submitting. Example: a $20 Claude subscription paid on Ahmad's
 card asks the currency, records that Ahmad paid personally so the company owes
 him, takes the rate, adds the card tax and forex fee lines, and posts a
-balanced entry. See `docs/UI-GUIDE.md`.
+balanced entry. A draft can be edited, a submitted entry taken back by its
+sender, and a rejected one fixed and sent again. See `docs/UI-GUIDE.md`.
 
 ### Control
 - Draft, pending, posted, reversed. Posted entries cannot be edited by anyone,
@@ -96,7 +98,16 @@ is about. Each transaction snapshots the rate and status used. Covers Section
 154A at 0.25% on IT exports, Section 153 withholding (4% IT, 7% specified,
 15% independent developers, for filers), Section 236Y at 0.5% on foreign card
 payments, FED on bank charges, salary withholding. Produces the quarterly
-Section 165 withholding statement. See `docs/TAXES.md`.
+Section 165 withholding statement. Taxes, their rates and when each is
+suggested are kept by the owner under Settings, Taxes, or imported from a
+spreadsheet file. See `docs/TAXES.md`.
+
+### Settings
+A home of cards for the owner: People, Taxes, Ledger codes, and Import and
+export. Ledger codes and headings can be added, renamed, moved and switched
+off, never deleted. Ledger codes and taxes go in and out as CSV files that
+open in Excel; an import shows what every row will change before anything is
+saved. Decisions 063 and 067 to 069.
 
 ### Clients and earnings
 Clients with status, projects as fixed, retainer or hourly, rebillable versus
@@ -145,7 +156,7 @@ books. Read only at first.
 | Layer | Technology | Responsibility |
 | --- | --- | --- |
 | App | Flutter, Dart, Riverpod 3 with code generation | Everything users see. Never calculates a balance |
-| API | Node 24, Express 5 | Every business rule, the posting engine, PDFs, auth, cron |
+| API | Node 24, Express 5 | Every business rule, the posting engine, CSV import and export, PDFs, auth, cron |
 | Database | MariaDB 11.8 | Storage, constraints, transactions, immutability trigger |
 | MCP | Node | Reuses the API's service layer directly |
 | Hosting | Hostinger Business | Node app, managed MariaDB, static web hosting |
@@ -170,8 +181,8 @@ petrol palette. See `docs/UI-GUIDE.md`.
 | Phase | Scope | Status |
 | --- | --- | --- |
 | 0 | Foundation: schema, auth, roles, audit, theme, strings | Complete |
-| 1 | Money in and out, taxes, approvals, validation, reimbursements | Complete, deployed |
-| 2 | Clients, projects, earning accounts | Next |
+| 1 | Money in and out, taxes, approvals, validation, reimbursements | Complete, deployed, every feature on screen |
+| 2 | Clients, projects, earning accounts | Next, after Phase 1 is used with real entries |
 | 3 | Quotations, invoices, receipts, documents | |
 | 4 | Payroll | |
 | 5 | Recurring costs | |
@@ -182,21 +193,23 @@ petrol palette. See `docs/UI-GUIDE.md`.
 
 ## Status
 
-Phase 1 complete, tested end to end on 2026-10-27 (locally and on
-production), and production reset to empty books. The API runs at
-api-accounting.winibex.com and the web app at accounting.winibex.com. 389 API
-tests and 87 Flutter widget tests pass. Before real entries, the screens still
-missing from Phase 1 (D15 in PROGRESS.md) come first. CI/CD is in place: the API auto-deploys on push via Hostinger Git
-integration, and the web app deploys via GitHub Actions building Flutter web
-and uploading over FTP. Still waiting on accountant review of taxes and chart
-of accounts. See `docs/PROGRESS.md` for pending items before Phase 2.
+Phase 1 is complete and live, and every Phase 1 feature has a screen. Settings
+has a home of cards, ledger codes with headings, and import and export of
+ledger codes and taxes. 463 API tests (460 pass, 3 argon2 skips) and 172
+Flutter widget tests pass. The API runs at api-accounting.winibex.com and the
+web app at accounting.winibex.com. CI/CD is in place: the API auto-deploys on
+push via Hostinger Git integration, and the web app deploys via GitHub Actions
+building Flutter web and uploading over FTP. Production holds empty books.
+Before real entries: the real 30 June 2026 balances and the accountant's tax
+rates, both entered from the app. See `docs/PROGRESS.md`.
 
 ## Known risks
 
 | Risk | Mitigation |
 | --- | --- |
 | Tax rates for tax year 2027 conflicted across sources | Rates are data, accountant sets them, bank figures win |
-| Flutter web cannot use the browser's Ctrl+F | Server search plus an in-app find bar (deferred) |
+| Flutter web cannot use the browser's Ctrl+F | Server search, plus find on this screen built into the app (decision 068) |
+| A spreadsheet import changes many records at once | A preview of every row before anything is saved, all or nothing on confirm, nothing ever deleted (decision 069) |
 | Hostinger shared constraints: no SSH npm, no migration CLI, no headless Chrome | Documented in `docs/DEPLOY.md` and designed around |
 | MariaDB differs from MySQL in JSON handling and collation | Differences listed in decision 041 and asserted by tests against the real engine |
 | JavaScript rounds integers past 2^53 | `supportBigNumbers` on every connection, guarded by a test. Decision 044 |

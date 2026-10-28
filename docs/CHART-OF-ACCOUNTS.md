@@ -36,6 +36,12 @@ return figures come straight out of the Trial Balance.
 - Accounts marked **system** cannot be renamed or deactivated
 - Accounts marked **control** cannot take manual journal entries. They are
   written only by their own module
+- New codes and headings are added by the owner in the app, under Settings,
+  Ledger codes, one at a time or many at once from a spreadsheet file through
+  Import and export. A code sits under a heading with the same first digit
+  that comes before it. Nothing is deleted; a code is switched off. Built-in
+  codes keep their name, heading and switch. Decisions 068 and 069
+- After a database reset, migration 002 puts this whole chart back by itself
 
 | Class | Type | Normal balance |
 | --- | --- | --- |

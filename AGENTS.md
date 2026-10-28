@@ -109,12 +109,14 @@ app/lib/core/            theme, glossary, http, widgets
 ```
 
 API modules built in Phase 0 and 1: health, auth, accounts, transactions,
-taxes, vendors, cheques, reimbursements, attachments, categories, users,
-dashboard, flags, history.
+taxes (with `import.js` for bulk files), vendors, cheques, reimbursements,
+attachments, categories, users (with `/people`), dashboard, flags, history,
+ledger-codes. CSV files are read and written by `core/csv.js`.
 
-App features built: auth, shell, dashboard, accounts, transactions (entry form,
-ledger, journal panel, approval inbox, edit history, receipt upload), flags,
-change_password.
+App features built: auth, shell (with find on this screen), dashboard,
+accounts, transactions (entry form, ledger, journal panel, approval inbox,
+edit history, receipt upload, fixing drafts), flags, change_password, people,
+money, vendors, cheques, settings, taxes, ledger_codes, import_export.
 
 Features never import from each other directly. Cross-feature needs go through
 a service interface documented in `docs/API.md`. Shared code lives in `core/`.
@@ -139,7 +141,7 @@ a service interface documented in `docs/API.md`. Shared code lives in `core/`.
   guarantees being tested live in the database
 - ESLint 9 flat config, no plugins. `Math.round` and `parseFloat` are blocked
   rules, because money is whole paisa and must never become a decimal
-- 389 API tests, 87 Flutter widget tests after the Phase 1 test fixes
+- 463 API tests (3 argon2 skips), 172 Flutter widget tests after batch G
 - Full rules in `docs/TESTING.md`
 
 ## UI rules

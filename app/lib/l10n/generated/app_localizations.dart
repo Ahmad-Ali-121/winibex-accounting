@@ -3489,6 +3489,1296 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cheque {number} recorded.'**
   String chequeIssuedDone(String number);
+
+  /// No description provided for @settingsOwnerOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the owner can change people, taxes and ledger codes.'**
+  String get settingsOwnerOnly;
+
+  /// No description provided for @fixingDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing a saved draft'**
+  String get fixingDraft;
+
+  /// No description provided for @fixingSentBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent back to be fixed'**
+  String get fixingSentBack;
+
+  /// No description provided for @fixingReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Why: {reason}'**
+  String fixingReason(String reason);
+
+  /// No description provided for @fixingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Change what is wrong, then save. It is sent for approval again, or posted if you may post your own entries.'**
+  String get fixingHint;
+
+  /// No description provided for @entryDraftExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'A draft, not sent yet. Open it to finish or change it.'**
+  String get entryDraftExplain;
+
+  /// No description provided for @entryPendingExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval. If something is wrong, take it back, fix it, and send it again. Only the person who sent it can do this.'**
+  String get entryPendingExplain;
+
+  /// No description provided for @entryRejectedExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent back by the approver. Open it to see why, fix it, and send it again.'**
+  String get entryRejectedExplain;
+
+  /// No description provided for @actionTakeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Take back to fix'**
+  String get actionTakeBack;
+
+  /// No description provided for @actionFixAndResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix and send again'**
+  String get actionFixAndResend;
+
+  /// No description provided for @taxesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Taxes'**
+  String get taxesTitle;
+
+  /// No description provided for @taxesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The taxes the company pays, and the ones it keeps back from people it pays. Each card says in plain words what the tax does.'**
+  String get taxesIntro;
+
+  /// No description provided for @actionAddTax.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tax'**
+  String get actionAddTax;
+
+  /// No description provided for @taxesShowOld.
+  ///
+  /// In en, this message translates to:
+  /// **'Show ended and earlier rates'**
+  String get taxesShowOld;
+
+  /// No description provided for @taxesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No taxes yet. The accountant\'s rates are added here.'**
+  String get taxesEmpty;
+
+  /// No description provided for @taxSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get taxSaved;
+
+  /// No description provided for @taxKindWithholding.
+  ///
+  /// In en, this message translates to:
+  /// **'Withholding, kept back'**
+  String get taxKindWithholding;
+
+  /// No description provided for @taxKindFinal.
+  ///
+  /// In en, this message translates to:
+  /// **'Final tax'**
+  String get taxKindFinal;
+
+  /// No description provided for @taxKindAdvance.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance tax'**
+  String get taxKindAdvance;
+
+  /// No description provided for @taxKindSalesTax.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales tax'**
+  String get taxKindSalesTax;
+
+  /// No description provided for @taxKindFed.
+  ///
+  /// In en, this message translates to:
+  /// **'FED'**
+  String get taxKindFed;
+
+  /// No description provided for @taxKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get taxKindOther;
+
+  /// No description provided for @taxInForce.
+  ///
+  /// In en, this message translates to:
+  /// **'In force'**
+  String get taxInForce;
+
+  /// No description provided for @taxStarts.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts {date}'**
+  String taxStarts(String date);
+
+  /// No description provided for @taxEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended {date}'**
+  String taxEnded(String date);
+
+  /// No description provided for @taxRates.
+  ///
+  /// In en, this message translates to:
+  /// **'{filer}% for a filer, {nonFiler}% for a non-filer'**
+  String taxRates(String filer, String nonFiler);
+
+  /// No description provided for @taxRatesFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed {filer} for a filer, {nonFiler} for a non-filer'**
+  String taxRatesFixed(String filer, String nonFiler);
+
+  /// No description provided for @taxBasisOurs.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken from us, so our own filer status sets the rate.'**
+  String get taxBasisOurs;
+
+  /// No description provided for @taxBasisPayee.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept back by us from the payee, so their filer status sets the rate.'**
+  String get taxBasisPayee;
+
+  /// No description provided for @taxBasisOursShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken from us'**
+  String get taxBasisOursShort;
+
+  /// No description provided for @taxBasisPayeeShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept back from the payee'**
+  String get taxBasisPayeeShort;
+
+  /// No description provided for @taxAppliesIn.
+  ///
+  /// In en, this message translates to:
+  /// **'On money coming in'**
+  String get taxAppliesIn;
+
+  /// No description provided for @taxAppliesOut.
+  ///
+  /// In en, this message translates to:
+  /// **'On money going out'**
+  String get taxAppliesOut;
+
+  /// No description provided for @taxAppliesBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'On money in and out'**
+  String get taxAppliesBoth;
+
+  /// No description provided for @taxBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get taxBoth;
+
+  /// No description provided for @taxPostsTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts to {account}'**
+  String taxPostsTo(String account);
+
+  /// No description provided for @taxPeriodOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'From {from}'**
+  String taxPeriodOpen(String from);
+
+  /// No description provided for @taxPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} to {to}'**
+  String taxPeriod(String from, String to);
+
+  /// No description provided for @taxRulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When the entry form suggests it'**
+  String get taxRulesTitle;
+
+  /// No description provided for @taxNoRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Never suggested. Add a rule, or it can only be added to an entry by hand.'**
+  String get taxNoRules;
+
+  /// No description provided for @ruleMoneyIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Money in'**
+  String get ruleMoneyIn;
+
+  /// No description provided for @ruleMoneyOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Money out'**
+  String get ruleMoneyOut;
+
+  /// No description provided for @ruleAnyCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Any currency'**
+  String get ruleAnyCurrency;
+
+  /// No description provided for @ruleForeignOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Foreign currency'**
+  String get ruleForeignOnly;
+
+  /// No description provided for @ruleRupeesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Rupees only'**
+  String get ruleRupeesOnly;
+
+  /// No description provided for @ruleAnyAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Any account'**
+  String get ruleAnyAccount;
+
+  /// No description provided for @ruleAnyCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Any category'**
+  String get ruleAnyCategory;
+
+  /// No description provided for @actionNewRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the rate from a date'**
+  String get actionNewRate;
+
+  /// No description provided for @actionAddRule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a rule'**
+  String get actionAddRule;
+
+  /// No description provided for @actionEndTax.
+  ///
+  /// In en, this message translates to:
+  /// **'End this tax'**
+  String get actionEndTax;
+
+  /// No description provided for @newRateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New rate for {code}'**
+  String newRateTitle(String code);
+
+  /// No description provided for @newRateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For a budget change. Entries before the start date keep the old rate; entries from it get the new one.'**
+  String get newRateHint;
+
+  /// No description provided for @fieldNewRateFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'New rate starts on'**
+  String get fieldNewRateFrom;
+
+  /// No description provided for @newRateOldEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'The current {code} rate will end on {date}.'**
+  String newRateOldEnds(String code, String date);
+
+  /// No description provided for @actionSaveNewRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Save new rate'**
+  String get actionSaveNewRate;
+
+  /// No description provided for @fieldRateFiler.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate for a filer'**
+  String get fieldRateFiler;
+
+  /// No description provided for @fieldRateNonFiler.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate for a non-filer'**
+  String get fieldRateNonFiler;
+
+  /// No description provided for @errRateShape.
+  ///
+  /// In en, this message translates to:
+  /// **'A number, up to four decimal places.'**
+  String get errRateShape;
+
+  /// No description provided for @endTaxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'End {code}?'**
+  String endTaxTitle(String code);
+
+  /// No description provided for @endTaxHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For a tax that no longer applies at all. It is not suggested or accepted on entries after this day. Entries before it keep it.'**
+  String get endTaxHint;
+
+  /// No description provided for @fieldLastDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Last day it applies'**
+  String get fieldLastDay;
+
+  /// No description provided for @addRuleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When to suggest {code}'**
+  String addRuleTitle(String code);
+
+  /// No description provided for @addRuleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The entry form suggests this tax when an entry matches all of these. \"Any\" means it does not matter.'**
+  String get addRuleHint;
+
+  /// No description provided for @fieldRuleCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get fieldRuleCurrency;
+
+  /// No description provided for @fieldRuleAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid from or into'**
+  String get fieldRuleAccount;
+
+  /// No description provided for @fieldRuleCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get fieldRuleCategory;
+
+  /// No description provided for @addTaxTitleFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a tax'**
+  String get addTaxTitleFull;
+
+  /// No description provided for @addTaxHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For a tax the accountant names. To change the rate of one that exists, use \"New rate from a date\" on it instead.'**
+  String get addTaxHint;
+
+  /// No description provided for @fieldTaxName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get fieldTaxName;
+
+  /// No description provided for @fieldTaxCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Short code'**
+  String get fieldTaxCode;
+
+  /// No description provided for @hintTaxCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown on entries, such as 153-IT'**
+  String get hintTaxCode;
+
+  /// No description provided for @fieldLawReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Law reference (optional)'**
+  String get fieldLawReference;
+
+  /// No description provided for @hintLawReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Such as ITO 2001 s.153'**
+  String get hintLawReference;
+
+  /// No description provided for @fieldTaxKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind'**
+  String get fieldTaxKind;
+
+  /// No description provided for @fieldTaxAuthority.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected by'**
+  String get fieldTaxAuthority;
+
+  /// No description provided for @fieldTaxAppliesTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to'**
+  String get fieldTaxAppliesTo;
+
+  /// No description provided for @fieldTaxBasis.
+  ///
+  /// In en, this message translates to:
+  /// **'Who it is about'**
+  String get fieldTaxBasis;
+
+  /// No description provided for @fieldTaxLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts to'**
+  String get fieldTaxLedger;
+
+  /// No description provided for @hintTaxLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'The ledger account the accountant gives for this tax.'**
+  String get hintTaxLedger;
+
+  /// No description provided for @hintTaxLedgerNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the ledger account it posts to.'**
+  String get hintTaxLedgerNeeded;
+
+  /// No description provided for @fieldTaxFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'In force from'**
+  String get fieldTaxFrom;
+
+  /// No description provided for @fieldReturnSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Return section (optional)'**
+  String get fieldReturnSection;
+
+  /// No description provided for @hintReturnSection.
+  ///
+  /// In en, this message translates to:
+  /// **'The section code the quarterly withholding statement uses.'**
+  String get hintReturnSection;
+
+  /// No description provided for @fieldAdjustable.
+  ///
+  /// In en, this message translates to:
+  /// **'Can be claimed back'**
+  String get fieldAdjustable;
+
+  /// No description provided for @hintAdjustable.
+  ///
+  /// In en, this message translates to:
+  /// **'On if this tax counts against our income tax later. Off if it is a final cost.'**
+  String get hintAdjustable;
+
+  /// No description provided for @errRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill this in.'**
+  String get errRequired;
+
+  /// No description provided for @ledgerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger codes'**
+  String get ledgerTitle;
+
+  /// No description provided for @ledgerIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The chart of accounts: every amount in the books is filed under one of these codes, grouped under headings.'**
+  String get ledgerIntro;
+
+  /// No description provided for @actionAddCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Add code'**
+  String get actionAddCode;
+
+  /// No description provided for @ledgerSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by code or name'**
+  String get ledgerSearchHint;
+
+  /// No description provided for @ledgerShowOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Show switched-off codes'**
+  String get ledgerShowOff;
+
+  /// No description provided for @ledgerSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved.'**
+  String get ledgerSaved;
+
+  /// No description provided for @ledgerClass1.
+  ///
+  /// In en, this message translates to:
+  /// **'Assets'**
+  String get ledgerClass1;
+
+  /// No description provided for @ledgerClass2.
+  ///
+  /// In en, this message translates to:
+  /// **'Liabilities'**
+  String get ledgerClass2;
+
+  /// No description provided for @ledgerClass3.
+  ///
+  /// In en, this message translates to:
+  /// **'Equity'**
+  String get ledgerClass3;
+
+  /// No description provided for @ledgerClass4.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get ledgerClass4;
+
+  /// No description provided for @ledgerClass5.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost of services'**
+  String get ledgerClass5;
+
+  /// No description provided for @ledgerClass6.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrative expenses'**
+  String get ledgerClass6;
+
+  /// No description provided for @ledgerClass7.
+  ///
+  /// In en, this message translates to:
+  /// **'Selling and marketing'**
+  String get ledgerClass7;
+
+  /// No description provided for @ledgerClass8.
+  ///
+  /// In en, this message translates to:
+  /// **'Finance costs and other'**
+  String get ledgerClass8;
+
+  /// No description provided for @ledgerClass9.
+  ///
+  /// In en, this message translates to:
+  /// **'Taxation'**
+  String get ledgerClass9;
+
+  /// No description provided for @ledgerNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No code matches that.'**
+  String get ledgerNoMatch;
+
+  /// No description provided for @ledgerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No ledger codes yet.'**
+  String get ledgerEmpty;
+
+  /// No description provided for @ledgerHeadingExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'A heading only groups the codes under it. Nothing is filed under a heading itself.'**
+  String get ledgerHeadingExplain;
+
+  /// No description provided for @ledgerBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Built in'**
+  String get ledgerBuiltIn;
+
+  /// No description provided for @ledgerBuiltInExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Posting, transfers, tax or the opening entry depend on this code, so its name stays and it stays on.'**
+  String get ledgerBuiltInExplain;
+
+  /// No description provided for @ledgerOnEntryForm.
+  ///
+  /// In en, this message translates to:
+  /// **'On the entry form'**
+  String get ledgerOnEntryForm;
+
+  /// No description provided for @ledgerOnEntryFormExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'People can pick this as what the money was for when they make an entry.'**
+  String get ledgerOnEntryFormExplain;
+
+  /// No description provided for @ledgerSwitchedOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched off'**
+  String get ledgerSwitchedOff;
+
+  /// No description provided for @ledgerSwitchedOffExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Not offered for new entries. Entries already filed under it keep it.'**
+  String get ledgerSwitchedOffExplain;
+
+  /// No description provided for @actionRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get actionRename;
+
+  /// No description provided for @ledgerAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a ledger code'**
+  String get ledgerAddTitle;
+
+  /// No description provided for @ledgerAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a code the accountant gave you. Its first digit says what kind it is, for example 6 for an administrative expense.'**
+  String get ledgerAddHint;
+
+  /// No description provided for @fieldLedgerCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get fieldLedgerCode;
+
+  /// No description provided for @ledgerCodeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Four digits, such as 6960.'**
+  String get ledgerCodeHelp;
+
+  /// No description provided for @ledgerGoesUnder.
+  ///
+  /// In en, this message translates to:
+  /// **'Goes under {group}'**
+  String ledgerGoesUnder(String group);
+
+  /// No description provided for @errLedgerCodeShape.
+  ///
+  /// In en, this message translates to:
+  /// **'Use four digits that do not start with 0, such as 6960.'**
+  String get errLedgerCodeShape;
+
+  /// No description provided for @fieldLedgerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get fieldLedgerName;
+
+  /// No description provided for @errLedgerNameShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Give it a name of at least 3 letters.'**
+  String get errLedgerNameShort;
+
+  /// No description provided for @ledgerAddToEntryForm.
+  ///
+  /// In en, this message translates to:
+  /// **'Show it on the entry form'**
+  String get ledgerAddToEntryForm;
+
+  /// No description provided for @ledgerAddToEntryFormHint.
+  ///
+  /// In en, this message translates to:
+  /// **'So people can pick it as what the money was for. Leave it off for a code only the accountant uses.'**
+  String get ledgerAddToEntryFormHint;
+
+  /// No description provided for @ledgerRenameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename {code}'**
+  String ledgerRenameTitle(String code);
+
+  /// No description provided for @ledgerRenameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries already filed under {code} keep the code and show the new name.'**
+  String ledgerRenameHint(String code);
+
+  /// No description provided for @ledgerSwitchOffTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch off {code}?'**
+  String ledgerSwitchOffTitle(String code);
+
+  /// No description provided for @ledgerSwitchOffHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It leaves the entry form and cannot be used for new entries. Entries already filed under it keep it. You can switch it back on later.'**
+  String get ledgerSwitchOffHint;
+
+  /// No description provided for @findOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Find on this screen (Ctrl+F)'**
+  String get findOpen;
+
+  /// No description provided for @findHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find on this screen'**
+  String get findHint;
+
+  /// No description provided for @findNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches'**
+  String get findNoMatches;
+
+  /// No description provided for @findCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total}'**
+  String findCount(int current, int total);
+
+  /// No description provided for @findPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous match (Shift+Enter)'**
+  String get findPrevious;
+
+  /// No description provided for @findNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next match (Enter)'**
+  String get findNext;
+
+  /// No description provided for @findClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close (Esc)'**
+  String get findClose;
+
+  /// No description provided for @findScopeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Finds what this screen shows. To search every entry, use Search on Transactions.'**
+  String get findScopeNote;
+
+  /// No description provided for @actionAddHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Add heading'**
+  String get actionAddHeading;
+
+  /// No description provided for @actionImportOrExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import or export'**
+  String get actionImportOrExport;
+
+  /// No description provided for @actionDownloadTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the template'**
+  String get actionDownloadTemplate;
+
+  /// No description provided for @actionDownloadCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the current list'**
+  String get actionDownloadCurrent;
+
+  /// No description provided for @actionImportFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a file'**
+  String get actionImportFile;
+
+  /// No description provided for @settingsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up who can sign in, the taxes the company deals with, and the codes the books are kept in. Only the owner sees this.'**
+  String get settingsIntro;
+
+  /// No description provided for @settingsBack.
+  ///
+  /// In en, this message translates to:
+  /// **'All settings'**
+  String get settingsBack;
+
+  /// No description provided for @settingsPeopleExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Who can sign in, and what each person may do.'**
+  String get settingsPeopleExplain;
+
+  /// No description provided for @settingsPeopleSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 person can sign in} other{{count} people can sign in}}'**
+  String settingsPeopleSummary(int count);
+
+  /// No description provided for @settingsTaxesExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'The taxes the company pays or keeps back, their rates, and when the entry form suggests them.'**
+  String get settingsTaxesExplain;
+
+  /// No description provided for @settingsTaxesSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No taxes in force yet} =1{1 tax in force} other{{count} taxes in force}}'**
+  String settingsTaxesSummary(int count);
+
+  /// No description provided for @settingsLedgerExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'The chart of accounts: the codes and headings every amount is filed under.'**
+  String get settingsLedgerExplain;
+
+  /// No description provided for @settingsLedgerSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{codes} codes under {headings} headings'**
+  String settingsLedgerSummary(int codes, int headings);
+
+  /// No description provided for @settingsImportExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'Ledger codes and taxes in and out as spreadsheet files, for the accountant.'**
+  String get settingsImportExplain;
+
+  /// No description provided for @settingsImportSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV files that open in Excel or Google Sheets'**
+  String get settingsImportSummary;
+
+  /// No description provided for @settingsAuditNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Every change made here is kept in the audit log with who made it and when.'**
+  String get settingsAuditNote;
+
+  /// No description provided for @bulkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import and export'**
+  String get bulkTitle;
+
+  /// No description provided for @bulkIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Move ledger codes and taxes in and out as spreadsheet files. Nothing is saved until you have seen what a file will change, row by row, and confirmed it.'**
+  String get bulkIntro;
+
+  /// No description provided for @bulkStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the template to start a new list, or the current list to change what is there.'**
+  String get bulkStep1;
+
+  /// No description provided for @bulkStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill it in or change it in Excel or Google Sheets. Keep the first two rows: the column names and the example row. Save it as \"CSV UTF-8\".'**
+  String get bulkStep2;
+
+  /// No description provided for @bulkStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Import it. Check what each row will do, then save. Rows with a problem are skipped and say why.'**
+  String get bulkStep3;
+
+  /// No description provided for @bulkLedgerExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'One row per code or heading. New codes are added and existing ones are updated. Nothing is deleted: a code is switched off with \"Switched on: no\".'**
+  String get bulkLedgerExplain;
+
+  /// No description provided for @bulkTaxesExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'One row per tax and rule. A new rate needs a start date after the current one; the old rate then ends the day before. Taxes not in the file stay as they are.'**
+  String get bulkTaxesExplain;
+
+  /// No description provided for @bulkDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded {file}.'**
+  String bulkDownloaded(String file);
+
+  /// No description provided for @bulkPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check before saving: {file}'**
+  String bulkPreviewTitle(String file);
+
+  /// No description provided for @bulkPreviewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is saved yet. This is what the file will do to each row.'**
+  String get bulkPreviewHint;
+
+  /// No description provided for @bulkCountAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new'**
+  String bulkCountAdd(int count);
+
+  /// No description provided for @bulkCountUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} changed'**
+  String bulkCountUpdate(int count);
+
+  /// No description provided for @bulkCountUnchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} no change'**
+  String bulkCountUnchanged(int count);
+
+  /// No description provided for @bulkCountSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} skipped'**
+  String bulkCountSkip(int count);
+
+  /// No description provided for @bulkShowUnchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Show rows with no change'**
+  String get bulkShowUnchanged;
+
+  /// No description provided for @bulkNothingToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Every row is already as the file says.'**
+  String get bulkNothingToShow;
+
+  /// No description provided for @bulkNothingToSave.
+  ///
+  /// In en, this message translates to:
+  /// **'There is nothing to save from this file.'**
+  String get bulkNothingToSave;
+
+  /// No description provided for @bulkSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing to save} =1{Save 1 change} other{Save {count} changes}}'**
+  String bulkSaveChanges(int count);
+
+  /// No description provided for @bulkSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved: {added} new, {updated} changed, {skipped} skipped.'**
+  String bulkSaved(int added, int updated, int skipped);
+
+  /// No description provided for @bulkActionAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get bulkActionAdd;
+
+  /// No description provided for @bulkActionUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed'**
+  String get bulkActionUpdate;
+
+  /// No description provided for @bulkActionUnchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'No change'**
+  String get bulkActionUnchanged;
+
+  /// No description provided for @bulkActionSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get bulkActionSkip;
+
+  /// No description provided for @bulkRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {number}'**
+  String bulkRow(int number);
+
+  /// No description provided for @bulkRows.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows {numbers}'**
+  String bulkRows(String numbers);
+
+  /// No description provided for @ledgerHowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How the codes are arranged'**
+  String get ledgerHowTitle;
+
+  /// No description provided for @ledgerHowDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'The first digit says what kind of account it is: 1 assets, 2 liabilities, 3 equity, 4 income, 5 to 9 costs.'**
+  String get ledgerHowDigits;
+
+  /// No description provided for @ledgerHowHeadings.
+  ///
+  /// In en, this message translates to:
+  /// **'Headings, shown with a folder, group the codes under them. Nothing is filed under a heading itself.'**
+  String get ledgerHowHeadings;
+
+  /// No description provided for @ledgerHowBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in codes keep their name and stay on, because posting, transfers, tax and the opening balances depend on them.'**
+  String get ledgerHowBuiltIn;
+
+  /// No description provided for @ledgerHowSwitchOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is deleted. A code no longer needed is switched off, and older entries keep it.'**
+  String get ledgerHowSwitchOff;
+
+  /// No description provided for @ledgerAddHeadingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a heading'**
+  String get ledgerAddHeadingTitle;
+
+  /// No description provided for @ledgerAddHeadingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A heading groups codes, for example 1130 Advances, deposits and prepayments. Use a code the accountant gave you.'**
+  String get ledgerAddHeadingHint;
+
+  /// No description provided for @fieldLedgerParent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sits under'**
+  String get fieldLedgerParent;
+
+  /// No description provided for @hintLedgerParent.
+  ///
+  /// In en, this message translates to:
+  /// **'The heading it is grouped under. Only headings of the same kind that come before it can hold it.'**
+  String get hintLedgerParent;
+
+  /// No description provided for @ledgerParentNearest.
+  ///
+  /// In en, this message translates to:
+  /// **'The nearest heading before it (automatic)'**
+  String get ledgerParentNearest;
+
+  /// No description provided for @ledgerEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change {code}'**
+  String ledgerEditTitle(String code);
+
+  /// No description provided for @ledgerEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The code {code} itself never changes, so entries filed under it keep it and show the new name.'**
+  String ledgerEditHint(String code);
+
+  /// No description provided for @ledgerSwitchOffHeadingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A heading can be switched off once nothing under it is on. You can switch it back on later.'**
+  String get ledgerSwitchOffHeadingHint;
+
+  /// No description provided for @taxHowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How taxes work here'**
+  String get taxHowTitle;
+
+  /// No description provided for @taxHowFiler.
+  ///
+  /// In en, this message translates to:
+  /// **'Each tax has a rate for filers and a higher rate for non-filers: anyone not on FBR\'s Active Taxpayers List.'**
+  String get taxHowFiler;
+
+  /// No description provided for @taxHowRates.
+  ///
+  /// In en, this message translates to:
+  /// **'A rate is never edited. \"Change the rate from a date\" ends the old rate the day before, so older entries keep the rate they were made at.'**
+  String get taxHowRates;
+
+  /// No description provided for @taxHowRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules say when the entry form suggests a tax. The person making the entry can still remove it or change the amount to what was really taken.'**
+  String get taxHowRules;
+
+  /// No description provided for @taxHowEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted entries keep the tax they were saved with. Nothing here changes the books.'**
+  String get taxHowEntries;
+
+  /// No description provided for @taxRulesExplain.
+  ///
+  /// In en, this message translates to:
+  /// **'When an entry matches one of these, the entry form adds this tax by itself. A rule is switched off, never deleted.'**
+  String get taxRulesExplain;
+
+  /// No description provided for @taxFactRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate'**
+  String get taxFactRate;
+
+  /// No description provided for @taxFactKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind'**
+  String get taxFactKind;
+
+  /// No description provided for @taxFactRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded in'**
+  String get taxFactRecorded;
+
+  /// No description provided for @taxFactDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get taxFactDates;
+
+  /// No description provided for @taxPaidTo.
+  ///
+  /// In en, this message translates to:
+  /// **'paid to {authority}'**
+  String taxPaidTo(String authority);
+
+  /// No description provided for @taxPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate}%'**
+  String taxPercent(String rate);
+
+  /// No description provided for @taxFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'PKR {amount}'**
+  String taxFixed(String amount);
+
+  /// No description provided for @taxAuthorityFbr.
+  ///
+  /// In en, this message translates to:
+  /// **'FBR'**
+  String get taxAuthorityFbr;
+
+  /// No description provided for @taxAuthorityPra.
+  ///
+  /// In en, this message translates to:
+  /// **'PRA'**
+  String get taxAuthorityPra;
+
+  /// No description provided for @taxAuthoritySrb.
+  ///
+  /// In en, this message translates to:
+  /// **'SRB'**
+  String get taxAuthoritySrb;
+
+  /// No description provided for @taxAuthorityIct.
+  ///
+  /// In en, this message translates to:
+  /// **'ICT'**
+  String get taxAuthorityIct;
+
+  /// No description provided for @taxAuthorityBank.
+  ///
+  /// In en, this message translates to:
+  /// **'the bank'**
+  String get taxAuthorityBank;
+
+  /// No description provided for @taxAuthorityOther.
+  ///
+  /// In en, this message translates to:
+  /// **'the tax office'**
+  String get taxAuthorityOther;
+
+  /// No description provided for @taxSayKeepBack.
+  ///
+  /// In en, this message translates to:
+  /// **'When we pay someone, we keep back {rate} of the payment ({nonFiler} if they are not a filer) and pay it to {authority} for them.'**
+  String taxSayKeepBack(String rate, String nonFiler, String authority);
+
+  /// No description provided for @taxSayCollect.
+  ///
+  /// In en, this message translates to:
+  /// **'When money comes in, the payer adds {rate} ({nonFiler} if they are not a filer), which we pay to {authority}.'**
+  String taxSayCollect(String rate, String nonFiler, String authority);
+
+  /// No description provided for @taxSayHeldBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'On money in and out, {rate} ({nonFiler} if the other side is not a filer) is held back and paid to {authority}.'**
+  String taxSayHeldBoth(String rate, String nonFiler, String authority);
+
+  /// No description provided for @taxSayTakenIn.
+  ///
+  /// In en, this message translates to:
+  /// **'When money comes in, {rate} of it is taken as tax ({nonFiler} if we are not a filer).'**
+  String taxSayTakenIn(String rate, String nonFiler);
+
+  /// No description provided for @taxSayTakenOut.
+  ///
+  /// In en, this message translates to:
+  /// **'When we pay, {rate} more is charged to us as tax ({nonFiler} if we are not a filer).'**
+  String taxSayTakenOut(String rate, String nonFiler);
+
+  /// No description provided for @taxSayTakenBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'On money in and out, {rate} is taken from us as tax ({nonFiler} if we are not a filer).'**
+  String taxSayTakenBoth(String rate, String nonFiler);
+
+  /// No description provided for @taxSayNotOurCost.
+  ///
+  /// In en, this message translates to:
+  /// **'It is not our cost: we only hold it until it is paid over.'**
+  String get taxSayNotOurCost;
+
+  /// No description provided for @taxSayClaimable.
+  ///
+  /// In en, this message translates to:
+  /// **'We can claim it back against our income tax.'**
+  String get taxSayClaimable;
+
+  /// No description provided for @taxSayFinalCost.
+  ///
+  /// In en, this message translates to:
+  /// **'It is a final cost: we cannot claim it back.'**
+  String get taxSayFinalCost;
 }
 
 class _AppLocalizationsDelegate

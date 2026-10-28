@@ -32,6 +32,22 @@ class EntryDraftController extends _$EntryDraftController {
   /// The form's own numbering for charge lines. Never sent to the server.
   int _nextChargeId = 1;
 
+  /// Opens a draft already on the server, to be fixed and saved again. The
+  /// form then edits that draft rather than creating a new one. Decision 067.
+  Future<ApiException?> openExisting(int id) async {
+    try {
+      final draft = await ref
+          .read(transactionsRepositoryProvider)
+          .openDraft(id, idempotencyKey: newIdempotencyKey());
+      if (!ref.mounted) return null;
+      _nextChargeId = draft.charges.length + 1;
+      state = draft;
+      return null;
+    } catch (error) {
+      return ApiException.from(error);
+    }
+  }
+
   /// Anything a tax depends on has changed: the lines are thrown away and the
   /// tax step suggests them again from the new figures. A tax worked out on
   /// the old amount must never be saved with the new one. Decision 064.
@@ -312,6 +328,12 @@ class EntrySave extends _$EntrySave {
       // an entry that read 6,500. Defect F7, decision 059.
       final body = jsonEncode(draft.toRequest());
       var sent = _sent;
+
+      // A draft opened from the server already exists. The first save edits
+      // it; an empty body forces that edit. Decision 067.
+      if (sent == null && draft.existingId != null) {
+        sent = _SentDraft(idempotencyKey: draft.idempotencyKey, id: draft.existingId!, body: '');
+      }
 
       if (sent == null || sent.idempotencyKey != draft.idempotencyKey) {
         final id = await repository.create(draft);

@@ -1371,6 +1371,136 @@ cancelling ask first. The server enforces the same order.
 the same bank account, searchable. Recording a cheque offers only bank and
 cheque accounts.
 
+### 067 — Fixing entries before they post, and the taxes screen
+2026-10-28
+
+D15 batch E, the last. Ahmad chose the three things in bold; the rest is
+Claude's, open to correction.
+
+**An entry that is not in the books yet can be fixed from Transactions.**
+Tapping a draft offers Edit. A submitted entry offers "Take back to fix",
+**only to the person who sent it** (Ahmad's choice); an approver who sees a
+mistake rejects it instead, with a reason. A rejected entry offers "Fix and
+send again", to the person who made it or the owner or an admin. Taking back
+and fixing turn it into a draft (`POST /transactions/:id/reopen`); the entry
+form opens it, edits that same draft and sends or posts it. A posted entry is
+never reopened: it is reversed.
+
+**Why it came back stays visible.** The rejection reason is kept on the row
+and shown above the form while it is fixed. The draft's tax lines are opened
+as they were saved, by name; changing a figure they depend on suggests them
+again, as for a new entry.
+
+**Taxes live in Settings, beside People, owner only** (Ahmad's choice). A rate
+is never edited. "New rate from a date" ends the current row the day before
+and starts a copy with the new rates, with its rules carried over, in one
+database transaction. An entry dated before the change keeps the old rate,
+one after it gets the new, and posted entries never move because they
+snapshot their rate. "End this tax" closes a tax with no replacement. A new
+tax names the ledger account it posts to; percentages only from the screen.
+
+**The screen also sets when each tax is suggested** (Ahmad's choice): money in
+or out, any currency, foreign only or rupees only, any account or one type,
+any category or one. A rule is switched off, never deleted. A tax with no
+active rule says it is never suggested.
+
+**Every change to a tax or a rule is in the audit log,** with the old and new
+rates.
+
+### 068 — Ledger codes from Settings, find on this screen, and a test kit fix
+2026-10-29
+
+Batch F. Ahmad asked for the three; he chose to build the ledger codes screen
+now and to put it in Settings. The rest is Claude's, open to correction.
+
+**No ledger code needs adding after a reset.** Migration 002 puts the whole
+chart of accounts back on any fresh database, so the screen is for a code
+added later, such as a new expense head the accountant asks for.
+
+**Ledger codes are a third Settings tab, owner only** (Ahmad's choice). A code
+is four digits and does not start with 0; its first digit sets the type and
+the normal side, as CHART-OF-ACCOUNTS.md describes. It sits under the nearest
+heading before it in the same class. An income or expense code can also be
+put on the entry form, on by default: a category of the same name is made,
+grouped with the other categories of its class. Balance sheet codes never
+join the form. A code or a name is never used twice.
+
+**Nothing is deleted, and the system's codes are left alone.** A code is
+switched off, and the entries that used it keep it. Built-in codes keep their
+name and stay on, because posting, transfers, tax and the opening entry
+depend on them. Headings only group and are not changed here. A code stays on
+while it holds money, while a company account uses it, or while a current tax
+posts to it; the refusal says which. Switching off also takes its categories
+off the entry form, and switching back on returns them. A rename carries over
+to categories still named as the code was. Every change is in the audit log.
+
+**Find on this screen is built into the app, not a package.** Supersedes the
+`find_in_page` package named in decision 004. Ctrl+F (Cmd+F on a Mac), or the
+find button in the top bar, opens a bar that highlights every match among the
+words the page shows, with Enter and Shift+Enter to step through them and
+Escape to close. It reads the text the page has drawn, so the menu, the top
+bar, hidden widgets and tabs not showing are never matched. It finds what the
+page has built; the search box on Transactions still searches every entry.
+
+**The test kit's flag id.** Steps 8.9a to 8.9c of `phase1-api-tests.http` now
+read the id from a request of their own, 8.9, sent just before them, instead
+of from 8.8d. The note that sat after 8.8e was being sent as that request's
+body and is gone.
+
+### 069 — Settings as a home of cards, headings, and import and export
+2026-10-29
+
+Batch G. Ahmad asked for headings, bulk import and export of ledger codes and
+taxes, a Settings screen that explains itself, and a taxes screen in plain
+words. He chose the four things in bold; the rest is Claude's, open to
+correction.
+
+**Settings opens on a home of cards** (Ahmad's choice): People, Taxes, Ledger
+codes, and Import and export. Each card says what it is for with a live
+summary, such as "3 people can sign in", and opens its own page at its own
+address (`/settings/people` and so on), with a way back to all settings. The
+tabs are gone.
+
+**Headings can be added, and a code picks its heading** (Ahmad's choice). A
+heading groups codes and nothing posts to it. A code or heading sits under a
+heading of the same kind (same first digit) that comes before it; left empty,
+the nearest such heading is used. The list is indented by heading. Headings
+can be renamed and moved, and switched off once nothing under them is on.
+Built-in codes and headings keep their name, heading and switch.
+
+**An import shows what it will do, and saves only when confirmed** (Ahmad's
+choice). Each row is listed as new, changed, no change or skipped, with the
+reason for a skip. Confirming saves every row that can be saved, together: if
+one fails, none is kept. Rows are never deleted by an import, and anything
+not in the file stays as it is.
+
+**The taxes file carries the rules too** (Ahmad's choice). One row is one tax
+with one rule for when the entry form suggests it; rows with the same short
+code are one tax with several rules and must agree on everything else. A row
+whose rates differ from the tax in force needs a start date after the current
+one: it starts a new rate from that day and ends the old one the day before,
+as decision 067 requires. With the same or an earlier date it is skipped.
+Names, the law section, the return section and notes are only words and change
+in place. The rules of a tax in the file are made to match the file: missing
+ones are added, others switched off.
+
+**The files are CSV,** which Excel and Google Sheets open and save. Row 1 has
+the column names, each with a short hint in brackets; columns are found by
+the words before the bracket, so they can be moved. Row 2 is an example; any
+row whose first cell starts with "e.g." is never imported. Files are written
+as UTF-8 with a byte order mark, so Excel reads them correctly; the page asks
+for "CSV UTF-8" when saving. Read and written by `api/core/csv.js`, not a
+package. "Download the current list" exports what is there in the same
+columns, so the usual way to change many things is export, edit, import.
+
+**Each tax says what it does in a plain sentence,** built from who the tax is
+about, which way the money moves, the rates and whether it can be claimed
+back: "When we pay someone, we keep back 4% of the payment (8% if they are not
+a filer) and pay it to FBR for them. It is not our cost: we only hold it
+until it is paid over." Below it, the rate, kind, where it is recorded and
+the dates, then when it is suggested. A short box at the top explains filers,
+rate changes, rules and that posted entries keep their tax.
+
 ---
 
 ## Open, not yet decided
@@ -1392,7 +1522,7 @@ cheque accounts.
 | M | Android emulator reaches the local API at 10.0.2.2, not localhost. Note for Phase 7 | Phase 7 |
 | N | ~~Rejected entry's flags~~ Decided, decision 062 | |
 | O | ~~Vendor on withheld tax~~ Decided, decision 062 | |
-| P | Tax management screen: change a rate by closing the old row and adding a new one, never editing in place. Owner only | Before the first real tax entry |
+| P | ~~Tax management screen~~ Built, decision 067 | |
 
 ---
 

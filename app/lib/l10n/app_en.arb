@@ -1008,5 +1008,558 @@
         "type": "String"
       }
     }
-  }
+  },
+  "settingsOwnerOnly": "Only the owner can change people, taxes and ledger codes.",
+  "fixingDraft": "Changing a saved draft",
+  "fixingSentBack": "Sent back to be fixed",
+  "fixingReason": "Why: {reason}",
+  "@fixingReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "fixingHint": "Change what is wrong, then save. It is sent for approval again, or posted if you may post your own entries.",
+  "entryDraftExplain": "A draft, not sent yet. Open it to finish or change it.",
+  "entryPendingExplain": "Waiting for approval. If something is wrong, take it back, fix it, and send it again. Only the person who sent it can do this.",
+  "entryRejectedExplain": "Sent back by the approver. Open it to see why, fix it, and send it again.",
+  "actionTakeBack": "Take back to fix",
+  "actionFixAndResend": "Fix and send again",
+  "taxesTitle": "Taxes",
+  "taxesIntro": "The taxes the company pays, and the ones it keeps back from people it pays. Each card says in plain words what the tax does.",
+  "actionAddTax": "Add tax",
+  "taxesShowOld": "Show ended and earlier rates",
+  "taxesEmpty": "No taxes yet. The accountant's rates are added here.",
+  "taxSaved": "Saved.",
+  "taxKindWithholding": "Withholding, kept back",
+  "taxKindFinal": "Final tax",
+  "taxKindAdvance": "Advance tax",
+  "taxKindSalesTax": "Sales tax",
+  "taxKindFed": "FED",
+  "taxKindOther": "Other",
+  "taxInForce": "In force",
+  "taxStarts": "Starts {date}",
+  "@taxStarts": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "taxEnded": "Ended {date}",
+  "@taxEnded": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "taxRates": "{filer}% for a filer, {nonFiler}% for a non-filer",
+  "@taxRates": {
+    "placeholders": {
+      "filer": {
+        "type": "String"
+      },
+      "nonFiler": {
+        "type": "String"
+      }
+    }
+  },
+  "taxRatesFixed": "Fixed {filer} for a filer, {nonFiler} for a non-filer",
+  "@taxRatesFixed": {
+    "placeholders": {
+      "filer": {
+        "type": "String"
+      },
+      "nonFiler": {
+        "type": "String"
+      }
+    }
+  },
+  "taxBasisOurs": "Taken from us, so our own filer status sets the rate.",
+  "taxBasisPayee": "Kept back by us from the payee, so their filer status sets the rate.",
+  "taxBasisOursShort": "Taken from us",
+  "taxBasisPayeeShort": "Kept back from the payee",
+  "taxAppliesIn": "On money coming in",
+  "taxAppliesOut": "On money going out",
+  "taxAppliesBoth": "On money in and out",
+  "taxBoth": "Both",
+  "taxPostsTo": "Posts to {account}",
+  "@taxPostsTo": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "taxPeriodOpen": "From {from}",
+  "@taxPeriodOpen": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      }
+    }
+  },
+  "taxPeriod": "{from} to {to}",
+  "@taxPeriod": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "taxRulesTitle": "When the entry form suggests it",
+  "taxNoRules": "Never suggested. Add a rule, or it can only be added to an entry by hand.",
+  "ruleMoneyIn": "Money in",
+  "ruleMoneyOut": "Money out",
+  "ruleAnyCurrency": "Any currency",
+  "ruleForeignOnly": "Foreign currency",
+  "ruleRupeesOnly": "Rupees only",
+  "ruleAnyAccount": "Any account",
+  "ruleAnyCategory": "Any category",
+  "actionNewRate": "Change the rate from a date",
+  "actionAddRule": "Add a rule",
+  "actionEndTax": "End this tax",
+  "newRateTitle": "New rate for {code}",
+  "@newRateTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "newRateHint": "For a budget change. Entries before the start date keep the old rate; entries from it get the new one.",
+  "fieldNewRateFrom": "New rate starts on",
+  "newRateOldEnds": "The current {code} rate will end on {date}.",
+  "@newRateOldEnds": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "actionSaveNewRate": "Save new rate",
+  "fieldRateFiler": "Rate for a filer",
+  "fieldRateNonFiler": "Rate for a non-filer",
+  "errRateShape": "A number, up to four decimal places.",
+  "endTaxTitle": "End {code}?",
+  "@endTaxTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "endTaxHint": "For a tax that no longer applies at all. It is not suggested or accepted on entries after this day. Entries before it keep it.",
+  "fieldLastDay": "Last day it applies",
+  "addRuleTitle": "When to suggest {code}",
+  "@addRuleTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "addRuleHint": "The entry form suggests this tax when an entry matches all of these. \"Any\" means it does not matter.",
+  "fieldRuleCurrency": "Currency",
+  "fieldRuleAccount": "Paid from or into",
+  "fieldRuleCategory": "Category",
+  "addTaxTitleFull": "Add a tax",
+  "addTaxHint": "For a tax the accountant names. To change the rate of one that exists, use \"New rate from a date\" on it instead.",
+  "fieldTaxName": "Name",
+  "fieldTaxCode": "Short code",
+  "hintTaxCode": "Shown on entries, such as 153-IT",
+  "fieldLawReference": "Law reference (optional)",
+  "hintLawReference": "Such as ITO 2001 s.153",
+  "fieldTaxKind": "Kind",
+  "fieldTaxAuthority": "Collected by",
+  "fieldTaxAppliesTo": "Applies to",
+  "fieldTaxBasis": "Who it is about",
+  "fieldTaxLedger": "Posts to",
+  "hintTaxLedger": "The ledger account the accountant gives for this tax.",
+  "hintTaxLedgerNeeded": "Choose the ledger account it posts to.",
+  "fieldTaxFrom": "In force from",
+  "fieldReturnSection": "Return section (optional)",
+  "hintReturnSection": "The section code the quarterly withholding statement uses.",
+  "fieldAdjustable": "Can be claimed back",
+  "hintAdjustable": "On if this tax counts against our income tax later. Off if it is a final cost.",
+  "errRequired": "Fill this in.",
+  "ledgerTitle": "Ledger codes",
+  "ledgerIntro": "The chart of accounts: every amount in the books is filed under one of these codes, grouped under headings.",
+  "actionAddCode": "Add code",
+  "ledgerSearchHint": "Search by code or name",
+  "ledgerShowOff": "Show switched-off codes",
+  "ledgerSaved": "Saved.",
+  "ledgerClass1": "Assets",
+  "ledgerClass2": "Liabilities",
+  "ledgerClass3": "Equity",
+  "ledgerClass4": "Income",
+  "ledgerClass5": "Cost of services",
+  "ledgerClass6": "Administrative expenses",
+  "ledgerClass7": "Selling and marketing",
+  "ledgerClass8": "Finance costs and other",
+  "ledgerClass9": "Taxation",
+  "ledgerNoMatch": "No code matches that.",
+  "ledgerEmpty": "No ledger codes yet.",
+  "ledgerHeadingExplain": "A heading only groups the codes under it. Nothing is filed under a heading itself.",
+  "ledgerBuiltIn": "Built in",
+  "ledgerBuiltInExplain": "Posting, transfers, tax or the opening entry depend on this code, so its name stays and it stays on.",
+  "ledgerOnEntryForm": "On the entry form",
+  "ledgerOnEntryFormExplain": "People can pick this as what the money was for when they make an entry.",
+  "ledgerSwitchedOff": "Switched off",
+  "ledgerSwitchedOffExplain": "Not offered for new entries. Entries already filed under it keep it.",
+  "actionRename": "Rename",
+  "ledgerAddTitle": "Add a ledger code",
+  "ledgerAddHint": "Use a code the accountant gave you. Its first digit says what kind it is, for example 6 for an administrative expense.",
+  "fieldLedgerCode": "Code",
+  "ledgerCodeHelp": "Four digits, such as 6960.",
+  "ledgerGoesUnder": "Goes under {group}",
+  "@ledgerGoesUnder": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "errLedgerCodeShape": "Use four digits that do not start with 0, such as 6960.",
+  "fieldLedgerName": "Name",
+  "errLedgerNameShort": "Give it a name of at least 3 letters.",
+  "ledgerAddToEntryForm": "Show it on the entry form",
+  "ledgerAddToEntryFormHint": "So people can pick it as what the money was for. Leave it off for a code only the accountant uses.",
+  "ledgerRenameTitle": "Rename {code}",
+  "@ledgerRenameTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerRenameHint": "Entries already filed under {code} keep the code and show the new name.",
+  "@ledgerRenameHint": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerSwitchOffTitle": "Switch off {code}?",
+  "@ledgerSwitchOffTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerSwitchOffHint": "It leaves the entry form and cannot be used for new entries. Entries already filed under it keep it. You can switch it back on later.",
+  "findOpen": "Find on this screen (Ctrl+F)",
+  "findHint": "Find on this screen",
+  "findNoMatches": "No matches",
+  "findCount": "{current} of {total}",
+  "@findCount": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "findPrevious": "Previous match (Shift+Enter)",
+  "findNext": "Next match (Enter)",
+  "findClose": "Close (Esc)",
+  "findScopeNote": "Finds what this screen shows. To search every entry, use Search on Transactions.",
+  "actionAddHeading": "Add heading",
+  "actionImportOrExport": "Import or export",
+  "actionDownloadTemplate": "Download the template",
+  "actionDownloadCurrent": "Download the current list",
+  "actionImportFile": "Import a file",
+  "settingsIntro": "Set up who can sign in, the taxes the company deals with, and the codes the books are kept in. Only the owner sees this.",
+  "settingsBack": "All settings",
+  "settingsPeopleExplain": "Who can sign in, and what each person may do.",
+  "settingsPeopleSummary": "{count, plural, =1{1 person can sign in} other{{count} people can sign in}}",
+  "@settingsPeopleSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsTaxesExplain": "The taxes the company pays or keeps back, their rates, and when the entry form suggests them.",
+  "settingsTaxesSummary": "{count, plural, =0{No taxes in force yet} =1{1 tax in force} other{{count} taxes in force}}",
+  "@settingsTaxesSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLedgerExplain": "The chart of accounts: the codes and headings every amount is filed under.",
+  "settingsLedgerSummary": "{codes} codes under {headings} headings",
+  "@settingsLedgerSummary": {
+    "placeholders": {
+      "codes": {
+        "type": "int"
+      },
+      "headings": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsImportExplain": "Ledger codes and taxes in and out as spreadsheet files, for the accountant.",
+  "settingsImportSummary": "CSV files that open in Excel or Google Sheets",
+  "settingsAuditNote": "Every change made here is kept in the audit log with who made it and when.",
+  "bulkTitle": "Import and export",
+  "bulkIntro": "Move ledger codes and taxes in and out as spreadsheet files. Nothing is saved until you have seen what a file will change, row by row, and confirmed it.",
+  "bulkStep1": "Download the template to start a new list, or the current list to change what is there.",
+  "bulkStep2": "Fill it in or change it in Excel or Google Sheets. Keep the first two rows: the column names and the example row. Save it as \"CSV UTF-8\".",
+  "bulkStep3": "Import it. Check what each row will do, then save. Rows with a problem are skipped and say why.",
+  "bulkLedgerExplain": "One row per code or heading. New codes are added and existing ones are updated. Nothing is deleted: a code is switched off with \"Switched on: no\".",
+  "bulkTaxesExplain": "One row per tax and rule. A new rate needs a start date after the current one; the old rate then ends the day before. Taxes not in the file stay as they are.",
+  "bulkDownloaded": "Downloaded {file}.",
+  "@bulkDownloaded": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkPreviewTitle": "Check before saving: {file}",
+  "@bulkPreviewTitle": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "bulkPreviewHint": "Nothing is saved yet. This is what the file will do to each row.",
+  "bulkCountAdd": "{count} new",
+  "@bulkCountAdd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkCountUpdate": "{count} changed",
+  "@bulkCountUpdate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkCountUnchanged": "{count} no change",
+  "@bulkCountUnchanged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkCountSkip": "{count} skipped",
+  "@bulkCountSkip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkShowUnchanged": "Show rows with no change",
+  "bulkNothingToShow": "Every row is already as the file says.",
+  "bulkNothingToSave": "There is nothing to save from this file.",
+  "bulkSaveChanges": "{count, plural, =0{Nothing to save} =1{Save 1 change} other{Save {count} changes}}",
+  "@bulkSaveChanges": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkSaved": "Saved: {added} new, {updated} changed, {skipped} skipped.",
+  "@bulkSaved": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkActionAdd": "New",
+  "bulkActionUpdate": "Changed",
+  "bulkActionUnchanged": "No change",
+  "bulkActionSkip": "Skipped",
+  "bulkRow": "Row {number}",
+  "@bulkRow": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkRows": "Rows {numbers}",
+  "@bulkRows": {
+    "placeholders": {
+      "numbers": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerHowTitle": "How the codes are arranged",
+  "ledgerHowDigits": "The first digit says what kind of account it is: 1 assets, 2 liabilities, 3 equity, 4 income, 5 to 9 costs.",
+  "ledgerHowHeadings": "Headings, shown with a folder, group the codes under them. Nothing is filed under a heading itself.",
+  "ledgerHowBuiltIn": "Built-in codes keep their name and stay on, because posting, transfers, tax and the opening balances depend on them.",
+  "ledgerHowSwitchOff": "Nothing is deleted. A code no longer needed is switched off, and older entries keep it.",
+  "ledgerAddHeadingTitle": "Add a heading",
+  "ledgerAddHeadingHint": "A heading groups codes, for example 1130 Advances, deposits and prepayments. Use a code the accountant gave you.",
+  "fieldLedgerParent": "Sits under",
+  "hintLedgerParent": "The heading it is grouped under. Only headings of the same kind that come before it can hold it.",
+  "ledgerParentNearest": "The nearest heading before it (automatic)",
+  "ledgerEditTitle": "Change {code}",
+  "@ledgerEditTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerEditHint": "The code {code} itself never changes, so entries filed under it keep it and show the new name.",
+  "@ledgerEditHint": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "ledgerSwitchOffHeadingHint": "A heading can be switched off once nothing under it is on. You can switch it back on later.",
+  "taxHowTitle": "How taxes work here",
+  "taxHowFiler": "Each tax has a rate for filers and a higher rate for non-filers: anyone not on FBR's Active Taxpayers List.",
+  "taxHowRates": "A rate is never edited. \"Change the rate from a date\" ends the old rate the day before, so older entries keep the rate they were made at.",
+  "taxHowRules": "Rules say when the entry form suggests a tax. The person making the entry can still remove it or change the amount to what was really taken.",
+  "taxHowEntries": "Posted entries keep the tax they were saved with. Nothing here changes the books.",
+  "taxRulesExplain": "When an entry matches one of these, the entry form adds this tax by itself. A rule is switched off, never deleted.",
+  "taxFactRate": "Rate",
+  "taxFactKind": "Kind",
+  "taxFactRecorded": "Recorded in",
+  "taxFactDates": "Dates",
+  "taxPaidTo": "paid to {authority}",
+  "@taxPaidTo": {
+    "placeholders": {
+      "authority": {
+        "type": "String"
+      }
+    }
+  },
+  "taxPercent": "{rate}%",
+  "@taxPercent": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "taxFixed": "PKR {amount}",
+  "@taxFixed": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "taxAuthorityFbr": "FBR",
+  "taxAuthorityPra": "PRA",
+  "taxAuthoritySrb": "SRB",
+  "taxAuthorityIct": "ICT",
+  "taxAuthorityBank": "the bank",
+  "taxAuthorityOther": "the tax office",
+  "taxSayKeepBack": "When we pay someone, we keep back {rate} of the payment ({nonFiler} if they are not a filer) and pay it to {authority} for them.",
+  "@taxSayKeepBack": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "nonFiler": {
+        "type": "String"
+      },
+      "authority": {
+        "type": "String"
+      }
+    }
+  },
+  "taxSayCollect": "When money comes in, the payer adds {rate} ({nonFiler} if they are not a filer), which we pay to {authority}.",
+  "@taxSayCollect": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "nonFiler": {
+        "type": "String"
+      },
+      "authority": {
+        "type": "String"
+      }
+    }
+  },
+  "taxSayHeldBoth": "On money in and out, {rate} ({nonFiler} if the other side is not a filer) is held back and paid to {authority}.",
+  "@taxSayHeldBoth": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "nonFiler": {
+        "type": "String"
+      },
+      "authority": {
+        "type": "String"
+      }
+    }
+  },
+  "taxSayTakenIn": "When money comes in, {rate} of it is taken as tax ({nonFiler} if we are not a filer).",
+  "@taxSayTakenIn": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "nonFiler": {
+        "type": "String"
+      }
+    }
+  },
+  "taxSayTakenOut": "When we pay, {rate} more is charged to us as tax ({nonFiler} if we are not a filer).",
+  "@taxSayTakenOut": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "nonFiler": {
+        "type": "String"
+      }
+    }
+  },
+  "taxSayTakenBoth": "On money in and out, {rate} is taken from us as tax ({nonFiler} if we are not a filer).",
+  "@taxSayTakenBoth": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "nonFiler": {
+        "type": "String"
+      }
+    }
+  },
+  "taxSayNotOurCost": "It is not our cost: we only hold it until it is paid over.",
+  "taxSayClaimable": "We can claim it back against our income tax.",
+  "taxSayFinalCost": "It is a final cost: we cannot claim it back."
 }

@@ -127,6 +127,13 @@ transactionRoutes.post('/transactions/:id/approve', requireAuth, money, async (r
   res.json(await service.approve({ user: actorFrom(req), id, ip: req.ip }));
 });
 
+// Back to a draft: a submitted entry taken back by its sender, or a rejected
+// one opened to be fixed. Moves no money, so no idempotency key. Decision 067.
+transactionRoutes.post('/transactions/:id/reopen', requireAuth, async (req, res) => {
+  const { id } = parseOrThrow(idParamSchema, req.params);
+  res.json(await service.reopen({ user: actorFrom(req), id, ip: req.ip }));
+});
+
 transactionRoutes.post('/transactions/:id/reject', requireAuth, async (req, res) => {
   const { id } = parseOrThrow(idParamSchema, req.params);
   const { reason } = parseOrThrow(reasonSchema, req.body ?? {});

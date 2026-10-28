@@ -2,30 +2,26 @@
 
 Read this first. Update it before ending any session.
 
-**Last updated:** 2026-10-27
-**Current phase:** Phase 1 complete and live; D15 screens being added in batches.
-**Where we stopped:** The full Phase 1 test ran locally (50 steps) and a
-12-step re-test ran on production; every figure matched. All findings from it
-are fixed and deployed: 389 API tests (386 pass, 3 argon2 skips), 87 Flutter
-tests, analyze clean. Production was then wiped and rebuilt with migrations
-000 to 006; the owner must set a new password at first sign-in. The books are
-empty and ready for the real opening entry. What remains before real entries
-is in "Pending before Phase 2" below; D15 is the main piece of work. Batch A
-of D15 (people and permissions, decisions 062 and 063) is written and waits
-passed and deployed on 2026-10-28, with migration 007 on production. Batch B
-(tax and charge lines, six currencies, decision 064) passed: 411 API tests,
-108 Flutter tests, and a 10-step check in the app. Batch C (decision 065)
-passed: 416 API tests, 123 Flutter tests, and a 10-step check in the app.
-Batch D (vendors and cheques, decision 066) is written and waits for
-Ahmad's test run: 416 API tests unchanged, 136 Flutter tests expected. No
-server change, no migration.
+**Last updated:** 2026-10-29
+**Current phase:** Phase 1 complete and live, D15 done. Waiting on real data before real entries.
+**Where we stopped:** Phase 1 is complete, and every Phase 1 feature has a
+screen (D15, batches A to E). Batches F and G added ledger codes and headings,
+find on this screen (Ctrl+F), a Settings home of cards, and import and export
+of ledger codes and taxes as CSV files, so the accountant never needs
+phpMyAdmin. 463 API tests (460 pass, 3 argon2 skips), 172 Flutter tests,
+analyze clean, and each batch checked step by step in the app. Batches E, F
+and G are pushed together; none needs a migration.
 
-The API runs on
-Hostinger at api-accounting.winibex.com; the web app is at
+Production holds empty books, with migrations 000 to 007 applied. Next, in this order: enter the real
+30 June 2026 balances on the Opening balances screen, then the accountant's
+tax rates under Settings, Taxes (one at a time or by importing a file), then
+start real daily entries. Phase 2 waits until Phase 1 has been used with real
+entries. Batch history and test counts are in the session log below.
+
+The API runs on Hostinger at api-accounting.winibex.com; the web app is at
 accounting.winibex.com. Both deploy automatically: the API via Hostinger Git
 integration on push, the web app via GitHub Actions building Flutter web and
-uploading over FTP. Migrations 000 to 006 are applied on production. The
-accountant review document is with the accountant.
+uploading over FTP. The accountant review document is with the accountant.
 
 ## Deployed
 
@@ -69,8 +65,8 @@ These are not Phase 1 features. They are setup tasks and external dependencies.
    app yet (opening entry, transfers, reversal, reimbursements, people
    balances, vendors, cheques, tax and charge lines on the form, petty cash
    status, history merge, adding users, editing a draft, resubmitting a
-   rejected entry, currencies other than USD on the form). Being built in
-   batches: A people and permissions (written 2026-10-27); B tax and charge
+   rejected entry, currencies other than USD on the form). **Done
+   2026-10-29**, built in batches: A people and permissions (written 2026-10-27); B tax and charge
    lines and all six currencies on the form; C transfers, reversal, paying
    someone back, the opening entry; D vendors and the cheque register; E
    editing a draft, resubmitting a rejected entry, and the taxes screen
@@ -110,7 +106,8 @@ data; no real entries until F7 is fixed.
 | O7 | 6100 Salaries and 6110 Staff welfare easy to mis-pick; 1,200 went to the wrong one in the test | Low, affects P&L | Fix written: searchable picker, code first, code order |
 
 Test kit glitch: requests 8.9a to 8.9c could not read the flag id from 8.8d;
-typing the id worked. To fix in the `.http` file. The guide writes JV-0014
+typing the id worked. Fixed in batch F: a request of their own, 8.9, now
+supplies it. The guide writes JV-0014
 where the system shows JV-14.
 
 ## Phase 2 scope
@@ -218,7 +215,10 @@ Flutter — done:
 - [x] Change password screen with forced-change guard
 - [x] Edit history panel on transactions
 - [x] Path URL strategy (no hash routing) with .htaccess SPA fallback
-- [ ] `find_in_page` for on-screen find (deferred, not blocking)
+- [x] Find on this screen, Ctrl+F, built into the shell. Batch F, decision 068
+- [x] Ledger codes in Settings: add, rename, switch off. Batch F, decision 068
+- [x] Settings home, headings, import and export of ledger codes and taxes,
+      taxes in plain words. Batch G, decision 069
 
 Deploy — done:
 
@@ -229,6 +229,7 @@ Deploy — done:
 - [x] Migrations 000-004 applied via phpMyAdmin
 - [x] Migration 005 applied via phpMyAdmin, 2026-10-26
 - [x] Migration 006 applied via phpMyAdmin, 2026-10-27
+- [x] Migration 007 applied via phpMyAdmin, 2026-10-28
 - [x] Defect fixes pushed and deployed, 2026-10-26
 - [x] Owner password hash set on production
 
@@ -250,7 +251,7 @@ Defect fixes, 2026-10-26, deployed to production the same day:
 - [x] D12 journal panel shows codes and names
 - [x] D13 decision 055 kept, UI-GUIDE corrected
 - [x] D14 unusual-amount warning with a fractional average
-- [ ] D15 screens for the API-only features
+- [x] D15 screens for the API-only features, closed 2026-10-29
   - [x] Batch A, deployed 2026-10-28: People screen (owner adds people, sets
         roles and limits, resets passwords, switches people off), decision 062
         rules, migration 007, "Client will pay this back"
@@ -259,9 +260,11 @@ Defect fixes, 2026-10-26, deployed to production the same day:
   - [x] Batch C, passed 2026-10-28: moving money, paying someone back and
         who is owed, reversing, the opening balances screen, the petty cash
         top-up, charge lines that say where they go. Decision 065
-  - [ ] Batch D, written 2026-10-28: Vendors and Cheques menu items and
+  - [x] Batch D, passed 2026-10-28: Vendors and Cheques menu items and
         screens. Decision 066
-  - [ ] Batch E: edit a draft, resubmit a rejected entry, taxes screen
+  - [x] Batch E, passed 2026-10-29: edit a draft, take back a submitted
+        entry, fix and resend a rejected one, the taxes screen with rates over
+        time and rules. Decision 067
 
 373 API tests (370 pass, 3 argon2 skips). 78 Flutter tests. Flutter analyze
 clean.
@@ -372,6 +375,62 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-29 (batch G passed; E, F and G pushed together)
+Ahmad's run: 463 API tests (460 pass, 3 skip), 172 Flutter tests, and all 10
+steps in the app, including a heading with codes under it, an import previewed
+then cancelled then saved, a built-in code refused by file, a tax rate refused
+in place then started from a later date, and a tax rule changed by file. No
+migration. The project docs were brought up to date: AGENTS.md, OVERVIEW.md,
+TAXES.md and CHART-OF-ACCOUNTS.md now say how codes, headings and tax rates
+are entered from the app.
+
+### 2026-10-29 (batch G written: Settings home, headings, import and export)
+Batch F passed (439 API, 162 Flutter, 10 steps in the app). Ahmad asked for
+headings, bulk import and export of ledger codes and taxes that the
+accountant can use without phpMyAdmin, a Settings screen that explains
+itself, and a taxes screen in plain words. He chose a home of cards, a
+preview before saving, the tax rules in the same file, and picking a code's
+heading (decision 069). Server: `core/csv.js`; ledger codes gain headings, a
+picked heading, edit, and template, export and import; `taxes/import.js` for
+taxes. App: Settings home and a route per page, the Ledger codes page with
+headings, the Import and export page with its preview, and tax cards that
+start with a plain sentence. 24 new API tests (463), 10 new Flutter tests
+(172). No migration.
+
+### 2026-10-29 (batch F written: ledger codes, find, test kit)
+Ahmad updated the project instruction about the owner login, and asked for
+the two leftovers and a way to add ledger codes. He chose to build the ledger
+codes screen now, as a third Settings tab (decision 068). Server: the
+`ledger-codes` module, owner only, with list, add, rename and switch off or
+on, and its categories kept in step. App: the Ledger codes tab, and find on
+this screen in the shell (`find_in_page.dart`) with a find button in the top
+bar. `.http` 8.9 added so 8.9a to 8.9c find their flag id. 13 new API tests
+(439), 13 new Flutter tests (162). No migration.
+
+### 2026-10-29 (D15 batch E passed, D15 closed)
+The 10-step check in the app passed: taxes screen (new rate from a date, the
+rate following the entry date, rules on and off, add and end a tax), take back
+by the sender only, fix and send again with the reason shown, edit a draft,
+posted entries locked. D15 is closed. Left before real entries: commit and
+push batch E, then the accountant's tax rates through the taxes screen, the
+30 June opening balances through the Opening balances screen, and the PSEB
+expiry date.
+
+### 2026-10-28 (D15 batch E tests passed)
+426 API tests (423 pass, 3 skip) and 149 Flutter tests pass on Ahmad's
+machine, analyze clean. Next: the 12-step check in the app on the local copy,
+then commit and push. No migration for this batch.
+
+### 2026-10-28 (D15 batch E written)
+Batch D passed (136 Flutter, 8 steps in the app) and was pushed. Ahmad chose
+Taxes in Settings, rules on the taxes screen, and taking back a submitted
+entry by its sender only (decision 067). Server: `/transactions/:id/reopen`,
+tax names on the entry detail, and the owner's tax endpoints in
+`taxes/manage.js`. App: the actions panel on unposted ledger rows, the form
+opening a saved draft with why it came back, Settings tabs, and the taxes
+screen. 10 new API tests (426), 13 new Flutter tests (149). Open item P
+closed.
 
 ### 2026-10-28 (D15 batch D written)
 Batch C passed (416 API, 123 Flutter, 10 steps in the app) and was pushed.

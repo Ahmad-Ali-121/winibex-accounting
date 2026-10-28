@@ -2,9 +2,9 @@
 
 Node, Express, MariaDB. REST over JSON. Base path `/api/v1`.
 
-Status: Phase 0 and Phase 1 endpoints built and tested. 416 API tests: 413
+Status: Phase 0 and Phase 1 endpoints built and tested. 463 API tests: 460
 pass and 3 skip, the argon2 tests, until that package is installed. Updated
-2026-10-28 for batch C (decision 065).
+2026-10-29 for batch G (decision 069).
 
 ## Conventions
 
@@ -98,6 +98,7 @@ api/
     dashboard/
     flags/
     history/
+    ledger-codes/     the owner's chart of accounts screen
     clients/          Phase 2
     earning-accounts/  Phase 2
     invoices/          Phase 3
@@ -141,13 +142,20 @@ to `POST /transactions` and `/transactions/preview`. Decision 064.
 | POST | /transactions/:id/submit | draft to pending |
 | POST | /transactions/:id/approve | posts it: allocates the journal number, writes the lines |
 | POST | /transactions/:id/reject | reason required |
+| POST | /transactions/:id/reopen | back to a draft. A submitted entry, by the person who sent it only; a rejected one, by its maker or the owner or an admin. 409 for a draft or a posted entry. The rejection reason stays on the row. No idempotency key. Decision 067 |
 | POST | /transactions/:id/reverse | reason required, once only. A transfer leg reverses the whole transfer, both legs, and the answer lists them in `legs`. Refused with 409 for a reversal, and for the opening entry, which only the history merge reverses. Decision 065 |
-| GET | /transactions/:id | with lines, taxes and charges |
+| GET | /transactions/:id | with lines, taxes and charges. Each tax line carries `tax_name` and `tax_short_code` |
 | GET | /transactions/:id/journal | the debit and credit lines, for the journal panel. Each line carries `coaId`, `code` and `name` |
 | GET | /transactions/:id/history | edit history from the audit log: what changed, by whom, when |
 | POST | /transfers | both legs, created and posted together or not at all |
 | GET | /transfers/:groupId | both legs of one transfer |
 | GET | /taxes | taxes in force on a date. `?direction=in` or `out` keeps only taxes that fit that kind of entry. Each carries `appliesTo` and `computation`. Decision 064 |
+| GET | /taxes/all | the taxes screen: every tax row, in force or not, each with `standing` (in_force, not_yet, ended, switched_off), `isCurrent`, its ledger account and its rules; plus the ledger accounts a tax may post to. Decision 067 |
+| POST | /taxes | owner only. A new tax: name, shortCode, authority, kind, appliesTo, computation, rateAtl, rateNonAtl, statusBasis, ledgerCode, effectiveFrom, optional lawReference, returnSection, isAdjustable, notes. 409 if a current tax already has that code |
+| POST | /taxes/:id/new-rate | owner only. `{ effectiveFrom, rateAtl, rateNonAtl }`. Ends this row the day before and starts a copy with the new rates and its rules. 409 if this row is already replaced; 400 if the date is not after it started |
+| POST | /taxes/:id/end | owner only. `{ lastDay }`. Ends a tax with no replacement |
+| POST | /taxes/:id/rules | owner only. `{ direction, currencyIsForeign, accountType, categoryId }`, null meaning any. 400 for the wrong direction or category |
+| PATCH | /tax-rules/:id | owner only. `{ isActive }`. Rules are switched off, never deleted |
 | GET | /taxes/suggest | what to suggest for a draft situation, with the ATL status used. With `?taxIds=6` or `6,9`, works out exactly those taxes instead: the line for a tax added by hand. 400 if one is not in force on the date or is for the other direction. Decision 064 |
 | GET | /vendors, /vendors/:id | |
 | POST, PATCH | /vendors | owner or admin only: ATL status decides a tax rate |
@@ -177,6 +185,16 @@ to `POST /transactions` and `/transactions/preview`. Decision 064.
 | GET | /dashboard | cash held, money in and out this month, pending count, open flag count. In and out count only money that entered or left a company account: a transfer counts only its fee, a reversal cancels its original on the same side, a cost paid personally is left out. Decision 057 |
 | GET | /history/merge-check | difference per account between history and the opening entry |
 | POST | /history/merge | owner only. Refused while any difference remains |
+| GET | /ledger-codes | owner only. The whole chart of accounts in code order, headings included: id, code, name, type, normalBalance, parentId, isHeader, isSystem, isActive, onEntryForm, and the categories that point at each code. Decision 068 |
+| POST | /ledger-codes | owner only. `{ code, name, kind, parentCode, addToEntryForm }`. Four digits, not starting with 0; the first digit sets the type and normal side. `kind` is `code` (default) or `heading`. `parentCode` names the heading it sits under: a heading that is on, with the same first digit, before it; null for the nearest one. An income or expense code with `addToEntryForm` (default true) also gets a category, grouped like the others in its class. 400 if the code is used, another code that is on has the name, or the heading cannot hold it. 201 with `code`, which carries `parentCode`. Decision 069 |
+| PATCH | /ledger-codes/:id | owner only. `{ name, parentCode }`, either or both. Categories still named as the code was are renamed with it. A heading cannot move under itself or anything under it. 409 for a built-in code |
+| POST | /ledger-codes/:id/active | owner only. `{ isActive }`. Switching off also takes its categories off the entry form; on brings them back. 409 for a built-in code, a code with money on it, one a company account uses, one a current tax posts to, or a heading with anything under it still on. Nothing is ever deleted |
+| GET | /ledger-codes/template | owner only. `{ filename, csv }`: the column names and an example row. Decision 069 |
+| GET | /ledger-codes/export | owner only. `{ filename, csv }`: every code and heading in the template's columns |
+| POST | /ledger-codes/import | owner only. `{ csv, apply }`. Without `apply`, a preview: `summary { add, update, unchanged, skip }` and `rows` with `row`, `code`, `name`, `action`, `changes` and `reason`, nothing saved. With `apply: true`, saves every row that can be saved, in one transaction, and answers the same shape with `applied: true`. 400 if a needed column is missing |
+| GET | /taxes/template | owner only. `{ filename, csv }`: the 19 columns and an example row. Decision 069 |
+| GET | /taxes/export | owner only. Every current tax, one row per rule (`never` when it has none) |
+| POST | /taxes/import | owner only. `{ csv, apply }`, as for ledger codes. Rows with the same short code are one tax. A changed rate with a later start date starts a new rate and ends the old one the day before; with the same or an earlier date the row is skipped. Words change in place; rules follow the file. Rows also carry `rows`, every row number of the tax |
 
 All of Phase 1's endpoints are built. `GET /currencies` was not needed: the app
 reads the currency list it needs from `/accounts` and the entry form.

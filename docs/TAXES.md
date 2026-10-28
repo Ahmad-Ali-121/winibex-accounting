@@ -25,6 +25,21 @@ signs off before seeding.
 4. The system suggests. The user confirms. What was actually deducted wins
 5. Each transaction snapshots the rate used and the ATL status it was based on
 
+## How taxes get into the system
+
+Not by migration. The owner enters them in the app, under Settings, Taxes:
+one at a time with "Add tax", or many at once by importing a spreadsheet file
+under Settings, Import and export, which shows what each row will do before
+anything is saved. Each tax card states in a plain sentence who pays it, how
+much, and whether it can be claimed back. Decisions 067 and 069.
+
+- A rate is never edited. A new rate starts on a date, and the old one ends
+  the day before, so every entry keeps the rate in force on its date
+- Rules on each tax say when the entry form suggests it: money in or out, the
+  currency, the account type and the category
+- Production holds no taxes yet. The rates below are entered once the
+  accountant confirms them
+
 ---
 
 ## Taxes deducted from Winibex
@@ -127,7 +142,11 @@ Recorded as charged. Posts to 8100.
 
 ---
 
-## Tax rules to seed
+## Tax rules to enter
+
+These become rules on each tax under Settings, Taxes, or rows in the taxes
+import file ("Suggest on", "Currency", "Account type", "Only for category
+code").
 
 | Situation | Suggested lines | ATL status used |
 | --- | --- | --- |

@@ -23,22 +23,28 @@
 
 @api = http://localhost:3000/api/v1
 # For production, put a # in front of the line above and remove it here:
-@today = 2026-10-27
+# @api = https://api-accounting.winibex.com/api/v1
+
+# The date you are testing on, as YYYY-MM-DD. Must match the app's date.
+@today = 2026-10-26
+
 @ownerEmail = winibexoffice@gmail.com
-@ownerPassword = Winibex-Local-2026
+@ownerPassword = PUT-THE-CURRENT-OWNER-PASSWORD-HERE
 @testPassword = Winibex-Test-2026
-@bankId = 1
-@cashId = 2
-@pettyId = 3
-@staffId = 4
-@cat5100 = 14
-@cat6200 = 22
-@cat6400 = 24
-@cat6600 = 27
-@coa8100 = 90
-@coa8200 = 91
-@tax236y = 1
-@tax153 = 3
+
+# From phase1-checks.sql, Section A. Replace every 0.
+@bankId = 0
+@cashId = 0
+@pettyId = 0
+@staffId = 0
+@cat5100 = 0
+@cat6200 = 0
+@cat6400 = 0
+@cat6600 = 0
+@coa8100 = 0
+@coa8200 = 0
+@tax236y = 0
+@tax153 = 0
 
 # Tokens, filled automatically by the sign-in requests below.
 @owner = {{ownerLogin.response.body.$.accessToken}}
@@ -909,7 +915,7 @@ Idempotency-Key: abc
 POST {{api}}/transactions
 Authorization: Bearer {{owner}}
 Content-Type: application/json
-Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
+Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
 
 {
   "date": "{{today}}",
@@ -918,15 +924,14 @@ Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
   "description": "Idempotency test, should exist once",
   "categoryId": {{cat6600}},
   "accountId": {{pettyId}},
-  "gross": { "minor": 80000, "currency": "PKR" },
-  "acknowledged_warnings": ["POSSIBLE_DUPLICATE", "REPEATED_DESCRIPTION"]
+  "gross": { "minor": 80000, "currency": "PKR" }
 }
 
 ### 6.17d Send exactly the same again. Expect 201 with the SAME transaction.id.
 POST {{api}}/transactions
 Authorization: Bearer {{owner}}
 Content-Type: application/json
-Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
+Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
 
 {
   "date": "{{today}}",
@@ -935,8 +940,7 @@ Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
   "description": "Idempotency test, should exist once",
   "categoryId": {{cat6600}},
   "accountId": {{pettyId}},
-  "gross": { "minor": 80000, "currency": "PKR" },
-  "acknowledged_warnings": ["POSSIBLE_DUPLICATE", "REPEATED_DESCRIPTION"]
+  "gross": { "minor": 80000, "currency": "PKR" }
 }
 
 ### 6.17e Same key, different amount. Expect 409 IDEMPOTENCY_KEY_REUSED,
@@ -946,7 +950,7 @@ Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
 POST {{api}}/transactions
 Authorization: Bearer {{owner}}
 Content-Type: application/json
-Idempotency-Key: 7a2e3d4c-5b6f-4a71-9b8c-0d1e2f3a4b5c
+Idempotency-Key: 6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b
 
 {
   "date": "{{today}}",
@@ -1175,7 +1179,6 @@ Authorization: Bearer {{owner}}
 #      resolutionNote "Receipt attached"
 #    1 THIN_DESCRIPTION on "tea", resolvedAutomatically false,
 #      resolvedByName the owner's name, resolutionNote your note from step 8.7
-# @name resolvedFlags
 GET {{api}}/flags?resolved=true
 Authorization: Bearer {{owner}}
 
@@ -1183,13 +1186,17 @@ Authorization: Bearer {{owner}}
 GET {{api}}/dashboard
 Authorization: Bearer {{owner}}
 
-# If 8.9a to 8.9c answer "Expected number, received nan", the flag id did not
-# carry over from 8.8d. Copy the first "id" from the 8.8d response and type it
-# in place of {{resolvedFlags.response.body.$.flags[0].id}} in all three.
+### 8.9 Pick one resolved flag for 8.9a to 8.9c. Send this first. Expect 200.
+# @name pickedFlag
+# 8.9a to 8.9c read the first flag's id from this answer by themselves.
+# Send it again if VS Code was closed since, because REST Client forgets
+# answers when it closes.
+GET {{api}}/flags?resolved=true
+Authorization: Bearer {{owner}}
 
 ### 8.9a Staff tries to mark a flag reviewed.
 # Expect 403, "Only the owner or an admin can mark a flag reviewed."
-POST {{api}}/flags/{{resolvedFlags.response.body.$.flags[0].id}}/resolve
+POST {{api}}/flags/{{pickedFlag.response.body.$.flags[0].id}}/resolve
 Authorization: Bearer {{staff}}
 Content-Type: application/json
 
@@ -1197,7 +1204,7 @@ Content-Type: application/json
 
 ### 8.9b A note that is too short.
 # Expect 400, "Say why it needs nothing more, in a few words."
-POST {{api}}/flags/{{resolvedFlags.response.body.$.flags[0].id}}/resolve
+POST {{api}}/flags/{{pickedFlag.response.body.$.flags[0].id}}/resolve
 Authorization: Bearer {{owner}}
 Content-Type: application/json
 
@@ -1205,7 +1212,7 @@ Content-Type: application/json
 
 ### 8.9c A flag that is already resolved.
 # Expect 409 INVALID_STATUS, "That flag has already been dealt with."
-POST {{api}}/flags/{{resolvedFlags.response.body.$.flags[0].id}}/resolve
+POST {{api}}/flags/{{pickedFlag.response.body.$.flags[0].id}}/resolve
 Authorization: Bearer {{owner}}
 Content-Type: application/json
 
@@ -1217,24 +1224,3 @@ Authorization: Bearer {{owner}}
 Content-Type: application/json
 
 { "note": "Nothing here" }
-
-### F5 check. A sales tax on money out. Expect 400 TAX_WRONG_DIRECTION.
-POST {{api}}/transactions
-Authorization: Bearer {{owner}}
-Content-Type: application/json
-Idempotency-Key: {{$guid}}
-
-{
-  "date": "{{today}}",
-  "direction": "out",
-  "method": "online",
-  "description": "Sales tax on a subscription, must be refused",
-  "categoryId": {{cat6400}},
-  "accountId": {{bankId}},
-  "gross": { "minor": 100000, "currency": "PKR" },
-  "taxes": [
-    { "taxId": 2, "baseAmount": { "minor": 100000, "currency": "PKR" },
-      "rateApplied": "1.0000", "atlStatusUsed": "atl", "atlParty": "company",
-      "amount": { "minor": 1000, "currency": "PKR" }, "deductedBy": "bank" }
-  ]
-}

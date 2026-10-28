@@ -141,7 +141,16 @@ Current modules:
   audit log.
 - **`taxes/`**: taxes in force on a date, and the suggestion engine that
   picks which taxes apply for a given direction, currency, account type and
-  category, with ATL status resolved by the right party.
+  category, with ATL status resolved by the right party. `manage.js` is the
+  owner's changes: a new tax, a new rate from a date, ending one, and rules.
+- **`ledger-codes/`**: the owner's chart of accounts. `rules.js` holds the
+  rules every change follows: the type from the first digit, which heading a
+  code may sit under, names never used twice, and when a code must stay on.
+  `service.js` lists, adds codes and headings, changes a name or heading,
+  switches off or on, and runs the import: a preview of every row, then all
+  of it saved together. Decisions 068 and 069.
+- **`taxes/import.js`**: taxes in bulk: the template, the export, and the
+  import with the same preview and confirm. Decision 069.
 - **`vendors/`**: anyone Winibex pays other than employees. NTN, CNIC,
   ATL status with check date. The ATL status drives which tax rate applies.
 - **`cheques/`**: the cheque register: issue, present, clear, bounce, cancel.
@@ -223,7 +232,7 @@ Numbered SQL files, run in order. The database remembers which have run.
 
 Every `.js` file here tests one area. They run against a real database, never a
 fake one, because the guarantees being tested live in the database. `npm test`
-runs them all. 416 tests after batch C: 413 pass, 3 argon2 tests skip until
+runs them all. 463 tests after batch G: 460 pass, 3 argon2 tests skip until
 that package is installed.
 
 Test files:
@@ -258,6 +267,15 @@ Test files:
 - **`defect-fixes.test.js`**: one or more tests per defect found while
   writing the Phase 1 test (D1, D2, D5 to D9, D11, D12, D14), and for the
   decision 062 rules. If any of them comes back, this file fails.
+- **`batch-e.test.js`**: changing taxes as the owner only, a new rate that
+  leaves earlier dates alone, rules, and taking back or fixing an entry.
+- **`ledger-codes.test.js`**: the owner's ledger codes: adding, the type
+  from the first digit, joining the entry form, no code or name twice,
+  built-in codes left alone, when a code must stay on, headings, and the
+  import and export.
+- **`taxes-import.test.js`**: taxes in bulk: preview, confirm, new rates
+  only from a later date, words in place, rules following the file.
+- **`csv.test.js`**: the CSV reader and writer.
 - **`money-moves.test.js`**: the opening balances screen's data, a transfer
   reversed whole, and the two reversals that are refused.
 - **`entry-form.test.js`**: what the tax and charge step needs: the tax list
@@ -359,7 +377,12 @@ Current features:
 
 - **`auth/`**: the login screen and everything behind it.
 - **`shell/`**: the frame around every screen: the left navigation on desktop,
-  the bottom bar on mobile, the theme and sign-out buttons.
+  the bottom bar on mobile, the find, theme and sign-out buttons.
+  `find_in_page.dart` is find on this screen: Ctrl+F (Cmd+F on a Mac) opens a
+  bar that highlights every match of what is typed among the words the page
+  shows, with Enter and Shift+Enter to step through them. It reads the text
+  the page has drawn, so it finds only what the page is showing; the search
+  box on Transactions searches every entry.
 - **`dashboard/`**: the home screen: cash held per account, money in and out
   this month, pending entries waiting for approval, flagged entries needing
   review. Real live data, not a placeholder.
@@ -386,6 +409,16 @@ Current features:
 - **`flags/`**: the flags review list: entries with confirmed warnings or
   raised flags. The owner and admins see a Mark reviewed button on each, which
   asks for a short note.
+- **`taxes/`**: the owner's taxes screen: rates over time, a new rate from a
+  date, ending a tax, and the rules for when each is suggested.
+- **`settings/`**: the Settings home of cards, and the page for each part
+  with its way back. The router gives each its own address.
+- **`ledger_codes/`**: the owner's Ledger codes page: the chart of accounts
+  grouped by its first digit and indented by heading, searchable, with add a
+  code or a heading, edit (name and heading) and switch off.
+- **`import_export/`**: the Import and export page: download the template or
+  the current list, import a file, and the preview dialog that shows each row
+  before anything is saved.
 - **`vendors/`**: the Vendors screen: who the company pays, their NTN or
   CNIC, filer status and when it was checked.
 - **`cheques/`**: the cheque register: record a cheque, move it from issued
@@ -407,7 +440,7 @@ Current features:
 
 ### `app/test/`
 
-136 Flutter widget tests after batch D, 2026-10-28. Flutter analyze clean.
+172 Flutter widget tests after batch G, 2026-10-29. Flutter analyze clean.
 
 - **`foundation_test.dart`**: checks the theme and glossary hold together.
 - **`login_test.dart`**: checks the login screen behaves on success, wrong
@@ -430,6 +463,19 @@ Current features:
   told apart and each gets its own message.
 - **`auth_user_test.dart`**: who may post their own entries: the owner, and
   an admin with auto-approve. Nobody else.
+- **`taxes_screen_test.dart`**: the tax cards, a new rate, rules, ending a
+  tax, adding one.
+- **`entry_editing_test.dart`**: a sent-back entry fixed and resent as the
+  same draft, and the ledger's Edit, Take back and Fix buttons.
+- **`ledger_codes_test.dart`**: the ledger codes screen: grouping, built-in
+  codes with no menu, adding, renaming, switching off, a refusal kept in the
+  dialog.
+- **`find_in_page_test.dart`**: Ctrl+F opens the find bar, the count, Enter
+  and Shift+Enter, hidden text and the bar's own words not matched, Escape.
+- **`settings_screen_test.dart`**: the Settings home cards and summaries,
+  opening each page, the way back, owner only.
+- **`import_export_test.dart`**: downloads, the import preview, confirming,
+  and a file with nothing to save.
 - **`vendors_cheques_test.dart`**: vendor cards and the vendor form, the
   cheque register, its moves, linking and recording a cheque.
 - **`money_moves_test.dart`**: moving money, the top-up, warnings sent again

@@ -87,8 +87,14 @@ export async function findDetail(runner = getPool(), id) {
       ORDER BY j.line_no`,
     [id],
   );
+  // The tax's name and code come too, so a draft opened again on the entry
+  // form can show its lines by name. Decision 067.
   const [taxes] = await runner.query(
-    'SELECT * FROM transaction_taxes WHERE transaction_id = ? ORDER BY id',
+    `SELECT tt.*, t.name AS tax_name, t.short_code AS tax_short_code
+       FROM transaction_taxes tt
+       JOIN taxes t ON t.id = tt.tax_id
+      WHERE tt.transaction_id = ?
+      ORDER BY tt.id`,
     [id],
   );
   const [charges] = await runner.query(

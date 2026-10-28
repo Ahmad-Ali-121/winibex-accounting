@@ -37,6 +37,9 @@ abstract final class _Palette {
   static const amberSoft = Color(0xFFF7EBD3);
   static const stone = Color(0xFF737A80); // reversed, cancelled
   static const stoneSoft = Color(0xFFE7E9EA);
+  // Find on this screen. See-through, so the text under them still reads.
+  static const findMatch = Color(0x66F2C14E);
+  static const findCurrent = Color(0xA6F08A24);
 
   // Dark
   static const nightPaper = Color(0xFF121415);
@@ -55,6 +58,8 @@ abstract final class _Palette {
   static const nightAmberSoft = Color(0xFF3A2F17);
   static const nightStone = Color(0xFFA0A7AB);
   static const nightStoneSoft = Color(0xFF262A2C);
+  static const nightFindMatch = Color(0x59E5B65A);
+  static const nightFindCurrent = Color(0x99F0A040);
 }
 
 // ---------------------------------------------------------------------------
@@ -83,6 +88,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.infoSoft,
     required this.reversed,
     required this.reversedSoft,
+    required this.findMatch,
+    required this.findCurrent,
   });
 
   final Color background;
@@ -104,6 +111,8 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color infoSoft;
   final Color reversed; // reversed and cancelled entries
   final Color reversedSoft;
+  final Color findMatch; // every match of Ctrl+F on the screen
+  final Color findCurrent; // the match Ctrl+F is on now
 
   static const light = AppColors(
     background: _Palette.paper,
@@ -125,6 +134,8 @@ class AppColors extends ThemeExtension<AppColors> {
     infoSoft: _Palette.petrolSoft,
     reversed: _Palette.stone,
     reversedSoft: _Palette.stoneSoft,
+    findMatch: _Palette.findMatch,
+    findCurrent: _Palette.findCurrent,
   );
 
   static const dark = AppColors(
@@ -147,6 +158,8 @@ class AppColors extends ThemeExtension<AppColors> {
     infoSoft: _Palette.nightPetrolSoft,
     reversed: _Palette.nightStone,
     reversedSoft: _Palette.nightStoneSoft,
+    findMatch: _Palette.nightFindMatch,
+    findCurrent: _Palette.nightFindCurrent,
   );
 
   @override
@@ -170,6 +183,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? infoSoft,
     Color? reversed,
     Color? reversedSoft,
+    Color? findMatch,
+    Color? findCurrent,
   }) {
     return AppColors(
       background: background ?? this.background,
@@ -191,6 +206,8 @@ class AppColors extends ThemeExtension<AppColors> {
       infoSoft: infoSoft ?? this.infoSoft,
       reversed: reversed ?? this.reversed,
       reversedSoft: reversedSoft ?? this.reversedSoft,
+      findMatch: findMatch ?? this.findMatch,
+      findCurrent: findCurrent ?? this.findCurrent,
     );
   }
 
@@ -218,6 +235,8 @@ class AppColors extends ThemeExtension<AppColors> {
       infoSoft: l(infoSoft, other.infoSoft),
       reversed: l(reversed, other.reversed),
       reversedSoft: l(reversedSoft, other.reversedSoft),
+      findMatch: l(findMatch, other.findMatch),
+      findCurrent: l(findCurrent, other.findCurrent),
     );
   }
 }
@@ -248,6 +267,7 @@ abstract final class AppRadii {
   static const double control = 6; // inputs, buttons, chips
   static const double container = 10; // dialogs, sheets, menus
   static const double pill = 999; // role badges, status chips, avatars
+  static const double highlight = 2; // the box Ctrl+F draws around a match
 }
 
 abstract final class AppSizes {
@@ -287,6 +307,33 @@ abstract final class AppSizes {
 
   /// An amount box beside a label, as on the opening balances screen.
   static const double amountFieldWidth = 220;
+
+  /// The find bar Ctrl+F opens, at its widest.
+  static const double findBarMaxWidth = 480;
+
+  /// How far a find highlight reaches past the letters it covers.
+  static const double findHighlightPadding = 1;
+
+  /// The code column on the ledger codes screen, wide enough for four digits.
+  static const double ledgerCodeColumnWidth = 64;
+
+  /// How far each level of heading pushes a ledger code in.
+  static const double ledgerIndent = 20;
+
+  /// The square holding each card's icon on the Settings home.
+  static const double settingsIconTile = 48;
+
+  /// The round number badge on a numbered step.
+  static const double stepBadge = 28;
+
+  /// The label column of a fact list, such as "Rate" on a tax card.
+  static const double factLabelWidth = 120;
+
+  /// The import preview: wide enough to read a change on one line.
+  static const double dialogPreviewWidth = 720;
+
+  /// The tallest the import preview's list grows before it scrolls.
+  static const double previewListHeight = 420;
 }
 
 // ---------------------------------------------------------------------------
@@ -328,13 +375,7 @@ abstract final class AppText {
       bodySmall: TextStyle(fontFamily: f, fontSize: 12.5, height: 1.4, color: muted),
       labelLarge: const TextStyle(fontFamily: f, fontSize: 14, height: 1.2, fontWeight: FontWeight.w500),
       labelMedium: const TextStyle(fontFamily: f, fontSize: 13, height: 1.2, fontWeight: FontWeight.w500),
-      labelSmall: TextStyle(
-        fontFamily: f,
-        fontSize: 12,
-        height: 1.2,
-        fontWeight: FontWeight.w500,
-        color: muted,
-      ),
+      labelSmall: TextStyle(fontFamily: f, fontSize: 12, height: 1.2, fontWeight: FontWeight.w500, color: muted),
     ).apply(bodyColor: body, displayColor: body);
   }
 

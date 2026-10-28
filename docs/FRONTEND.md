@@ -171,6 +171,50 @@ a keep-alive action provider that returns `ApiException?`. Both screens take
 only to choose which buttons to show. Adding or changing a vendor invalidates
 the entry form's `vendorOptionsProvider`. Decision 066.
 
+## Fixing drafts and the taxes screen
+
+`/transactions/new?edit=12` opens draft 12: `EntryScreen(editId:)` calls
+`openExisting`, which builds the draft with `EntryDraft.fromDetail` and sets
+`existingId`, so `EntrySave` edits it with `PATCH` before submitting or
+posting. `onEditDone` leaves the form after the save. The ledger's
+`onEdit` opens `entry_actions_panel.dart` for draft, pending and rejected
+rows, which reopens pending and rejected ones first. `features/taxes/` is the
+owner's taxes screen, shown in `features/settings/` beside People. Decision
+067.
+
+## Settings, headings, and import and export
+
+Settings is a home of cards (`features/settings/`), and each part is its own
+route under `/settings`: `people`, `taxes`, `ledger-codes`, `import-export`.
+`SettingsScreen` takes the section and an `onOpen` callback, so only the
+router knows the addresses. The taxes and ledger codes pages link to Import
+and export the same way.
+
+Files are picked and saved through `core/files/csv_files.dart`, behind
+`csvFilesProvider` so tests can replace it. It uses file_picker 13's static
+`FilePicker.pickFile` and `FilePicker.saveFile`; on the web, saving downloads
+the file. The app never reads a CSV itself: it sends the text and shows the
+server's plan (`features/import_export/`). Confirming invalidates the ledger
+codes, the taxes and the entry form's categories. Decision 069.
+
+## Ledger codes and find on this screen
+
+`features/ledger_codes/` is the third Settings tab, owner only. Every change
+goes through `LedgerCodeActions.run`, which asks for the list again and
+invalidates `categoryGroupsProvider`, so a new or switched-off code shows on
+the entry form at once. Decision 068.
+
+Find on this screen is `features/shell/presentation/find_in_page.dart`, built
+by hand rather than with a package. `FindScope` wraps the shell and listens
+for Ctrl+F, Cmd+F and Escape through `HardwareKeyboard`, but not while a
+dialog is on top. `FindTarget` wraps the page area only, so the menu and the
+top bar are never matched. It walks the page's elements for `RenderParagraph`
+text, skips anything offstage or on a tab that is not showing, and paints the
+highlights in a `CustomPaint` over the page, recomputed from the live layout
+so they follow scrolling. Stepping to a match uses `Scrollable.ensureVisible`.
+It finds only what the page has built: rows a long list has not built yet are
+found after scrolling, and the ledger's server search covers every entry.
+
 ## The root widget and the splash
 
 `app.dart` builds one `MaterialApp.router` from the first frame. While the
@@ -245,4 +289,6 @@ fixes: the sign-in error inside the real app, the date picker, the three kinds
 of error, and the reason dialog. 95 with the People screen, 99 with its
 redesign, 108 with the tax and charges step and six currencies, 123 with
 moving money, paying back, reversing and the opening balances, 136 with
-vendors and cheques.
+vendors and cheques, 149 with fixing drafts and the taxes screen, 162 with
+ledger codes and find on this screen, 172 with the Settings home, headings,
+and import and export.

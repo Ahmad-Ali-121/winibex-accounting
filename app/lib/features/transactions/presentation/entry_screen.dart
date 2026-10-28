@@ -30,11 +30,18 @@ export 'widgets/money_field.dart' show parseMinorUnits;
 /// and the conditional fields appear only when they apply, so a PKR entry
 /// never shows an exchange rate box.
 class EntryScreen extends ConsumerStatefulWidget {
-  const EntryScreen({super.key, this.canPost = false});
+  const EntryScreen({super.key, this.canPost = false, this.editId, this.onEditDone});
 
   /// Whether this person may post rather than submit for approval. The server
   /// decides for real; this only changes what the button says.
   final bool canPost;
+
+  /// A draft on the server to open and fix, rather than a new entry.
+  /// Decision 067.
+  final int? editId;
+
+  /// Called once a fixed draft is saved, to leave the form.
+  final VoidCallback? onEditDone;
 
   @override
   ConsumerState<EntryScreen> createState() => _EntryScreenState();
@@ -43,6 +50,39 @@ class EntryScreen extends ConsumerStatefulWidget {
 class _EntryScreenState extends ConsumerState<EntryScreen> {
   int _step = 0;
   static const _lastStep = 6;
+
+  bool _opening = false;
+  Object? _openRefusal;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.editId != null) WidgetsBinding.instance.addPostFrameCallback((_) => _open(widget.editId!));
+  }
+
+  @override
+  void didUpdateWidget(covariant EntryScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.editId != null && widget.editId != oldWidget.editId) {
+      final id = widget.editId!;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _open(id));
+    }
+  }
+
+  Future<void> _open(int id) async {
+    setState(() {
+      _opening = true;
+      _openRefusal = null;
+      _step = 0;
+    });
+    ref.read(entrySaveProvider.notifier).dismiss();
+    final refusal = await ref.read(entryDraftControllerProvider.notifier).openExisting(id);
+    if (!mounted) return;
+    setState(() {
+      _opening = false;
+      _openRefusal = refusal;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +112,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
           // field and saving again was refused as a reused key. D10.
           ref.invalidate(entryDraftControllerProvider);
           if (mounted) setState(() => _step = 0);
+          if (widget.editId != null) widget.onEditDone?.call();
 
         // The review step shows these itself: a disabled button while saving,
         // and the reason when the server refused.
@@ -82,12 +123,28 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       }
     });
 
+    if (_opening) return const Center(child: CircularProgressIndicator());
+    if (_openRefusal != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: _RefusalBanner(
+            message: errorMessageFor(_openRefusal!, network: l10n.errNetwork, server: l10n.errServer),
+          ),
+        ),
+      );
+    }
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: AppSizes.formMaxWidth),
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.xl),
           children: [
+            if (draft.existingId != null) ...[
+              _FixingBanner(reason: draft.sentBackReason),
+              const SizedBox(height: AppSpacing.lg),
+            ],
             _StepHeader(step: _step, lastStep: _lastStep),
             const SizedBox(height: AppSpacing.xl),
             switch (_step) {
@@ -490,6 +547,52 @@ class _ReviewStep extends ConsumerWidget {
           child: Text(canPost ? l10n.actionSaveAndPost : l10n.actionSubmitForApproval),
         ),
       ],
+    );
+  }
+}
+
+/// Says this form is fixing a draft already saved, and, for one sent back,
+/// the approver's reason, in their words. Decision 067.
+class _FixingBanner extends StatelessWidget {
+  const _FixingBanner({this.reason});
+
+  final String? reason;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    final text = Theme.of(context).textTheme;
+    final sentBack = reason != null;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: sentBack ? colors.pendingSoft : colors.accentSoft,
+        borderRadius: BorderRadius.circular(AppRadii.container),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(sentBack ? Icons.reply : Icons.edit_note, color: sentBack ? colors.pending : colors.accent),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(sentBack ? l10n.fixingSentBack : l10n.fixingDraft, style: text.titleSmall),
+                if (sentBack) ...[
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(l10n.fixingReason(reason!), style: text.bodyMedium),
+                ],
+                const SizedBox(height: AppSpacing.xxs),
+                Text(l10n.fixingHint, style: text.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

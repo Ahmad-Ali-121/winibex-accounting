@@ -17,6 +17,7 @@ import { historyRoutes } from './modules/history/routes.js';
 import { categoryRoutes } from './modules/categories/routes.js';
 import { userRoutes } from './modules/users/routes.js';
 import { attachmentRoutes } from './modules/attachments/routes.js';
+import { ledgerCodeRoutes } from './modules/ledger-codes/routes.js';
 
 export const API_PREFIX = '/api/v1';
 
@@ -59,6 +60,7 @@ export function createApp() {
   app.use(API_PREFIX, categoryRoutes);
   app.use(API_PREFIX, userRoutes);
   app.use(API_PREFIX, attachmentRoutes);
+  app.use(API_PREFIX, ledgerCodeRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

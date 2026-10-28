@@ -1929,4 +1929,805 @@ class AppLocalizationsEn extends AppLocalizations {
   String chequeIssuedDone(String number) {
     return 'Cheque $number recorded.';
   }
+
+  @override
+  String get settingsOwnerOnly =>
+      'Only the owner can change people, taxes and ledger codes.';
+
+  @override
+  String get fixingDraft => 'Changing a saved draft';
+
+  @override
+  String get fixingSentBack => 'Sent back to be fixed';
+
+  @override
+  String fixingReason(String reason) {
+    return 'Why: $reason';
+  }
+
+  @override
+  String get fixingHint =>
+      'Change what is wrong, then save. It is sent for approval again, or posted if you may post your own entries.';
+
+  @override
+  String get entryDraftExplain =>
+      'A draft, not sent yet. Open it to finish or change it.';
+
+  @override
+  String get entryPendingExplain =>
+      'Waiting for approval. If something is wrong, take it back, fix it, and send it again. Only the person who sent it can do this.';
+
+  @override
+  String get entryRejectedExplain =>
+      'Sent back by the approver. Open it to see why, fix it, and send it again.';
+
+  @override
+  String get actionTakeBack => 'Take back to fix';
+
+  @override
+  String get actionFixAndResend => 'Fix and send again';
+
+  @override
+  String get taxesTitle => 'Taxes';
+
+  @override
+  String get taxesIntro =>
+      'The taxes the company pays, and the ones it keeps back from people it pays. Each card says in plain words what the tax does.';
+
+  @override
+  String get actionAddTax => 'Add tax';
+
+  @override
+  String get taxesShowOld => 'Show ended and earlier rates';
+
+  @override
+  String get taxesEmpty =>
+      'No taxes yet. The accountant\'s rates are added here.';
+
+  @override
+  String get taxSaved => 'Saved.';
+
+  @override
+  String get taxKindWithholding => 'Withholding, kept back';
+
+  @override
+  String get taxKindFinal => 'Final tax';
+
+  @override
+  String get taxKindAdvance => 'Advance tax';
+
+  @override
+  String get taxKindSalesTax => 'Sales tax';
+
+  @override
+  String get taxKindFed => 'FED';
+
+  @override
+  String get taxKindOther => 'Other';
+
+  @override
+  String get taxInForce => 'In force';
+
+  @override
+  String taxStarts(String date) {
+    return 'Starts $date';
+  }
+
+  @override
+  String taxEnded(String date) {
+    return 'Ended $date';
+  }
+
+  @override
+  String taxRates(String filer, String nonFiler) {
+    return '$filer% for a filer, $nonFiler% for a non-filer';
+  }
+
+  @override
+  String taxRatesFixed(String filer, String nonFiler) {
+    return 'Fixed $filer for a filer, $nonFiler for a non-filer';
+  }
+
+  @override
+  String get taxBasisOurs =>
+      'Taken from us, so our own filer status sets the rate.';
+
+  @override
+  String get taxBasisPayee =>
+      'Kept back by us from the payee, so their filer status sets the rate.';
+
+  @override
+  String get taxBasisOursShort => 'Taken from us';
+
+  @override
+  String get taxBasisPayeeShort => 'Kept back from the payee';
+
+  @override
+  String get taxAppliesIn => 'On money coming in';
+
+  @override
+  String get taxAppliesOut => 'On money going out';
+
+  @override
+  String get taxAppliesBoth => 'On money in and out';
+
+  @override
+  String get taxBoth => 'Both';
+
+  @override
+  String taxPostsTo(String account) {
+    return 'Posts to $account';
+  }
+
+  @override
+  String taxPeriodOpen(String from) {
+    return 'From $from';
+  }
+
+  @override
+  String taxPeriod(String from, String to) {
+    return '$from to $to';
+  }
+
+  @override
+  String get taxRulesTitle => 'When the entry form suggests it';
+
+  @override
+  String get taxNoRules =>
+      'Never suggested. Add a rule, or it can only be added to an entry by hand.';
+
+  @override
+  String get ruleMoneyIn => 'Money in';
+
+  @override
+  String get ruleMoneyOut => 'Money out';
+
+  @override
+  String get ruleAnyCurrency => 'Any currency';
+
+  @override
+  String get ruleForeignOnly => 'Foreign currency';
+
+  @override
+  String get ruleRupeesOnly => 'Rupees only';
+
+  @override
+  String get ruleAnyAccount => 'Any account';
+
+  @override
+  String get ruleAnyCategory => 'Any category';
+
+  @override
+  String get actionNewRate => 'Change the rate from a date';
+
+  @override
+  String get actionAddRule => 'Add a rule';
+
+  @override
+  String get actionEndTax => 'End this tax';
+
+  @override
+  String newRateTitle(String code) {
+    return 'New rate for $code';
+  }
+
+  @override
+  String get newRateHint =>
+      'For a budget change. Entries before the start date keep the old rate; entries from it get the new one.';
+
+  @override
+  String get fieldNewRateFrom => 'New rate starts on';
+
+  @override
+  String newRateOldEnds(String code, String date) {
+    return 'The current $code rate will end on $date.';
+  }
+
+  @override
+  String get actionSaveNewRate => 'Save new rate';
+
+  @override
+  String get fieldRateFiler => 'Rate for a filer';
+
+  @override
+  String get fieldRateNonFiler => 'Rate for a non-filer';
+
+  @override
+  String get errRateShape => 'A number, up to four decimal places.';
+
+  @override
+  String endTaxTitle(String code) {
+    return 'End $code?';
+  }
+
+  @override
+  String get endTaxHint =>
+      'For a tax that no longer applies at all. It is not suggested or accepted on entries after this day. Entries before it keep it.';
+
+  @override
+  String get fieldLastDay => 'Last day it applies';
+
+  @override
+  String addRuleTitle(String code) {
+    return 'When to suggest $code';
+  }
+
+  @override
+  String get addRuleHint =>
+      'The entry form suggests this tax when an entry matches all of these. \"Any\" means it does not matter.';
+
+  @override
+  String get fieldRuleCurrency => 'Currency';
+
+  @override
+  String get fieldRuleAccount => 'Paid from or into';
+
+  @override
+  String get fieldRuleCategory => 'Category';
+
+  @override
+  String get addTaxTitleFull => 'Add a tax';
+
+  @override
+  String get addTaxHint =>
+      'For a tax the accountant names. To change the rate of one that exists, use \"New rate from a date\" on it instead.';
+
+  @override
+  String get fieldTaxName => 'Name';
+
+  @override
+  String get fieldTaxCode => 'Short code';
+
+  @override
+  String get hintTaxCode => 'Shown on entries, such as 153-IT';
+
+  @override
+  String get fieldLawReference => 'Law reference (optional)';
+
+  @override
+  String get hintLawReference => 'Such as ITO 2001 s.153';
+
+  @override
+  String get fieldTaxKind => 'Kind';
+
+  @override
+  String get fieldTaxAuthority => 'Collected by';
+
+  @override
+  String get fieldTaxAppliesTo => 'Applies to';
+
+  @override
+  String get fieldTaxBasis => 'Who it is about';
+
+  @override
+  String get fieldTaxLedger => 'Posts to';
+
+  @override
+  String get hintTaxLedger =>
+      'The ledger account the accountant gives for this tax.';
+
+  @override
+  String get hintTaxLedgerNeeded => 'Choose the ledger account it posts to.';
+
+  @override
+  String get fieldTaxFrom => 'In force from';
+
+  @override
+  String get fieldReturnSection => 'Return section (optional)';
+
+  @override
+  String get hintReturnSection =>
+      'The section code the quarterly withholding statement uses.';
+
+  @override
+  String get fieldAdjustable => 'Can be claimed back';
+
+  @override
+  String get hintAdjustable =>
+      'On if this tax counts against our income tax later. Off if it is a final cost.';
+
+  @override
+  String get errRequired => 'Fill this in.';
+
+  @override
+  String get ledgerTitle => 'Ledger codes';
+
+  @override
+  String get ledgerIntro =>
+      'The chart of accounts: every amount in the books is filed under one of these codes, grouped under headings.';
+
+  @override
+  String get actionAddCode => 'Add code';
+
+  @override
+  String get ledgerSearchHint => 'Search by code or name';
+
+  @override
+  String get ledgerShowOff => 'Show switched-off codes';
+
+  @override
+  String get ledgerSaved => 'Saved.';
+
+  @override
+  String get ledgerClass1 => 'Assets';
+
+  @override
+  String get ledgerClass2 => 'Liabilities';
+
+  @override
+  String get ledgerClass3 => 'Equity';
+
+  @override
+  String get ledgerClass4 => 'Income';
+
+  @override
+  String get ledgerClass5 => 'Cost of services';
+
+  @override
+  String get ledgerClass6 => 'Administrative expenses';
+
+  @override
+  String get ledgerClass7 => 'Selling and marketing';
+
+  @override
+  String get ledgerClass8 => 'Finance costs and other';
+
+  @override
+  String get ledgerClass9 => 'Taxation';
+
+  @override
+  String get ledgerNoMatch => 'No code matches that.';
+
+  @override
+  String get ledgerEmpty => 'No ledger codes yet.';
+
+  @override
+  String get ledgerHeadingExplain =>
+      'A heading only groups the codes under it. Nothing is filed under a heading itself.';
+
+  @override
+  String get ledgerBuiltIn => 'Built in';
+
+  @override
+  String get ledgerBuiltInExplain =>
+      'Posting, transfers, tax or the opening entry depend on this code, so its name stays and it stays on.';
+
+  @override
+  String get ledgerOnEntryForm => 'On the entry form';
+
+  @override
+  String get ledgerOnEntryFormExplain =>
+      'People can pick this as what the money was for when they make an entry.';
+
+  @override
+  String get ledgerSwitchedOff => 'Switched off';
+
+  @override
+  String get ledgerSwitchedOffExplain =>
+      'Not offered for new entries. Entries already filed under it keep it.';
+
+  @override
+  String get actionRename => 'Rename';
+
+  @override
+  String get ledgerAddTitle => 'Add a ledger code';
+
+  @override
+  String get ledgerAddHint =>
+      'Use a code the accountant gave you. Its first digit says what kind it is, for example 6 for an administrative expense.';
+
+  @override
+  String get fieldLedgerCode => 'Code';
+
+  @override
+  String get ledgerCodeHelp => 'Four digits, such as 6960.';
+
+  @override
+  String ledgerGoesUnder(String group) {
+    return 'Goes under $group';
+  }
+
+  @override
+  String get errLedgerCodeShape =>
+      'Use four digits that do not start with 0, such as 6960.';
+
+  @override
+  String get fieldLedgerName => 'Name';
+
+  @override
+  String get errLedgerNameShort => 'Give it a name of at least 3 letters.';
+
+  @override
+  String get ledgerAddToEntryForm => 'Show it on the entry form';
+
+  @override
+  String get ledgerAddToEntryFormHint =>
+      'So people can pick it as what the money was for. Leave it off for a code only the accountant uses.';
+
+  @override
+  String ledgerRenameTitle(String code) {
+    return 'Rename $code';
+  }
+
+  @override
+  String ledgerRenameHint(String code) {
+    return 'Entries already filed under $code keep the code and show the new name.';
+  }
+
+  @override
+  String ledgerSwitchOffTitle(String code) {
+    return 'Switch off $code?';
+  }
+
+  @override
+  String get ledgerSwitchOffHint =>
+      'It leaves the entry form and cannot be used for new entries. Entries already filed under it keep it. You can switch it back on later.';
+
+  @override
+  String get findOpen => 'Find on this screen (Ctrl+F)';
+
+  @override
+  String get findHint => 'Find on this screen';
+
+  @override
+  String get findNoMatches => 'No matches';
+
+  @override
+  String findCount(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
+  String get findPrevious => 'Previous match (Shift+Enter)';
+
+  @override
+  String get findNext => 'Next match (Enter)';
+
+  @override
+  String get findClose => 'Close (Esc)';
+
+  @override
+  String get findScopeNote =>
+      'Finds what this screen shows. To search every entry, use Search on Transactions.';
+
+  @override
+  String get actionAddHeading => 'Add heading';
+
+  @override
+  String get actionImportOrExport => 'Import or export';
+
+  @override
+  String get actionDownloadTemplate => 'Download the template';
+
+  @override
+  String get actionDownloadCurrent => 'Download the current list';
+
+  @override
+  String get actionImportFile => 'Import a file';
+
+  @override
+  String get settingsIntro =>
+      'Set up who can sign in, the taxes the company deals with, and the codes the books are kept in. Only the owner sees this.';
+
+  @override
+  String get settingsBack => 'All settings';
+
+  @override
+  String get settingsPeopleExplain =>
+      'Who can sign in, and what each person may do.';
+
+  @override
+  String settingsPeopleSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people can sign in',
+      one: '1 person can sign in',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsTaxesExplain =>
+      'The taxes the company pays or keeps back, their rates, and when the entry form suggests them.';
+
+  @override
+  String settingsTaxesSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count taxes in force',
+      one: '1 tax in force',
+      zero: 'No taxes in force yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsLedgerExplain =>
+      'The chart of accounts: the codes and headings every amount is filed under.';
+
+  @override
+  String settingsLedgerSummary(int codes, int headings) {
+    return '$codes codes under $headings headings';
+  }
+
+  @override
+  String get settingsImportExplain =>
+      'Ledger codes and taxes in and out as spreadsheet files, for the accountant.';
+
+  @override
+  String get settingsImportSummary =>
+      'CSV files that open in Excel or Google Sheets';
+
+  @override
+  String get settingsAuditNote =>
+      'Every change made here is kept in the audit log with who made it and when.';
+
+  @override
+  String get bulkTitle => 'Import and export';
+
+  @override
+  String get bulkIntro =>
+      'Move ledger codes and taxes in and out as spreadsheet files. Nothing is saved until you have seen what a file will change, row by row, and confirmed it.';
+
+  @override
+  String get bulkStep1 =>
+      'Download the template to start a new list, or the current list to change what is there.';
+
+  @override
+  String get bulkStep2 =>
+      'Fill it in or change it in Excel or Google Sheets. Keep the first two rows: the column names and the example row. Save it as \"CSV UTF-8\".';
+
+  @override
+  String get bulkStep3 =>
+      'Import it. Check what each row will do, then save. Rows with a problem are skipped and say why.';
+
+  @override
+  String get bulkLedgerExplain =>
+      'One row per code or heading. New codes are added and existing ones are updated. Nothing is deleted: a code is switched off with \"Switched on: no\".';
+
+  @override
+  String get bulkTaxesExplain =>
+      'One row per tax and rule. A new rate needs a start date after the current one; the old rate then ends the day before. Taxes not in the file stay as they are.';
+
+  @override
+  String bulkDownloaded(String file) {
+    return 'Downloaded $file.';
+  }
+
+  @override
+  String bulkPreviewTitle(String file) {
+    return 'Check before saving: $file';
+  }
+
+  @override
+  String get bulkPreviewHint =>
+      'Nothing is saved yet. This is what the file will do to each row.';
+
+  @override
+  String bulkCountAdd(int count) {
+    return '$count new';
+  }
+
+  @override
+  String bulkCountUpdate(int count) {
+    return '$count changed';
+  }
+
+  @override
+  String bulkCountUnchanged(int count) {
+    return '$count no change';
+  }
+
+  @override
+  String bulkCountSkip(int count) {
+    return '$count skipped';
+  }
+
+  @override
+  String get bulkShowUnchanged => 'Show rows with no change';
+
+  @override
+  String get bulkNothingToShow => 'Every row is already as the file says.';
+
+  @override
+  String get bulkNothingToSave => 'There is nothing to save from this file.';
+
+  @override
+  String bulkSaveChanges(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Save $count changes',
+      one: 'Save 1 change',
+      zero: 'Nothing to save',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkSaved(int added, int updated, int skipped) {
+    return 'Saved: $added new, $updated changed, $skipped skipped.';
+  }
+
+  @override
+  String get bulkActionAdd => 'New';
+
+  @override
+  String get bulkActionUpdate => 'Changed';
+
+  @override
+  String get bulkActionUnchanged => 'No change';
+
+  @override
+  String get bulkActionSkip => 'Skipped';
+
+  @override
+  String bulkRow(int number) {
+    return 'Row $number';
+  }
+
+  @override
+  String bulkRows(String numbers) {
+    return 'Rows $numbers';
+  }
+
+  @override
+  String get ledgerHowTitle => 'How the codes are arranged';
+
+  @override
+  String get ledgerHowDigits =>
+      'The first digit says what kind of account it is: 1 assets, 2 liabilities, 3 equity, 4 income, 5 to 9 costs.';
+
+  @override
+  String get ledgerHowHeadings =>
+      'Headings, shown with a folder, group the codes under them. Nothing is filed under a heading itself.';
+
+  @override
+  String get ledgerHowBuiltIn =>
+      'Built-in codes keep their name and stay on, because posting, transfers, tax and the opening balances depend on them.';
+
+  @override
+  String get ledgerHowSwitchOff =>
+      'Nothing is deleted. A code no longer needed is switched off, and older entries keep it.';
+
+  @override
+  String get ledgerAddHeadingTitle => 'Add a heading';
+
+  @override
+  String get ledgerAddHeadingHint =>
+      'A heading groups codes, for example 1130 Advances, deposits and prepayments. Use a code the accountant gave you.';
+
+  @override
+  String get fieldLedgerParent => 'Sits under';
+
+  @override
+  String get hintLedgerParent =>
+      'The heading it is grouped under. Only headings of the same kind that come before it can hold it.';
+
+  @override
+  String get ledgerParentNearest => 'The nearest heading before it (automatic)';
+
+  @override
+  String ledgerEditTitle(String code) {
+    return 'Change $code';
+  }
+
+  @override
+  String ledgerEditHint(String code) {
+    return 'The code $code itself never changes, so entries filed under it keep it and show the new name.';
+  }
+
+  @override
+  String get ledgerSwitchOffHeadingHint =>
+      'A heading can be switched off once nothing under it is on. You can switch it back on later.';
+
+  @override
+  String get taxHowTitle => 'How taxes work here';
+
+  @override
+  String get taxHowFiler =>
+      'Each tax has a rate for filers and a higher rate for non-filers: anyone not on FBR\'s Active Taxpayers List.';
+
+  @override
+  String get taxHowRates =>
+      'A rate is never edited. \"Change the rate from a date\" ends the old rate the day before, so older entries keep the rate they were made at.';
+
+  @override
+  String get taxHowRules =>
+      'Rules say when the entry form suggests a tax. The person making the entry can still remove it or change the amount to what was really taken.';
+
+  @override
+  String get taxHowEntries =>
+      'Posted entries keep the tax they were saved with. Nothing here changes the books.';
+
+  @override
+  String get taxRulesExplain =>
+      'When an entry matches one of these, the entry form adds this tax by itself. A rule is switched off, never deleted.';
+
+  @override
+  String get taxFactRate => 'Rate';
+
+  @override
+  String get taxFactKind => 'Kind';
+
+  @override
+  String get taxFactRecorded => 'Recorded in';
+
+  @override
+  String get taxFactDates => 'Dates';
+
+  @override
+  String taxPaidTo(String authority) {
+    return 'paid to $authority';
+  }
+
+  @override
+  String taxPercent(String rate) {
+    return '$rate%';
+  }
+
+  @override
+  String taxFixed(String amount) {
+    return 'PKR $amount';
+  }
+
+  @override
+  String get taxAuthorityFbr => 'FBR';
+
+  @override
+  String get taxAuthorityPra => 'PRA';
+
+  @override
+  String get taxAuthoritySrb => 'SRB';
+
+  @override
+  String get taxAuthorityIct => 'ICT';
+
+  @override
+  String get taxAuthorityBank => 'the bank';
+
+  @override
+  String get taxAuthorityOther => 'the tax office';
+
+  @override
+  String taxSayKeepBack(String rate, String nonFiler, String authority) {
+    return 'When we pay someone, we keep back $rate of the payment ($nonFiler if they are not a filer) and pay it to $authority for them.';
+  }
+
+  @override
+  String taxSayCollect(String rate, String nonFiler, String authority) {
+    return 'When money comes in, the payer adds $rate ($nonFiler if they are not a filer), which we pay to $authority.';
+  }
+
+  @override
+  String taxSayHeldBoth(String rate, String nonFiler, String authority) {
+    return 'On money in and out, $rate ($nonFiler if the other side is not a filer) is held back and paid to $authority.';
+  }
+
+  @override
+  String taxSayTakenIn(String rate, String nonFiler) {
+    return 'When money comes in, $rate of it is taken as tax ($nonFiler if we are not a filer).';
+  }
+
+  @override
+  String taxSayTakenOut(String rate, String nonFiler) {
+    return 'When we pay, $rate more is charged to us as tax ($nonFiler if we are not a filer).';
+  }
+
+  @override
+  String taxSayTakenBoth(String rate, String nonFiler) {
+    return 'On money in and out, $rate is taken from us as tax ($nonFiler if we are not a filer).';
+  }
+
+  @override
+  String get taxSayNotOurCost =>
+      'It is not our cost: we only hold it until it is paid over.';
+
+  @override
+  String get taxSayClaimable => 'We can claim it back against our income tax.';
+
+  @override
+  String get taxSayFinalCost => 'It is a final cost: we cannot claim it back.';
 }

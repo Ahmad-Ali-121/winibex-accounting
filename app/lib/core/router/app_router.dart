@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../api/api_client.dart';
-import '../theme/app_theme.dart';
 import '../../features/accounts/presentation/accounts_screen.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/change_password_screen.dart';
@@ -13,7 +12,7 @@ import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/cheques/presentation/cheques_screen.dart';
 import '../../features/flags/presentation/flags_screen.dart';
 import '../../features/money/presentation/opening_entry_screen.dart';
-import '../../features/people/presentation/people_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/transactions/presentation/approvals_screen.dart';
 import '../../features/transactions/presentation/entry_screen.dart';
 import '../../features/transactions/presentation/ledger_screen.dart';
@@ -43,6 +42,10 @@ abstract final class Routes {
   static const recurring = '/recurring';
   static const reports = '/reports';
   static const settings = '/settings';
+  static const settingsPeople = '/settings/people';
+  static const settingsTaxes = '/settings/taxes';
+  static const settingsLedgerCodes = '/settings/ledger-codes';
+  static const settingsImportExport = '/settings/import-export';
 }
 
 /// Bridges a Riverpod provider to a Listenable, which is what go_router's
@@ -100,55 +103,26 @@ GoRouter appRouter(Ref ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: Routes.login,
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: Routes.changePassword,
-        builder: (context, state) => const ChangePasswordScreen(forced: true),
-      ),
+      GoRoute(path: Routes.login, builder: (context, state) => const LoginScreen()),
+      GoRoute(path: Routes.changePassword, builder: (context, state) => const ChangePasswordScreen(forced: true)),
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
         routes: [
-          GoRoute(
-            path: Routes.dashboard,
-            builder: (context, state) => const DashboardScreen(),
-          ),
+          GoRoute(path: Routes.dashboard, builder: (context, state) => const DashboardScreen()),
           // Declared before /accounts, so the longer path wins.
-          GoRoute(
-            path: Routes.openingEntry,
-            builder: (context, state) => const _OpeningEntry(),
-          ),
-          GoRoute(
-            path: Routes.accounts,
-            builder: (context, state) => const _Accounts(),
-          ),
+          GoRoute(path: Routes.openingEntry, builder: (context, state) => const _OpeningEntry()),
+          GoRoute(path: Routes.accounts, builder: (context, state) => const _Accounts()),
           // Declared before /transactions, so the longer path wins.
           GoRoute(
             path: Routes.newEntry,
-            builder: (context, state) => const _NewEntry(),
+            // ?edit=12 opens draft 12 to be fixed. Decision 067.
+            builder: (context, state) => _NewEntry(editId: int.tryParse(state.uri.queryParameters['edit'] ?? '')),
           ),
-          GoRoute(
-            path: Routes.transactions,
-            builder: (context, state) => const _Ledger(),
-          ),
-          GoRoute(
-            path: Routes.approvals,
-            builder: (context, state) => const ApprovalsScreen(),
-          ),
-          GoRoute(
-            path: Routes.flags,
-            builder: (context, state) => const _Flags(),
-          ),
-          GoRoute(
-            path: Routes.vendors,
-            builder: (context, state) => const _Vendors(),
-          ),
-          GoRoute(
-            path: Routes.cheques,
-            builder: (context, state) => const _Cheques(),
-          ),
+          GoRoute(path: Routes.transactions, builder: (context, state) => const _Ledger()),
+          GoRoute(path: Routes.approvals, builder: (context, state) => const ApprovalsScreen()),
+          GoRoute(path: Routes.flags, builder: (context, state) => const _Flags()),
+          GoRoute(path: Routes.vendors, builder: (context, state) => const _Vendors()),
+          GoRoute(path: Routes.cheques, builder: (context, state) => const _Cheques()),
           GoRoute(
             path: Routes.clients,
             builder: (context, state) => const _ComingSoon(module: 'clients'),
@@ -172,15 +146,29 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: Routes.settings,
             builder: (context, state) => const _Settings(),
+            routes: [
+              GoRoute(
+                path: 'people',
+                builder: (context, state) => const _Settings(section: SettingsSection.people),
+              ),
+              GoRoute(
+                path: 'taxes',
+                builder: (context, state) => const _Settings(section: SettingsSection.taxes),
+              ),
+              GoRoute(
+                path: 'ledger-codes',
+                builder: (context, state) => const _Settings(section: SettingsSection.ledgerCodes),
+              ),
+              GoRoute(
+                path: 'import-export',
+                builder: (context, state) => const _Settings(section: SettingsSection.importExport),
+              ),
+            ],
           ),
         ],
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text(AppLocalizations.of(context).errServer),
-      ),
-    ),
+    errorBuilder: (context, state) => Scaffold(body: Center(child: Text(AppLocalizations.of(context).errServer))),
   );
 }
 
@@ -191,12 +179,18 @@ GoRouter appRouter(Ref ref) {
 /// It was "owner or admin", which offered "Save and post" to admins who may
 /// not post their own entries. D4.
 class _NewEntry extends ConsumerWidget {
-  const _NewEntry();
+  const _NewEntry({this.editId});
+
+  final int? editId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).value;
-    return EntryScreen(canPost: user?.canPostOwnEntries ?? false);
+    return EntryScreen(
+      canPost: user?.canPostOwnEntries ?? false,
+      editId: editId,
+      onEditDone: () => context.go(Routes.transactions),
+    );
   }
 }
 
@@ -254,7 +248,10 @@ class _Ledger extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).value;
-    return LedgerScreen(canReverse: user?.canApprove ?? false);
+    return LedgerScreen(
+      canReverse: user?.canApprove ?? false,
+      onEdit: (id) => context.go('${Routes.newEntry}?edit=$id'),
+    );
   }
 }
 
@@ -270,26 +267,25 @@ class _Flags extends ConsumerWidget {
   }
 }
 
-/// Settings opens on People for now. Only the owner adds people or changes
-/// what they can do, so everyone else sees one line saying so. The server
-/// refuses them anyway. Decision 063.
+/// Settings: a home of cards, and a page for each. The owner's. Decisions
+/// 063, 067, 068 and 069.
 class _Settings extends ConsumerWidget {
-  const _Settings();
+  const _Settings({this.section});
+
+  final SettingsSection? section;
+
+  static String _path(SettingsSection? section) => switch (section) {
+    null => Routes.settings,
+    SettingsSection.people => Routes.settingsPeople,
+    SettingsSection.taxes => Routes.settingsTaxes,
+    SettingsSection.ledgerCodes => Routes.settingsLedgerCodes,
+    SettingsSection.importExport => Routes.settingsImportExport,
+  };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).value;
-    if (user?.isOwner ?? false) return const PeopleScreen();
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Text(
-          AppLocalizations.of(context).peopleOwnerOnly,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ),
-    );
+    return SettingsScreen(isOwner: user?.isOwner ?? false, section: section, onOpen: (next) => context.go(_path(next)));
   }
 }
 
@@ -302,11 +298,6 @@ class _ComingSoon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        module,
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-    );
+    return Center(child: Text(module, style: Theme.of(context).textTheme.bodySmall));
   }
 }

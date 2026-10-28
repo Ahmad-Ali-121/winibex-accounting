@@ -13,9 +13,8 @@ transactions, triggers, constraints.
 cd api && npm run test
 ```
 
-416 API tests after batch C, 2026-10-28: 413 pass, 3 skip (the argon2
-tests, until that package is installed). 136 Flutter widget tests after
-batch D, which changed no server code.
+463 API tests after batch G, 2026-10-29: 460 pass, 3 skip (the argon2
+tests, until that package is installed). 172 Flutter widget tests.
 Flutter analyze clean.
 
 ### Must always pass
@@ -89,6 +88,24 @@ cannot; a resolved flag cannot be resolved twice. Decision 056.
 for every defect found while writing `docs/PHASE1-TEST.md` (D1, D2, D5 to D9,
 D11, D12, D14), so none can come back unnoticed.
 
+**Ledger codes.** `tests/ledger-codes.test.js`: only the owner; a new code
+takes its type and side from its first digit; income and expense codes join
+the entry form, balance sheet codes never; a code or name is never used
+twice; built-in codes and headings are left alone; a code with money on it,
+or one a current tax posts to, stays on; every change is audited. Decision
+068.
+
+**Headings and import.** `tests/ledger-codes.test.js` also covers headings
+(named or nearest, the same kind, before the code, renamed and moved, on while
+anything under them is on) and the import: the template, owner only, a
+preview that saves nothing, confirming, an exported file importing back with
+nothing to change, switching off by file, a missing column.
+`tests/taxes-import.test.js`: grouping rows into one tax, skips with reasons,
+a new rate only from a later date with the old one ended the day before,
+words in place, rules following the file. `tests/csv.test.js`: quoting, Excel's
+byte order mark and line endings, columns found by name, the example row.
+Decision 069.
+
 **Edit history.** The audit log records every change, and the history endpoint
 returns them in order with before and after values.
 
@@ -112,6 +129,15 @@ cd app && flutter analyze
   by the server, the payee required for tax kept back, a charge on the usual
   account or a picked one, and taxes thrown away when the amount changes
 - Widget tests for the six currencies
+- Widget tests for the taxes screen and for fixing drafts, taken-back and
+  sent-back entries
+- Widget tests for the Settings home (cards, live summaries, each opening its
+  page, the way back, owner only), the ledger codes screen (grouping, built-in
+  codes without a menu, adding a code under a picked heading, adding a
+  heading, editing, switching off, a refusal kept in the dialog), and import
+  and export (downloads, the preview, confirming, nothing to save) and for
+  find on this screen (Ctrl+F, the count, Enter and Shift+Enter, hidden text
+  and the bar's own words not matched, Escape)
 - Widget tests for vendors and cheques: what each card says, the forms, the
   allowed cheque moves, cancelling asks first, linking a payment
 - Widget tests for batch C: moving money and its warnings, the petty cash

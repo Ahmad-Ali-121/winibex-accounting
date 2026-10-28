@@ -349,6 +349,48 @@ export async function submitForApproval({ user, id, ip = null }) {
   return result;
 }
 
+// Back to a draft, to be fixed and sent again. Decision 067.
+//
+// A submitted entry may be taken back only by the person who sent it; an
+// approver who sees a mistake rejects it instead. A rejected entry may be
+// reopened by the person who made it, or by the owner or an admin. The
+// rejection reason stays on the row, so the form can show why it came back.
+// A posted entry is never reopened: it is corrected by reversing it.
+export async function reopen({ user, id, ip = null }) {
+  const result = await withTransaction(async (connection) => {
+    const row = await repo.lockById(connection, id);
+    if (!row) throw notFound('That entry does not exist.');
+    const own = Number(row.created_by) === Number(user.id);
+
+    if (row.status === 'pending') {
+      if (!own) {
+        throw forbidden('Only the person who sent it can take it back. An approver can reject it instead, with a reason.');
+      }
+    } else if (row.status === 'rejected') {
+      if (!own && !POSTABLE_BY.has(user.role)) throw forbidden('That is not your entry.');
+    } else if (row.status === 'draft') {
+      throw new AppError(409, ErrorCode.INVALID_STATUS, 'It is already a draft, so it can be changed as it is.');
+    } else {
+      throw new AppError(
+        409,
+        ErrorCode.INVALID_STATUS,
+        'A posted entry cannot be opened again. Reverse it, then record it correctly as a new entry.',
+      );
+    }
+
+    await repo.setStatus(connection, id, 'draft');
+    await writeAudit(connection, {
+      userId: user.id, ip, table: 'transactions', recordId: id,
+      action: AuditAction.STATUS_CHANGE,
+      before: { status: row.status }, after: { status: 'draft' },
+    });
+
+    return { id, status: 'draft' };
+  });
+
+  return result;
+}
+
 export async function reject({ user, id, reason, ip = null }) {
   if (!reason) throw badRequest(ErrorCode.VALIDATION_FAILED, 'Say why it is being rejected.');
 

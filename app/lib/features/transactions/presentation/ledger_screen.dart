@@ -8,6 +8,7 @@ import '../../../core/widgets/money_text.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../application/ledger_providers.dart';
 import '../domain/ledger.dart';
+import 'widgets/entry_actions_panel.dart';
 import 'widgets/journal_panel.dart';
 
 /// Every entry, searched on the server.
@@ -16,11 +17,15 @@ import 'widgets/journal_panel.dart';
 /// the entries that reversed them. Nothing is ever deleted from the book.
 /// Decision 012.
 class LedgerScreen extends ConsumerWidget {
-  const LedgerScreen({super.key, this.canReverse = false});
+  const LedgerScreen({super.key, this.canReverse = false, this.onEdit});
 
   /// The owner and admins may reverse a posted entry from its journal panel.
   /// The server checks again. Decision 065.
   final bool canReverse;
+
+  /// Opens a draft in the entry form. Drafts, entries waiting for approval
+  /// and entries sent back are offered for fixing. Decision 067.
+  final ValueChanged<int>? onEdit;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,7 +41,7 @@ class LedgerScreen extends ConsumerWidget {
                 title: l10n.emptyLedgerTitle,
                 detail: l10n.emptyLedgerDetail,
               ),
-            AsyncData(:final value) => _LedgerTable(page: value, canReverse: canReverse),
+            AsyncData(:final value) => _LedgerTable(page: value, canReverse: canReverse, onEdit: onEdit),
             AsyncError(:final error) => ErrorPanel.from(
                 error,
                 networkMessage: l10n.errNetwork,
@@ -85,10 +90,11 @@ class _SearchBar extends ConsumerWidget {
 }
 
 class _LedgerTable extends ConsumerWidget {
-  const _LedgerTable({required this.page, required this.canReverse});
+  const _LedgerTable({required this.page, required this.canReverse, this.onEdit});
 
   final LedgerPage page;
   final bool canReverse;
+  final ValueChanged<int>? onEdit;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -100,7 +106,11 @@ class _LedgerTable extends ConsumerWidget {
         Expanded(
           child: ListView.builder(
             itemCount: page.transactions.length,
-            itemBuilder: (context, index) => _LedgerRow(entry: page.transactions[index], canReverse: canReverse),
+            itemBuilder: (context, index) => _LedgerRow(
+              entry: page.transactions[index],
+              canReverse: canReverse,
+              onEdit: onEdit,
+            ),
           ),
         ),
         Container(
@@ -140,10 +150,13 @@ class _LedgerTable extends ConsumerWidget {
 }
 
 class _LedgerRow extends StatelessWidget {
-  const _LedgerRow({required this.entry, required this.canReverse});
+  const _LedgerRow({required this.entry, required this.canReverse, this.onEdit});
 
   final TransactionSummary entry;
   final bool canReverse;
+  final ValueChanged<int>? onEdit;
+
+  static const _fixable = {'draft', 'pending', 'rejected'};
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +164,11 @@ class _LedgerRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return InkWell(
-      onTap: entry.isPosted ? () => showJournalPanel(context, entry, canReverse: canReverse) : null,
+      onTap: entry.isPosted
+          ? () => showJournalPanel(context, entry, canReverse: canReverse)
+          : onEdit != null && _fixable.contains(entry.status)
+              ? () => showEntryActions(context, entry, onEdit!)
+              : null,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
