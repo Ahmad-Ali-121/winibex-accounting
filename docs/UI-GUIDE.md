@@ -222,22 +222,25 @@ warning the user cannot investigate becomes a warning they dismiss by reflex.
 Settings opens on People. Only the owner sees it; anyone else sees one line
 saying only the owner can add people. Decision 063.
 
-- A card per person: name, email, role, and in plain words what is special
-  about them: "Approves up to 50,000.00", "Posts own entries", "Also uses
-  the office login", "Has not set their own password yet", "Switched off"
-- Edit, Reset password, Switch off or on. None of these on the office login
-- Add person asks for the name, email, role, a temporary password, and for an
-  admin, an approval limit in whole rupees (empty means no limit) and whether
-  their own entries post straight away
-- "What each role can do" opens above the list, written for the owner, not
-  for an accountant:
-  - **Owner.** Everything, including adding people. The office login
-  - **Admin.** Approves others' entries, moves money, reverses, pays people
-    back, adds vendors, issues cheques, clears flags. Cannot add people or
-    change settings
-  - **Staff.** Records money in and out and sends it for approval
-  - **Also uses the office login.** For anyone who knows the office password,
-    so the app can note when that login approves their own work
+- "What each role can do" sits above the list: three tiles, one line each,
+  always visible, each role with its own icon (owner solid, admin tinted,
+  staff neutral, so rank reads before the label). "See exactly who can do
+  what" opens a table of tasks against Owner, Admin and Staff: a tick, a dash,
+  or "depends on settings" for an admin's limit and own-entry posting
+- People are grouped: Office login, Admins, Staff, then Switched off, each
+  with a count. Two cards per row on a wide screen, one on a phone
+- A card per person: initials, name, email, a role badge, and chips with an
+  icon each saying what is special about them: "Approves up to PKR 50,000.00",
+  "Posts own entries", "Every entry needs approval", "Also uses the office
+  login", "Has not set their own password yet", "Switched off". A switched-off
+  card is dimmed
+- Edit is a button; Reset password and Switch off sit in a menu, because they
+  are rarer and stronger. Switching off asks first. None on the office login
+- Add person is three short sections: who (name, email), role (two cards to
+  pick from, with what each means), approvals for an admin (limit in whole
+  rupees with separators as you type, empty means no limit; own entries post
+  or not), sign-in (uses the office login; temporary password with "Make one
+  for me", show and copy). Generated passwords avoid 0, O, 1, l and I
 - Nobody is deleted, so every entry keeps the name of who made it
 
 ## Posting and corrections

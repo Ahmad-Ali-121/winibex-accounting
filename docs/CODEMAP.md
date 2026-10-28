@@ -374,8 +374,9 @@ Current features:
   raised flags. The owner and admins see a Mark reviewed button on each, which
   asks for a short note.
 - **`people/`**: the owner's People screen under Settings: everyone who can
-  sign in, what each role can do in plain words, add a person, change what
-  they can do, reset a password, switch someone off.
+  sign in, grouped by role, what each role can do in plain words and as a
+  table, add a person, change what they can do, reset a password, switch
+  someone off. The pieces of the screen are in `presentation/widgets/`.
 - **`change_password/`**: the change password screen, with the forced-change
   guard that redirects here on first login.
 
@@ -386,8 +387,8 @@ Current features:
 
 ### `app/test/`
 
-95 Flutter widget tests after the People screen, 2026-10-27. Flutter analyze
-clean.
+99 Flutter widget tests after the People screen redesign, 2026-10-28.
+Flutter analyze clean.
 
 - **`foundation_test.dart`**: checks the theme and glossary hold together.
 - **`login_test.dart`**: checks the login screen behaves on success, wrong

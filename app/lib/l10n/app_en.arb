@@ -584,7 +584,6 @@
   "roleAdmin": "Admin",
   "roleStaff": "Staff",
   "roleHelpTitle": "What each role can do",
-  "roleOwnerHelp": "Can do everything, including adding people and changing what they can do. Their own entries go straight into the books. There is only one owner: the office login.",
   "roleAdminHelp": "Approves other people's entries, moves money between accounts, reverses entries, pays people back, adds vendors, issues cheques and clears flags. Cannot add people or change settings.",
   "roleStaffHelp": "Records money in and money out and sends it for approval. Cannot approve anything, including their own entries.",
   "officeLoginHelp": "Turn this on for anyone who also knows the office login password. When the office login approves an entry this person made, the app keeps a quiet note, because it may be the same person approving their own work.",
@@ -602,13 +601,96 @@
   "peopleNoLimit": "Approves any amount",
   "peoplePostsOwn": "Posts own entries",
   "peopleSharesLogin": "Also uses the office login",
-  "peopleSwitchedOff": "Switched off. Cannot sign in.",
+  "peopleSwitchedOff": "Switched off, cannot sign in",
   "peopleMustChange": "Has not set their own password yet",
-  "personAdded": "Person added. Give them the temporary password.",
+  "personAdded": "{name} is added. Give them the temporary password in person.",
   "personSaved": "Saved.",
   "passwordReset": "Password reset. They are signed out everywhere and must set a new one.",
   "addPersonTitle": "Add a person",
   "editPersonTitle": "Change what this person can do",
   "errNameRequired": "Enter their name.",
-  "errEmailInvalid": "Enter a valid email address."
+  "errEmailInvalid": "Enter a valid email address.",
+  "@personAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "resetPasswordTitle": "Reset password for {name}",
+  "@resetPasswordTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleIntro": "Who can sign in, and what each person may do. Only the owner can change this.",
+  "roleOwnerShort": "Full access. Adds people and changes what they can do. The office login.",
+  "roleAdminShort": "Approves entries and moves money. Cannot add people.",
+  "roleStaffShort": "Records money in and out. Someone else approves it.",
+  "roleGuideSubtitle": "Read this before giving someone a login.",
+  "roleGuideShowTable": "See exactly who can do what",
+  "roleGuideTask": "Task",
+  "capRecord": "Record money in and money out",
+  "capPostOwn": "Own entries go straight into the books",
+  "capApprove": "Approve other people's entries",
+  "capMoveMoney": "Move money between accounts",
+  "capReverse": "Reverse a posted entry",
+  "capPayBack": "Pay people back",
+  "capVendorsCheques": "Add vendors and issue cheques",
+  "capClearFlags": "Mark flags as reviewed",
+  "capPeople": "Add people and change what they can do",
+  "capLimited": "Depends on settings",
+  "capLimitedTip": "For an admin, this depends on their settings: an optional approval limit, and whether their own entries post straight away.",
+  "a11yYes": "Yes",
+  "a11yNo": "No",
+  "peopleNobodyDeleted": "Nobody is deleted. Someone who leaves is switched off, so every entry keeps the name of who made it.",
+  "peopleFullAccess": "Full access",
+  "peopleOwnNeedApproval": "Own entries need approval",
+  "peopleNeedsApproval": "Every entry needs approval",
+  "peopleOwnerNote": "This is the office login. It always has full access and changes its own password.",
+  "actionMore": "More actions",
+  "peopleSectionOffice": "Office login",
+  "peopleSectionAdmins": "Admins",
+  "peopleSectionStaff": "Staff members",
+  "peopleSectionOff": "Switched off",
+  "dialogSectionWho": "Who",
+  "dialogSectionApprovals": "Approvals",
+  "dialogSectionSignIn": "Sign-in",
+  "hintEmailIsLogin": "They sign in with this email.",
+  "hintEmailFixed": "The email they sign in with cannot be changed.",
+  "currencyCodePkr": "PKR",
+  "hintNoLimit": "No limit",
+  "actionGeneratePassword": "Make one for me",
+  "actionCopy": "Copy",
+  "passwordCopied": "Password copied. Give it to them in person.",
+  "a11yShowPassword": "Show password",
+  "a11yHidePassword": "Hide password",
+  "resetPasswordBody": "They will be signed out everywhere. Give them this temporary password; they choose their own the next time they sign in.",
+  "switchOffTitle": "Switch off {name}?",
+  "@switchOffTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "switchOffBody": "They are signed out at once and cannot sign in. Their entries stay in the books with their name. You can switch them back on at any time.",
+  "personSwitchedOff": "{name} is switched off.",
+  "@personSwitchedOff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personSwitchedOn": "{name} can sign in again.",
+  "@personSwitchedOn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

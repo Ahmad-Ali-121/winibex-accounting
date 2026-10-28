@@ -21,21 +21,21 @@ abstract final class _Palette {
   // negatives by accounting convention.
 
   // Light
-  static const paper = Color(0xFFF4F5F5);        // page background
-  static const paperRaised = Color(0xFFFFFFFF);  // tables, forms, dialogs
-  static const paperSunken = Color(0xFFECEEEF);  // table header, input fill
-  static const graphite = Color(0xFF1D2124);     // primary text
-  static const graphiteMuted = Color(0xFF62696E);// secondary text
-  static const rule = Color(0xFFDADDDE);         // ledger lines, borders
+  static const paper = Color(0xFFF4F5F5); // page background
+  static const paperRaised = Color(0xFFFFFFFF); // tables, forms, dialogs
+  static const paperSunken = Color(0xFFECEEEF); // table header, input fill
+  static const graphite = Color(0xFF1D2124); // primary text
+  static const graphiteMuted = Color(0xFF62696E); // secondary text
+  static const rule = Color(0xFFDADDDE); // ledger lines, borders
   static const ruleStrong = Color(0xFFBFC4C6);
 
-  static const petrol = Color(0xFF0E5A6B);       // accent, primary actions, money in
+  static const petrol = Color(0xFF0E5A6B); // accent, primary actions, money in
   static const petrolSoft = Color(0xFFDCEDF0);
-  static const redInk = Color(0xFFA6322B);       // negatives, errors
+  static const redInk = Color(0xFFA6322B); // negatives, errors
   static const redInkSoft = Color(0xFFF6E1DF);
-  static const amber = Color(0xFF8A5A00);        // pending, warnings
+  static const amber = Color(0xFF8A5A00); // pending, warnings
   static const amberSoft = Color(0xFFF7EBD3);
-  static const stone = Color(0xFF737A80);        // reversed, cancelled
+  static const stone = Color(0xFF737A80); // reversed, cancelled
   static const stoneSoft = Color(0xFFE7E9EA);
 
   // Dark
@@ -94,15 +94,15 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color ruleStrong;
   final Color accent;
   final Color accentSoft;
-  final Color moneyIn;      // debit to cash, income received
-  final Color moneyOut;     // credit to cash, spending
-  final Color negative;     // negative balances, errors
+  final Color moneyIn; // debit to cash, income received
+  final Color moneyOut; // credit to cash, spending
+  final Color negative; // negative balances, errors
   final Color negativeSoft;
-  final Color pending;      // draft, pending approval, warnings
+  final Color pending; // draft, pending approval, warnings
   final Color pendingSoft;
-  final Color info;         // links, informational flags
+  final Color info; // links, informational flags
   final Color infoSoft;
-  final Color reversed;     // reversed and cancelled entries
+  final Color reversed; // reversed and cancelled entries
   final Color reversedSoft;
 
   static const light = AppColors(
@@ -245,8 +245,9 @@ abstract final class AppSpacing {
 /// Tables have no radius: they are ruled, like a ledger.
 abstract final class AppRadii {
   static const double none = 0;
-  static const double control = 6;   // inputs, buttons, chips
+  static const double control = 6; // inputs, buttons, chips
   static const double container = 10; // dialogs, sheets, menus
+  static const double pill = 999; // role badges, status chips, avatars
 }
 
 abstract final class AppSizes {
@@ -264,6 +265,25 @@ abstract final class AppSizes {
   /// The tallest a dropdown list may open. Longer lists scroll inside it, so
   /// a long category list never covers the whole form.
   static const double menuMaxHeight = 320;
+
+  /// A dialog with more than one section, such as adding a person. Wide
+  /// enough for two choices side by side.
+  static const double dialogWideWidth = 560;
+
+  /// The round initials badge beside a person's name.
+  static const double avatar = 40;
+
+  /// Small icons inside badges and status chips.
+  static const double iconSmall = 16;
+
+  /// Icons in menus, tables and role badges.
+  static const double iconMedium = 20;
+
+  /// Card lists switch from one column to two at this width.
+  static const double twoColumnBreakpoint = 960;
+
+  /// Each role's column in the "who can do what" table.
+  static const double roleColumnWidth = 88;
 }
 
 // ---------------------------------------------------------------------------
@@ -283,8 +303,20 @@ abstract final class AppText {
   static TextTheme _base(Color body, Color muted) {
     const f = AppFonts.family;
     return TextTheme(
-      displaySmall: const TextStyle(fontFamily: f, fontSize: 32, height: 1.2, fontWeight: FontWeight.w600, letterSpacing: -0.4),
-      headlineMedium: const TextStyle(fontFamily: f, fontSize: 24, height: 1.25, fontWeight: FontWeight.w600, letterSpacing: -0.2),
+      displaySmall: const TextStyle(
+        fontFamily: f,
+        fontSize: 32,
+        height: 1.2,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.4,
+      ),
+      headlineMedium: const TextStyle(
+        fontFamily: f,
+        fontSize: 24,
+        height: 1.25,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.2,
+      ),
       headlineSmall: const TextStyle(fontFamily: f, fontSize: 20, height: 1.3, fontWeight: FontWeight.w600),
       titleMedium: const TextStyle(fontFamily: f, fontSize: 16, height: 1.4, fontWeight: FontWeight.w600),
       titleSmall: const TextStyle(fontFamily: f, fontSize: 14, height: 1.4, fontWeight: FontWeight.w600),
@@ -293,7 +325,13 @@ abstract final class AppText {
       bodySmall: TextStyle(fontFamily: f, fontSize: 12.5, height: 1.4, color: muted),
       labelLarge: const TextStyle(fontFamily: f, fontSize: 14, height: 1.2, fontWeight: FontWeight.w500),
       labelMedium: const TextStyle(fontFamily: f, fontSize: 13, height: 1.2, fontWeight: FontWeight.w500),
-      labelSmall: TextStyle(fontFamily: f, fontSize: 12, height: 1.2, fontWeight: FontWeight.w500, color: muted),
+      labelSmall: TextStyle(
+        fontFamily: f,
+        fontSize: 12,
+        height: 1.2,
+        fontWeight: FontWeight.w500,
+        color: muted,
+      ),
     ).apply(bodyColor: body, displayColor: body);
   }
 
@@ -346,9 +384,7 @@ abstract final class AppTheme {
 
     final text = AppText._base(c.text, c.textMuted);
 
-    final controlShape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppRadii.control),
-    );
+    final controlShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.control));
 
     return ThemeData(
       useMaterial3: true,
@@ -367,10 +403,7 @@ abstract final class AppTheme {
         showDuration: const Duration(seconds: 6),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         constraints: const BoxConstraints(maxWidth: 320),
-        decoration: BoxDecoration(
-          color: c.text,
-          borderRadius: BorderRadius.circular(AppRadii.control),
-        ),
+        decoration: BoxDecoration(color: c.text, borderRadius: BorderRadius.circular(AppRadii.control)),
         textStyle: text.bodySmall?.copyWith(color: c.surface, height: 1.45),
       ),
 
@@ -421,11 +454,7 @@ abstract final class AppTheme {
       ),
 
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          shape: controlShape,
-          foregroundColor: c.info,
-          textStyle: text.labelLarge,
-        ),
+        style: TextButton.styleFrom(shape: controlShape, foregroundColor: c.info, textStyle: text.labelLarge),
       ),
     );
   }

@@ -1120,10 +1120,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roleHelpTitle => 'What each role can do';
 
   @override
-  String get roleOwnerHelp =>
-      'Can do everything, including adding people and changing what they can do. Their own entries go straight into the books. There is only one owner: the office login.';
-
-  @override
   String get roleAdminHelp =>
       'Approves other people\'s entries, moves money between accounts, reverses entries, pays people back, adds vendors, issues cheques and clears flags. Cannot add people or change settings.';
 
@@ -1182,13 +1178,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get peopleSharesLogin => 'Also uses the office login';
 
   @override
-  String get peopleSwitchedOff => 'Switched off. Cannot sign in.';
+  String get peopleSwitchedOff => 'Switched off, cannot sign in';
 
   @override
   String get peopleMustChange => 'Has not set their own password yet';
 
   @override
-  String get personAdded => 'Person added. Give them the temporary password.';
+  String personAdded(String name) {
+    return '$name is added. Give them the temporary password in person.';
+  }
 
   @override
   String get personSaved => 'Saved.';
@@ -1208,4 +1206,165 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errEmailInvalid => 'Enter a valid email address.';
+
+  @override
+  String resetPasswordTitle(String name) {
+    return 'Reset password for $name';
+  }
+
+  @override
+  String get peopleIntro =>
+      'Who can sign in, and what each person may do. Only the owner can change this.';
+
+  @override
+  String get roleOwnerShort =>
+      'Full access. Adds people and changes what they can do. The office login.';
+
+  @override
+  String get roleAdminShort =>
+      'Approves entries and moves money. Cannot add people.';
+
+  @override
+  String get roleStaffShort =>
+      'Records money in and out. Someone else approves it.';
+
+  @override
+  String get roleGuideSubtitle => 'Read this before giving someone a login.';
+
+  @override
+  String get roleGuideShowTable => 'See exactly who can do what';
+
+  @override
+  String get roleGuideTask => 'Task';
+
+  @override
+  String get capRecord => 'Record money in and money out';
+
+  @override
+  String get capPostOwn => 'Own entries go straight into the books';
+
+  @override
+  String get capApprove => 'Approve other people\'s entries';
+
+  @override
+  String get capMoveMoney => 'Move money between accounts';
+
+  @override
+  String get capReverse => 'Reverse a posted entry';
+
+  @override
+  String get capPayBack => 'Pay people back';
+
+  @override
+  String get capVendorsCheques => 'Add vendors and issue cheques';
+
+  @override
+  String get capClearFlags => 'Mark flags as reviewed';
+
+  @override
+  String get capPeople => 'Add people and change what they can do';
+
+  @override
+  String get capLimited => 'Depends on settings';
+
+  @override
+  String get capLimitedTip =>
+      'For an admin, this depends on their settings: an optional approval limit, and whether their own entries post straight away.';
+
+  @override
+  String get a11yYes => 'Yes';
+
+  @override
+  String get a11yNo => 'No';
+
+  @override
+  String get peopleNobodyDeleted =>
+      'Nobody is deleted. Someone who leaves is switched off, so every entry keeps the name of who made it.';
+
+  @override
+  String get peopleFullAccess => 'Full access';
+
+  @override
+  String get peopleOwnNeedApproval => 'Own entries need approval';
+
+  @override
+  String get peopleNeedsApproval => 'Every entry needs approval';
+
+  @override
+  String get peopleOwnerNote =>
+      'This is the office login. It always has full access and changes its own password.';
+
+  @override
+  String get actionMore => 'More actions';
+
+  @override
+  String get peopleSectionOffice => 'Office login';
+
+  @override
+  String get peopleSectionAdmins => 'Admins';
+
+  @override
+  String get peopleSectionStaff => 'Staff members';
+
+  @override
+  String get peopleSectionOff => 'Switched off';
+
+  @override
+  String get dialogSectionWho => 'Who';
+
+  @override
+  String get dialogSectionApprovals => 'Approvals';
+
+  @override
+  String get dialogSectionSignIn => 'Sign-in';
+
+  @override
+  String get hintEmailIsLogin => 'They sign in with this email.';
+
+  @override
+  String get hintEmailFixed => 'The email they sign in with cannot be changed.';
+
+  @override
+  String get currencyCodePkr => 'PKR';
+
+  @override
+  String get hintNoLimit => 'No limit';
+
+  @override
+  String get actionGeneratePassword => 'Make one for me';
+
+  @override
+  String get actionCopy => 'Copy';
+
+  @override
+  String get passwordCopied => 'Password copied. Give it to them in person.';
+
+  @override
+  String get a11yShowPassword => 'Show password';
+
+  @override
+  String get a11yHidePassword => 'Hide password';
+
+  @override
+  String get resetPasswordBody =>
+      'They will be signed out everywhere. Give them this temporary password; they choose their own the next time they sign in.';
+
+  @override
+  String switchOffTitle(String name) {
+    return 'Switch off $name?';
+  }
+
+  @override
+  String get switchOffBody =>
+      'They are signed out at once and cannot sign in. Their entries stay in the books with their name. You can switch them back on at any time.';
+
+  @override
+  String personSwitchedOff(String name) {
+    return '$name is switched off.';
+  }
+
+  @override
+  String personSwitchedOn(String name) {
+    return '$name can sign in again.';
+  }
 }

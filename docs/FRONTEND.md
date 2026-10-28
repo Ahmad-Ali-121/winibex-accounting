@@ -71,6 +71,15 @@ navigation frame).
 picker entry. The approval limit is typed in whole rupees and sent as
 `Money.pkr(rupees * 100)`; empty sends null, no limit. Decision 063.
 
+The screen is split: `presentation/people_screen.dart` (header, groups, the
+two-column grid) and `presentation/widgets/` with `role_guide.dart` (role
+tiles and the who-can-do-what table), `member_card.dart` (the card, role
+badge, status chips) and `member_dialog.dart` (add and edit, reset password,
+the switch-off confirmation, the temporary password field). The People sizes
+(`avatar`, `iconSmall`, `iconMedium`, `dialogWideWidth`,
+`twoColumnBreakpoint`, `roleColumnWidth`) and `AppRadii.pill` are in
+`app_theme.dart`.
+
 ## Rules that do not bend
 
 - **No raw colours, sizes, or text styles in feature code.** Everything comes
@@ -200,4 +209,5 @@ network is stubbed. Both themes are covered. 62 tests at the end of Phase 1,
 retry, the form resetting, the review list, and who may post. 79 with F7: a
 changed entry after a refusal edits and posts the same draft. 86 with the app
 fixes: the sign-in error inside the real app, the date picker, the three kinds
-of error, and the reason dialog. 95 with the People screen.
+of error, and the reason dialog. 95 with the People screen, 99 with its
+redesign.

@@ -12,8 +12,10 @@ tests, analyze clean. Production was then wiped and rebuilt with migrations
 empty and ready for the real opening entry. What remains before real entries
 is in "Pending before Phase 2" below; D15 is the main piece of work. Batch A
 of D15 (people and permissions, decisions 062 and 063) is written and waits
-for Ahmad's test run: 403 API tests, 95 Flutter tests expected. Migration 007
-must be applied in phpMyAdmin before that code is pushed.
+and passed locally on 2026-10-28: 403 API tests (400 pass, 3 skip), 95
+Flutter tests. The People screen was then redesigned for clarity (99 Flutter
+tests expected). Migration 007 must be applied in phpMyAdmin before that code
+is pushed.
 
 The API runs on
 Hostinger at api-accounting.winibex.com; the web app is at
@@ -363,6 +365,17 @@ was built in Phase 1. This phase adds the full reporting suite.
 ---
 
 ## Session log
+
+### 2026-10-28 (People screen redesign)
+Batch A passed locally: 403 API tests, 95 Flutter tests, and the screen
+checked in the browser. Ahmad asked for it to be easier to understand and
+feel premium. Now: three role tiles always visible with a who-can-do-what
+table one tap away; people grouped by role with counts, two per row on wide
+screens; initials, role badges and icon chips on each card; Reset password
+and Switch off in a menu, with a confirmation before switching off; the add
+and edit dialog in sections with role cards, rupee separators while typing,
+and a "Make one for me" temporary password with show and copy. Seven new
+theme tokens. 4 more Flutter tests (99).
 
 ### 2026-10-27 (D15 batch A: people and permissions)
 Ahmad decided the order of the D15 work and asked Claude to decide N, O and

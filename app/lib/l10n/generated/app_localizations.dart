@@ -2062,12 +2062,6 @@ abstract class AppLocalizations {
   /// **'What each role can do'**
   String get roleHelpTitle;
 
-  /// No description provided for @roleOwnerHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Can do everything, including adding people and changing what they can do. Their own entries go straight into the books. There is only one owner: the office login.'**
-  String get roleOwnerHelp;
-
   /// No description provided for @roleAdminHelp.
   ///
   /// In en, this message translates to:
@@ -2173,7 +2167,7 @@ abstract class AppLocalizations {
   /// No description provided for @peopleSwitchedOff.
   ///
   /// In en, this message translates to:
-  /// **'Switched off. Cannot sign in.'**
+  /// **'Switched off, cannot sign in'**
   String get peopleSwitchedOff;
 
   /// No description provided for @peopleMustChange.
@@ -2185,8 +2179,8 @@ abstract class AppLocalizations {
   /// No description provided for @personAdded.
   ///
   /// In en, this message translates to:
-  /// **'Person added. Give them the temporary password.'**
-  String get personAdded;
+  /// **'{name} is added. Give them the temporary password in person.'**
+  String personAdded(String name);
 
   /// No description provided for @personSaved.
   ///
@@ -2223,6 +2217,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter a valid email address.'**
   String get errEmailInvalid;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password for {name}'**
+  String resetPasswordTitle(String name);
+
+  /// No description provided for @peopleIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Who can sign in, and what each person may do. Only the owner can change this.'**
+  String get peopleIntro;
+
+  /// No description provided for @roleOwnerShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Full access. Adds people and changes what they can do. The office login.'**
+  String get roleOwnerShort;
+
+  /// No description provided for @roleAdminShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Approves entries and moves money. Cannot add people.'**
+  String get roleAdminShort;
+
+  /// No description provided for @roleStaffShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Records money in and out. Someone else approves it.'**
+  String get roleStaffShort;
+
+  /// No description provided for @roleGuideSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read this before giving someone a login.'**
+  String get roleGuideSubtitle;
+
+  /// No description provided for @roleGuideShowTable.
+  ///
+  /// In en, this message translates to:
+  /// **'See exactly who can do what'**
+  String get roleGuideShowTable;
+
+  /// No description provided for @roleGuideTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Task'**
+  String get roleGuideTask;
+
+  /// No description provided for @capRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Record money in and money out'**
+  String get capRecord;
+
+  /// No description provided for @capPostOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'Own entries go straight into the books'**
+  String get capPostOwn;
+
+  /// No description provided for @capApprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve other people\'s entries'**
+  String get capApprove;
+
+  /// No description provided for @capMoveMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Move money between accounts'**
+  String get capMoveMoney;
+
+  /// No description provided for @capReverse.
+  ///
+  /// In en, this message translates to:
+  /// **'Reverse a posted entry'**
+  String get capReverse;
+
+  /// No description provided for @capPayBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay people back'**
+  String get capPayBack;
+
+  /// No description provided for @capVendorsCheques.
+  ///
+  /// In en, this message translates to:
+  /// **'Add vendors and issue cheques'**
+  String get capVendorsCheques;
+
+  /// No description provided for @capClearFlags.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark flags as reviewed'**
+  String get capClearFlags;
+
+  /// No description provided for @capPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Add people and change what they can do'**
+  String get capPeople;
+
+  /// No description provided for @capLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Depends on settings'**
+  String get capLimited;
+
+  /// No description provided for @capLimitedTip.
+  ///
+  /// In en, this message translates to:
+  /// **'For an admin, this depends on their settings: an optional approval limit, and whether their own entries post straight away.'**
+  String get capLimitedTip;
+
+  /// No description provided for @a11yYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get a11yYes;
+
+  /// No description provided for @a11yNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get a11yNo;
+
+  /// No description provided for @peopleNobodyDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody is deleted. Someone who leaves is switched off, so every entry keeps the name of who made it.'**
+  String get peopleNobodyDeleted;
+
+  /// No description provided for @peopleFullAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Full access'**
+  String get peopleFullAccess;
+
+  /// No description provided for @peopleOwnNeedApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Own entries need approval'**
+  String get peopleOwnNeedApproval;
+
+  /// No description provided for @peopleNeedsApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Every entry needs approval'**
+  String get peopleNeedsApproval;
+
+  /// No description provided for @peopleOwnerNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the office login. It always has full access and changes its own password.'**
+  String get peopleOwnerNote;
+
+  /// No description provided for @actionMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get actionMore;
+
+  /// No description provided for @peopleSectionOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Office login'**
+  String get peopleSectionOffice;
+
+  /// No description provided for @peopleSectionAdmins.
+  ///
+  /// In en, this message translates to:
+  /// **'Admins'**
+  String get peopleSectionAdmins;
+
+  /// No description provided for @peopleSectionStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff members'**
+  String get peopleSectionStaff;
+
+  /// No description provided for @peopleSectionOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched off'**
+  String get peopleSectionOff;
+
+  /// No description provided for @dialogSectionWho.
+  ///
+  /// In en, this message translates to:
+  /// **'Who'**
+  String get dialogSectionWho;
+
+  /// No description provided for @dialogSectionApprovals.
+  ///
+  /// In en, this message translates to:
+  /// **'Approvals'**
+  String get dialogSectionApprovals;
+
+  /// No description provided for @dialogSectionSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in'**
+  String get dialogSectionSignIn;
+
+  /// No description provided for @hintEmailIsLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'They sign in with this email.'**
+  String get hintEmailIsLogin;
+
+  /// No description provided for @hintEmailFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'The email they sign in with cannot be changed.'**
+  String get hintEmailFixed;
+
+  /// No description provided for @currencyCodePkr.
+  ///
+  /// In en, this message translates to:
+  /// **'PKR'**
+  String get currencyCodePkr;
+
+  /// No description provided for @hintNoLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'No limit'**
+  String get hintNoLimit;
+
+  /// No description provided for @actionGeneratePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Make one for me'**
+  String get actionGeneratePassword;
+
+  /// No description provided for @actionCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get actionCopy;
+
+  /// No description provided for @passwordCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Password copied. Give it to them in person.'**
+  String get passwordCopied;
+
+  /// No description provided for @a11yShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get a11yShowPassword;
+
+  /// No description provided for @a11yHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get a11yHidePassword;
+
+  /// No description provided for @resetPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They will be signed out everywhere. Give them this temporary password; they choose their own the next time they sign in.'**
+  String get resetPasswordBody;
+
+  /// No description provided for @switchOffTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch off {name}?'**
+  String switchOffTitle(String name);
+
+  /// No description provided for @switchOffBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They are signed out at once and cannot sign in. Their entries stay in the books with their name. You can switch them back on at any time.'**
+  String get switchOffBody;
+
+  /// No description provided for @personSwitchedOff.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is switched off.'**
+  String personSwitchedOff(String name);
+
+  /// No description provided for @personSwitchedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} can sign in again.'**
+  String personSwitchedOn(String name);
 }
 
 class _AppLocalizationsDelegate

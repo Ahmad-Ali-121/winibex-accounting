@@ -14,10 +14,11 @@ import 'package:winibex_accounting/core/theme/app_theme.dart';
 import 'package:winibex_accounting/features/people/data/people_repository.dart';
 import 'package:winibex_accounting/features/people/domain/team_member.dart';
 import 'package:winibex_accounting/features/people/presentation/people_screen.dart';
+import 'package:winibex_accounting/features/people/presentation/widgets/member_dialog.dart';
 import 'package:winibex_accounting/l10n/generated/app_localizations.dart';
 
 const _owner = TeamMember(id: 1, name: 'Office', email: 'office@winibex.com', role: 'owner');
-final _maryam = TeamMember(
+const _maryam = TeamMember(
   id: 2,
   name: 'Maryam',
   email: 'maryam@winibex.com',
@@ -83,8 +84,7 @@ Future<void> _pump(WidgetTester tester, _FakeRepository repository) async {
   await tester.pumpAndSettle();
 }
 
-AppLocalizations _l10n(WidgetTester tester) =>
-    AppLocalizations.of(tester.element(find.byType(PeopleScreen)));
+AppLocalizations _l10n(WidgetTester tester) => AppLocalizations.of(tester.element(find.byType(PeopleScreen)));
 
 Finder _field(String label) => find.widgetWithText(TextFormField, label);
 
@@ -97,19 +97,37 @@ void main() {
     expect(find.text('Maryam'), findsOneWidget);
     expect(find.text('Fazal'), findsOneWidget);
     expect(find.text(l10n.peopleSharesLogin), findsOneWidget);
-    expect(find.text(l10n.actionEdit), findsNWidgets(2),
-        reason: 'the owner row offers no edit, reset or switch off');
+    expect(
+      find.text(l10n.actionEdit),
+      findsNWidgets(2),
+      reason: 'the owner row offers no edit, reset or switch off',
+    );
   });
 
-  testWidgets('what each role can do is one tap away', (tester) async {
+  testWidgets('each role is explained in a line, and the full table is one tap away', (tester) async {
     await _pump(tester, _FakeRepository());
     final l10n = _l10n(tester);
 
-    await tester.tap(find.text(l10n.roleHelpTitle));
+    expect(find.text(l10n.roleOwnerShort), findsOneWidget);
+    expect(find.text(l10n.roleAdminShort), findsOneWidget);
+    expect(find.text(l10n.roleStaffShort), findsOneWidget);
+    expect(find.text(l10n.capPeople), findsNothing);
+
+    await tester.tap(find.text(l10n.roleGuideShowTable));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining(l10n.roleOwnerHelp), findsOneWidget);
-    expect(find.textContaining(l10n.roleStaffHelp), findsOneWidget);
+    expect(find.text(l10n.capPeople), findsOneWidget);
+    expect(find.text(l10n.capReverse), findsOneWidget);
+  });
+
+  testWidgets('people are grouped by role', (tester) async {
+    await _pump(tester, _FakeRepository());
+    final l10n = _l10n(tester);
+
+    expect(find.text(l10n.peopleSectionOffice), findsOneWidget);
+    expect(find.text(l10n.peopleSectionAdmins), findsOneWidget);
+    expect(find.text(l10n.peopleSectionStaff), findsOneWidget);
+    expect(find.text(l10n.peopleSectionOff), findsNothing, reason: 'nobody is switched off');
   });
 
   testWidgets('adding staff sends no approval limit', (tester) async {
@@ -123,14 +141,14 @@ void main() {
     await tester.enterText(_field(l10n.fieldFullName), 'Ali');
     await tester.enterText(_field(l10n.fieldEmail), 'ali@winibex.com');
     await tester.enterText(_field(l10n.fieldTemporaryPassword), 'Welcome-2026');
-    await tester.tap(find.widgetWithText(FilledButton, l10n.actionSave));
+    await tester.tap(find.widgetWithText(FilledButton, l10n.actionAddPerson).last);
     await tester.pumpAndSettle();
 
     expect(repository.added?.role, 'staff');
     expect(repository.added?.email, 'ali@winibex.com');
     expect(repository.added?.approvalLimit, isNull);
     expect(repository.added?.autoApproveOwn, isFalse);
-    expect(find.text(l10n.personAdded), findsOneWidget);
+    expect(find.text(l10n.personAdded('Ali')), findsOneWidget);
   });
 
   testWidgets('an admin limit typed in rupees is sent in paisa', (tester) async {
@@ -142,11 +160,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(_field(l10n.fieldFullName), 'Sana');
     await tester.enterText(_field(l10n.fieldEmail), 'sana@winibex.com');
-    await tester.tap(find.text(l10n.roleAdmin).last);
+    await tester.tap(find.text(l10n.roleAdminShort).last);
     await tester.pumpAndSettle();
     await tester.enterText(_field(l10n.fieldApprovalLimit), '50,000');
     await tester.enterText(_field(l10n.fieldTemporaryPassword), 'Welcome-2026');
-    await tester.tap(find.widgetWithText(FilledButton, l10n.actionSave));
+    await tester.tap(find.widgetWithText(FilledButton, l10n.actionAddPerson).last);
     await tester.pumpAndSettle();
 
     expect(repository.added?.role, 'admin');
@@ -163,7 +181,7 @@ void main() {
     await tester.enterText(_field(l10n.fieldFullName), 'Ali');
     await tester.enterText(_field(l10n.fieldEmail), 'ali@winibex.com');
     await tester.enterText(_field(l10n.fieldTemporaryPassword), 'short');
-    await tester.tap(find.widgetWithText(FilledButton, l10n.actionSave));
+    await tester.tap(find.widgetWithText(FilledButton, l10n.actionAddPerson).last);
     await tester.pumpAndSettle();
 
     expect(repository.added, isNull);
@@ -186,22 +204,45 @@ void main() {
     await tester.enterText(_field(l10n.fieldFullName), 'Ali');
     await tester.enterText(_field(l10n.fieldEmail), 'fazal@winibex.com');
     await tester.enterText(_field(l10n.fieldTemporaryPassword), 'Welcome-2026');
-    await tester.tap(find.widgetWithText(FilledButton, l10n.actionSave));
+    await tester.tap(find.widgetWithText(FilledButton, l10n.actionAddPerson).last);
     await tester.pumpAndSettle();
 
     expect(find.text('Someone already signs in with that email.'), findsOneWidget);
   });
 
-  testWidgets('switching someone off sends isActive false', (tester) async {
+  testWidgets('switching someone off asks first, then sends isActive false', (tester) async {
     final repository = _FakeRepository();
     await _pump(tester, repository);
     final l10n = _l10n(tester);
 
-    await tester.tap(find.text(l10n.actionSwitchOff).last);
+    await tester.tap(find.byTooltip(l10n.actionMore).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.actionSwitchOff));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.switchOffTitle('Fazal')), findsOneWidget);
+    expect(repository.changes, isNull, reason: 'nothing is sent before the owner confirms');
+
+    await tester.tap(find.widgetWithText(FilledButton, l10n.actionSwitchOff));
     await tester.pumpAndSettle();
 
     expect(repository.changedId, 3);
     expect(repository.changes, {'isActive': false});
+  });
+
+  testWidgets('cancelling the switch off sends nothing', (tester) async {
+    final repository = _FakeRepository();
+    await _pump(tester, repository);
+    final l10n = _l10n(tester);
+
+    await tester.tap(find.byTooltip(l10n.actionMore).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.actionSwitchOff));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.actionCancel));
+    await tester.pumpAndSettle();
+
+    expect(repository.changes, isNull);
   });
 
   testWidgets('resetting a password sends the temporary one', (tester) async {
@@ -209,7 +250,9 @@ void main() {
     await _pump(tester, repository);
     final l10n = _l10n(tester);
 
-    await tester.tap(find.text(l10n.actionResetPassword).first);
+    await tester.tap(find.byTooltip(l10n.actionMore).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.actionResetPassword));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, 'Temporary-2026');
     await tester.tap(find.widgetWithText(FilledButton, l10n.actionResetPassword));
@@ -217,5 +260,32 @@ void main() {
 
     expect(repository.resetId, 2);
     expect(repository.resetTo, 'Temporary-2026');
+  });
+
+  testWidgets('a generated temporary password is long enough and easy to read out', (tester) async {
+    final repository = _FakeRepository();
+    await _pump(tester, repository);
+    final l10n = _l10n(tester);
+
+    await tester.tap(find.text(l10n.actionAddPerson).first);
+    await tester.pumpAndSettle();
+    await tester.enterText(_field(l10n.fieldFullName), 'Ali');
+    await tester.enterText(_field(l10n.fieldEmail), 'ali@winibex.com');
+    await tester.tap(find.text(l10n.actionGeneratePassword));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, l10n.actionAddPerson).last);
+    await tester.pumpAndSettle();
+
+    final password = repository.added!.temporaryPassword!;
+    expect(password.length, greaterThanOrEqualTo(10));
+    expect(password, isNot(matches(RegExp('[0O1lI]'))));
+  });
+
+  test('the approval limit shows thousands separators as it is typed', () {
+    final formatted = RupeesInputFormatter().formatEditUpdate(
+      TextEditingValue.empty,
+      const TextEditingValue(text: '1250000'),
+    );
+    expect(formatted.text, '1,250,000');
   });
 }

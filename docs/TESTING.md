@@ -14,7 +14,7 @@ cd api && npm run test
 ```
 
 403 API tests after people and permissions, 2026-10-27: 400 pass, 3 skip
-(the argon2 tests, until that package is installed). 95 Flutter widget tests.
+(the argon2 tests, until that package is installed). 99 Flutter widget tests.
 Flutter analyze clean.
 
 ### Must always pass
@@ -110,7 +110,8 @@ cd app && flutter analyze
 - Widget tests for the review list and Mark reviewed
 - Widget tests for the People screen: the owner row has no actions, a limit
   typed in rupees is sent in paisa, a short temporary password sends nothing,
-  a refusal is shown, switch off and reset password
+  a refusal is shown, people grouped by role, the full table one tap away,
+  switch off asks first, reset password, a generated password readable
 - Unit tests for who may post their own entries (`auth_user_test.dart`)
 - Widget tests for the accounts list with balances
 - Money formatting tests, including negatives, foreign amounts and zero
